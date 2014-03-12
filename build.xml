@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- github version -->
+<!-- ======================================================================= -->
+<!-- heliumv main ant-buildfile                       -->
+<!--                                                                         -->
+<!-- $Id: build.xml,v 1.49 2009/10/09 09:21:58 adi Exp $ -->
+<!--                                                                         -->
+<!-- ======================================================================= -->
+
+
+<project name="build-main" basedir="." default="readme">
+	<property environment="env" />
+	<property file="build-os.properties" />
+
+	<import file="${file.build.commons}" />
+	<import file="${file.build.jboss.libs}" />
+
+	<path id="id.server.lib.path">
+		<fileset dir="${dir.jboss}">
+			<include name="**/${name.lib.dir}/**/*.jar" />
+			<include name="**/${name.lib.conf}/**/.keyHeliumV" />
+			<include name="**/${name.lib.conf}/**/props/*.properties" />
+			<include name="**/${name.lib.deploy}/**" />
+		</fileset>
+	</path>
+
+	<path id="id.test.lib.path">
+		<fileset dir="${dir.deploy.customer}">
+			<include name="**/client/**/*.jar" />
+			<include name="**/server/**/*.jar" />
+			<include name="server/**/*.jar" />
+		</fileset>
+	</path>
+
+
+	<!-- wrapper-macro in order to stop the jboss before exiting. -->
+	<macrodef name="stopfail" backtrace="false">
+		<attribute name="message" default="" />
+		<attribute name="if" default="" />
+		<attribute name="unless" default="" />
+		<text name="hvfail-text" optional="true" />
+		<sequential>
+			<if>
+				<and>
+					<isset property="@{if}" />
+					<not>
+						<isset property="@{unless}" />
+					</not>
+				</and>
+				<then>
+					<ant antfile="${file.build.jboss}" target="stop" inheritall="false" />
+				</then>
+			</if>
+			<fail message="@{message}" if="@{if}" unless="@{unless}">@{hvfail-text}</fail>
+		</sequential>
+	</macrodef>
+
+	<target name="clean">
+		<delete dir="${dir.deploy.customer}" />
+	</target>
+
+	<!-- Setzt initiale Variablen und erzeugt ggf. fehlende Verzeichnisse. -->
+	<target name="init">
+		<condition property="dir.ccwork.temp.logs" value="${dir.ccwork.temp}/${projectname}" else="${dir.ccwork.temp}/logs">
+			<isset property="projectname" />
+		</condition>
+
+		<echo>Benoetigte Verzeichnisse erstellen</echo>
+		<mkdir dir="${dir.classes}" />
+		<mkdir dir="${dir.ccwork}" />
+		<mkdir dir="${dir.ccwork.temp}" />
+
+		<mkdir dir="${dir.deploy.customer}" />
+	</target>
+
+
+	<target name="readme" description="read me - how 2 use">
+		<echo>
+			<![CDATA[
+    ]]>
+		</echo>
+	</target>
+
+
+
+	<target name="switch.database.connection" depends="check.db" description="just does the necessary copy-tasks to change the db-connection for the an already configured heliumv-server">
+		<echo>allgemeine jboss-files kopieren</echo>
+		<ant antfile="${file.build.jboss}" target="setup.database.connection" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+
+		<ant antfile="${file.build.jboss}" target="switch.db.jackrabbit" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+
+		<echo>Helium V Server-files deployen</echo>
+		<ant antfile="${file.build.server}" target="install" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+	</target>
+
+
+	<target name="quicksetup.server" depends="init, check.db">
+		<echo>Helium V Server bauen</echo>
+		<ant antfile="${file.build.server}" target="build" inheritall="false" />
+
+		<echo>Datenbank-Zugriff neu konfigurieren</echo>
+		<ant antfile="${file.build.jboss}" target="setup.database.connection" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+
+		<echo>Helium V Server-files deployen</echo>
+		<ant antfile="${file.build.server}" target="install" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+	</target>
+
+
+	<target name="setup.server" depends="init, check.db">
+		<ant antfile="${file.build.server}" target="cleanbuild" />
+		<antcall target="configure.server" />
+	</target>
+
+	<target name="configure.server" depends="init, check.db">
+		<ant antfile="${file.build.install}" target="configure" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+	</target>
+
+	<target name="setup.junit.tests" depends="init">
+		<echo>Tests compilieren</echo>
+		<antcallback target="compile.tests" return="failed.junit.test.compile" />
+		<fail if="failed.junit.test.compile" message="JUnit-Tests konnten nicht kompiliert werden." />
+
+		<echo>rescopy.tests</echo>
+		<antcall target="rescopy.tests" />
+	</target>
+
+	<!--*****************************************-->
+	<!-- Vorbereiten der tests
+	Achtung: hier wird nicht mehr kompiliert! Es muss bereits
+	vorher das target deploy aufgerufen worden sein. (cruiser)-->
+	<!--*****************************************-->
+	<target name="setup.test.environment" depends="init, check.db, clean.temp.logs">
+		<fail if="is.jboss.running" message="jboss is running! cannot proceed." />
+
+		<echo>db.which.MSSQL (${db.which.MSSQL}), db.which.POSTGRESQL (${db.which.POSTGRESQL}), db.which (${db.which}), db (${db})</echo>
+		<antcall target="configure.server" />
+		<antcall target="configure.client" />
+
+		<ant antfile="${file.build.db}" target="drop.db" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+		<ant antfile="${file.build.db}" target="create.auslieferdb" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+	</target>
+	
+	<target name="setup.client" depends="check.environment.client">
+		<echo>Client bauen und ausliefern des neuen Clients</echo>
+		<ant antfile="${file.build.client}" target="clean" inheritall="false" inheritrefs="false" />
+
+		<ant antfile="${file.build.client}" target="deploy" inheritall="false" inheritrefs="false">
+			<property name="deploydir" value="${dir.deploy.customer}" />
+		</ant>
+
+<!--
+		<antcall target="configure.client" />
+ -->
+	</target>
+
+	<target name="configure.client">
+		<!-- benoetigt der client beim start -->
+		<echo>Kopieren fuer Zeiterfassungsstifte</echo>
+		<ant antfile="${file.build.client}" target="copy.libs.zeiterfassung" inheritrefs="false" inheritall="false" />
+	</target>
+
+	
+	<target name="delete.spy.log" description="deletes log/spy.log">
+		<delete file="${file.spy.log}" />
+	</target>
+	
+	<target name="empty.spy.log" description="log cannot be deleted but emptied, because jboss is running">
+		<echo file="${file.spy.log}" append="false"></echo>
+	</target>
+	
+	<target name="configure.with.p6spy">
+		<antcallback target="delete.spy.log" />
+
+		<ant antfile="${file.build.jboss}" target="setup.with.p6spy" inheritall="false" />
+	</target>
+
+	<target name="configure.without.p6spy">
+		<antcallback target="delete.spy.log" />
+		<ant antfile="${file.build.jboss}" target="setup.without.p6spy" inheritall="false" />
+	</target>
+
+
+
+	<target name="print.buildstatus">
+		<echo>
+		this build was triggered by the following build:
+		================================================
+		most.recent.loglabel: 	${most.recent.loglabel}
+		most.recent.logdir: 		${most.recent.logdir}
+		most.recent.logfile: 		${most.recent.logfile}
+		most.recent.logtime: 		${most.recent.logtime}
+		================================================
+	</echo>
+	</target>
+
+
+	<target name="increment.release" description="increments releasnumber, creates new updateclass and writes the number to files">
+		<antcallback antfile="${file.build.lpdbupd}" target="increment.release" return="nextupdatenumber" inheritall="false" />
+
+		<antcall target="set.updatenumber">
+			<param name="updatenumber" value="${nextupdatenumber}" />
+		</antcall>
+	</target>
+	<target name="increment.version" description="increments versionnumber, creates new updateclass and writes the number to files">
+		<antcallback antfile="${file.build.lpdbupd}" target="increment.version" return="nextupdatenumber" inheritall="false" />
+
+		<antcall target="set.updatenumber">
+			<param name="updatenumber" value="${nextupdatenumber}" />
+		</antcall>
+	</target>
+	<target name="set.updatenumber">
+		<fail unless="updatenumber" message="updatenumber not set, cannot proceed" />
+
+		<ant antfile="${file.build.server}" target="set.updatenumber" inheritall="false">
+			<property name="updatenumber" value="${updatenumber}" />
+		</ant>
+
+		<ant antfile="${file.build.client}" target="set.updatenumber" inheritall="false">
+			<property name="updatenumber" value="${updatenumber}" />
+		</ant>
+	</target>
+
+
+	<target name="test.dummy" description="simuliert einen test, der funktioniert, oder nicht ;-)">
+
+		<echo message="PROJECT_HOME=${env.PROJECT_HOME}" />
+		<echo file="${dir.ccwork.temp}/PROJECT_HOME.txt" message="PROJECT_HOME=${env.PROJECT_HOME}" />
+		<fail if="failed.dummy" message="dummy failed" />
+	</target>
+
+	<target name="integrate" description="target fuer das integrationsbuild (inkl. build)">
+		<antcall target="deploy" />
+		<antcall target="test.all.independent" />
+		<antcall target="test.all" />
+	</target>
+
+
+	<target name="test.all" depends="setup.test.environment" description="Voneinander abhaengige Tests: Build und teste lpclient, lpserver, lpdbupd und installer.">
+		<antcallback target="configure.without.p6spy" />
+
+		<ant antfile="${file.build.jboss}" target="start" inheritall="false" />
+	
+		<!-- <echo>Postgresql restarten</echo>
+		<ant antfile="${file.build.dbtools}" target="restart.db.postgresql" inheritall="false" />-->
+		
+		<echo>Test Server (voneinander abhaengige Tests)</echo>
+		<echo>==========================================</echo>
+		<antcallback target="test.server" return="failed.junit.testsuiteserver" />
+
+		<!-- nach den junit-tests noch einmal alle parameter und rechte updaten (ggf. neue Mandanten) -->
+		<ant antfile="${file.build.db}" target="update.params" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+
+		<echo>Loesche Testreports</echo>
+		<antcall target="delete.testreports" />
+
+		<antcallback target="delete.spy.log" />
+		
+		<echo>starte QFTests (voneinander abhaengig)</echo>
+		<echo>======================================</echo>
+		<antcallback antfile="${file.build.qftest}" target="start.qftest.batch.old" inheritall="false" return="failed.qftest" />
+
+		<!--db- nach qftests-->
+		<echo>Backup DB (MSSQL oder POSTGRES) nach QFTests</echo>
+
+		<ant antfile="${file.build.dbtools}" target="backup.db.qftest">
+			<property name="name.qftest.dbbackup" value="nach_qftests" />
+		</ant>
+
+		<echo>test ob wert wieder leer: name.qftest.dbbackup = ${name.qftest.dbbackup}</echo>
+		<echo>qftests-failed: ${failed.qftest}</echo>
+
+		<echo>JUnit Tests nach QFTest</echo>
+		<antcallback target="test.server.NachQFTest" inheritrefs="failed.servertestnachqftest" />
+
+		<stopfail if="failed.junit.testsuiteserver" message="test.server failed" />
+		<stopfail if="failed.qftest" message="qftest failed" />
+		<stopfail if="failed.servertestnachqftest" message="test.server.NachQFTest failed" />
+
+		<echo message="Tests erfolgreich!" />
+
+		<echo>JBoss stoppen</echo>
+		<ant antfile="${file.build.jboss}" target="stop" inheritall="false" />
+	</target>
+
+
+
+	<!-- diese properties sollen eigentlich weg ...
+ geht allerdings erst, wenn die  qftests keine reports mehr sichern. -->
+	<property name="dir.jrprint" value="${dir.ccwork}/temp/jrprints" />
+	<property name="dir.jrprint.xml" value="${dir.ccwork}/temp/jrprints/xml" />
+	<property name="dir.jrprint.xml.parsed" value="${dir.ccwork}/temp/jrprints/xmlcsvparsed" />
+	<property name="dir.jrprint.diff" value="${dir.ccwork}/temp/jrprints/diff" />
+
+	<target name="delete.testreports">
+		<echo>
+		</echo>
+		<echo>Loesche: Getestete Reports aus frueheren Tests ...</echo>
+		<delete dir="${dir.jrprint}" />
+
+		<mkdir dir="${dir.jrprint}" />
+		<mkdir dir="${dir.jrprint.xml}" />
+		<mkdir dir="${dir.jrprint.diff}" />
+		<mkdir dir="${dir.jrprint.xml.parsed}" />
+	</target>
+
+	<target name="clean.temp.logs">
+		<delete dir="${dir.ccwork.temp.logs}" />
+		<mkdir dir="${dir.ccwork.temp.logs}" />
+	</target>
+
+
+	<target name="rescopy.tests" description="kopieren der Testdaten.">
+		<copy todir="${dir.classes}">
+			<fileset dir="${dir.test.new}">
+				<include name="**/testdata/**" />
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
+	</target>
+
+
+	<target name="check.files.deploy">
+	</target>
+
+
+	<!-- ***************************************************-->
+	<!-- ermittelt eine neue buildnummer aus dem cruisecontrol-label
+	und setzt diese in allen projekten. -->
+	<!-- ***************************************************-->
+	<target name="set.buildnumbers" if="manage.buildnumbers">
+		<fail unless="label" message="label ist nicht gesetzt. Evtl. nicht durch cruisecontrol aufgerufen?" />
+
+		<!-- buildnummer aus label ermitteln -->
+		<propertyregex property="buildnumber" input="${label}" regexp="build\.([0-9]*)" select="\1" />
+		<fail unless="buildnumber" message="Konnte Buildnummer nicht ermitteln. Ungueltiges Format von Label? (sollte 'build.xxxx' sein)" />
+		<echo message="setting buildnumber ${buildnumber}" />
+
+		<ant antfile="${file.build.server}" target="set.buildnumber" inheritall="false">
+			<property name="buildnumber" value="${buildnumber}" />
+		</ant>
+
+		<ant antfile="${file.build.client}" target="set.buildnumber" inheritall="false">
+			<property name="buildnumber" value="${buildnumber}" />
+		</ant>
+
+		<ant antfile="${file.build.lpdbupd}" target="set.buildnumber" inheritall="false">
+			<property name="buildnumber" value="${buildnumber}" />
+		</ant>
+	</target>
+
+
+	<!-- ***************************************************-->
+	<!--alles bauen, alles noetige
+	ins endverzeichnis kopieren -->
+	<!-- ***************************************************-->
+	<target name="deploy" depends="clean, init, set.buildnumbers" description="builds all necessary files for deployment.">
+
+		<tstamp>
+			<format property="build.start" pattern="dd.MM.yyyy hh:mm:ss" locale="de,AT" />
+		</tstamp>
+
+		<var name="deploydir" value="${dir.deploy.customer}" />
+
+		<!-- build the server -->
+		<ant antfile="${file.build.server}" target="cleanbuild" />
+
+		<!-- build the client -->
+		<antcall target="setup.client" />
+
+		<!-- build the webstart-client -->
+		<ant antfile="${file.build.webstart}" target="install" />
+
+		<!-- build the Rest-api -->
+		<ant antfile="build.xml" target="deploy" dir="../restapi">
+			<property name="deploydir" value="${deploydir}" />
+		</ant>
+		
+		<!-- ein kleiner check, ob alle benoetigten files vorhanden sind. -->
+		<antcall target="check.files.deploy" />
+
+		<ant antfile="${file.build.server}" target="deploy">
+			<property name="deploydir" value="${deploydir}" />
+		</ant>
+
+		<ant antfile="${file.build.jboss}" target="deploy" inheritall="false" inheritrefs="false">
+			<property name="deploydir" value="${deploydir}" />
+		</ant>
+
+		<ant antfile="${file.build.report}" target="deploy" inheritall="false" inheritrefs="false">
+			<property name="deploydir" value="${deploydir}" />
+		</ant>
+
+		<ant antfile="${file.build.webstart}" target="deploy" >
+			<property name="deploydir" value="${deploydir}" />
+		</ant>
+
+		<copy todir="${deploydir}">
+			<fileset dir=".">
+				<include name="build-commons.xml" />
+				<include name="build-commons.properties" />
+				<include name="build-install.xml" />
+				<include name="build-install.properties" />
+			</fileset>
+		</copy>
+
+		<echo file="${deploydir}/build-install.properties.local">
+file.build.lpdbupd=lpdbupd/build.xml
+file.build.server=server/build.xml
+file.installer.jar=client/installer/lpclientpc-installer.jar
+	</echo>
+
+		<copy todir="${deploydir}">
+			<fileset dir="${dir.tools}">
+				<include name="build-publish.*" />
+			</fileset>
+			<mapper>
+				<globmapper from="build-publish.*" to="build.*" />
+			</mapper>
+		</copy>
+
+		<copy todir="${deploydir}">
+			<fileset dir="${dir.tools}">
+				<include name="bin/**" />
+			</fileset>
+		</copy>
+
+		<tstamp>
+			<format property="build.stop" pattern="dd.MM.yyyy hh:mm:ss" locale="de,AT" />
+		</tstamp>
+		<echo>Start: ${build.start}</echo>
+		<echo>Stop:  ${build.stop}</echo>
+	</target>
+
+</project>

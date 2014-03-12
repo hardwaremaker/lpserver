@@ -1,0 +1,339 @@
+#!/bin/bash
+#
+# sh-file to get the initial components for 
+# a new heliumv installation.
+#
+
+###############################################################
+# edit the following lines to represent correct configuration:
+###############################################################
+FTP_SERVER=demo.heliumv.at
+FTP_USER=hvdownload
+FTP_PASSWORD=hv.imdvftp.08
+
+# the network interface from which to determine the ip-address
+DEV_NETWORK=eth0
+
+###############################################################
+# usually no edit should be required here ...
+###############################################################
+# directories on the download server
+DIR_JAVA=java/linux
+DIR_ANT=ant
+DIR_ANT_ADDITIONAL=$DIR_ANT/additional
+DIR_JBOSS=jboss
+DIR_HELIUMV=heliumv
+DIR_TOOLS=tools
+DIR_BIN=bin/linux
+DIR_RPM=rpm
+DIR_FULL=full
+
+# local directories
+DIR_POSTGRESQL_DATA=/var/lib/pgsql/data
+DIR_DEST_HELIUM=/opt/heliumv
+DIR_DEST_BIN=$DIR_DEST_HELIUM/bin
+DIR_DEST_JBOSS=$DIR_DEST_HELIUM
+DIR_DEST_ANT=$DIR_DEST_HELIUM
+DIR_HELIUM_DOWNLOAD=$DIR_DEST_HELIUM/download
+
+# name of temporary profile-file
+FILE_PROFILE=profile.sh
+
+# name of the ant install file
+FILE_ANT_INSTALL=build-install.xml
+
+# prefixes. these are used to determine actual names via regexpressions
+PREFIX_ANT=apache-ant
+PREFIX_JBOSS=jboss-
+
+# the tag which is used in (postgres-) configfiles to mark lines which we have edited.
+TAG_HV=#hv#
+
+USER_POSTGRES=postgres
+
+###############################################################
+# functions
+###############################################################
+function clean() {
+	rm $FILE_PROFILE
+}
+
+function get_dir() {
+	wget -r -l inf --no-verbose --no-host-directories --ftp-user=$FTP_USER --ftp-password=$FTP_PASSWORD ftp://$FTP_SERVER/$1/*
+}
+
+function install_packages() {
+	yum -y install mc vim-enhanced gedit
+	
+	get_dir $DIR_RPM
+	rpm -i $DIR_RPM/*.rpm
+}
+
+function install_bin() {
+	get_dir $DIR_BIN
+
+	# copy to our bin-directory and make executable
+	cp $DIR_BIN/* $DIR_DEST_BIN
+	chmod 700 $DIR_DEST_BIN/*
+
+	# set path-variable:
+	echo "export PATH=\$PATH:$DIR_DEST_BIN" >> $FILE_PROFILE
+
+}
+
+function install_java() {
+	# get java re from ftp-server
+	get_dir $DIR_JAVA
+
+	# validate that there is only one file in java-dir:
+	filecount=$(ls -1 $DIR_JAVA | wc -l)
+	if [ ! "${filecount}" = 1 ]; then 
+		echo "There has to be exactly one file in ${DIR_JAVA}. This is not the case -> aborting."
+		exit 1
+	fi
+
+	echo "***************************************"
+	echo "* installing java runtime environment *"
+	echo "***************************************"
+
+	# make it executable and execute it.
+	jrebin=$DIR_JAVA/$(ls -1 $DIR_JAVA)
+	chmod 0744 $jrebin
+	echo "yes" | $jrebin > /dev/null
+
+	# cleanup
+	rm *.rpm
+	
+	# determine java home
+	javahome=$(rpm -q --filesbypkg $(rpm -qa | grep jdk) | grep src.zip$ | sed -e's/[^ ]\+[ ]\+\(.*\)\/src\.zip$/\1/')
+	echo "java home will be: $javahome"
+	echo "export JAVA_HOME=$javahome" >> $FILE_PROFILE
+	echo "export PATH=\$PATH:$javahome/bin" >> $FILE_PROFILE
+}
+
+function install_ant() {
+	get_dir $DIR_ANT
+ 
+	# validate that there is only one file in java-dir:
+	filecount=$(ls -1 $DIR_ANT | grep .zip$ | wc -l)
+	if [ ! "${filecount}" = 1 ]; then 
+		echo "There has to be exactly one zip file in ${DIR_ANT}. This is not the case -> aborting."
+		exit 1
+	fi
+	antzip=$DIR_ANT/$(ls -1 $DIR_ANT | grep .zip$)
+	echo "unzipping $antzip to $DIR_DEST_HELIUMV ..."
+	unzip -q -d $DIR_DEST_ANT $antzip  
+	echo "   ...done"
+	
+	antdir=$(ls -1 ${DIR_DEST_ANT} | grep ^${PREFIX_ANT})
+	if [ ! "$(echo $antdir | wc -l)" = 1 ]; then
+		echo "There has to be exactly one dir starting with ${PREFIX_ANT} ${DIR_DEST_ANT}. This is not the case -> aborting."
+		exit 1
+	fi
+	
+	anthome=$DIR_DEST_ANT/$antdir
+	echo "ant home dir will be: $anthome"
+	echo "export ANT_HOME=$anthome" >> $FILE_PROFILE
+	echo "export PATH=\$PATH:$anthome/bin" >> $FILE_PROFILE
+	
+	echo "copying additional libs ..."
+	cp $DIR_ANT_ADDITIONAL/* $anthome/lib
+	echo "   ...done"
+}
+
+function install_jboss() {
+	get_dir $DIR_JBOSS
+	zipfile=$(ls -1 ${DIR_JBOSS} | grep .zip)
+	if [ ! "$(echo $zipfile | wc -l)" = 1 ]; then
+		echo "There has to be exactly one zip file inf ${DIR_JBOSS}. This is not the case -> aborting."
+		exit 1
+	fi
+	
+	jbosszip=$DIR_JBOSS/$zipfile
+	echo "unzipping $jbosszip to $DIR_DEST_JBOSS ..."
+	unzip -q -d $DIR_DEST_JBOSS $jbosszip
+	echo "   ...done"
+	
+	jbossdir=$(ls -1 ${DIR_DEST_JBOSS} | grep ^${PREFIX_JBOSS})
+	if [ ! "$(echo $jbossdir | wc -l)" = 1 ]; then
+		echo "There has to be exactly one dir starting with ${PREFIX_JBOSS} in ${DIR_DEST_JBOSS}. This is not the case -> aborting."
+		exit 1
+	fi
+	
+	jbosshome=$DIR_DEST_JBOSS/$jbossdir
+	echo "jboss home will be: ${jbosshome}"
+	echo "export JBOSS_HOME=$jbosshome" >> $FILE_PROFILE
+
+}
+
+function install_heliumv() {
+	mkdir $DIR_HELIUMV
+	mkdir $DIR_HELIUMV/conf
+
+	# write update.properties
+	conffile=$DIR_HELIUMV/conf/update.properties
+	rm -f $conffile
+	echo "is.active.fetch.ftp = true" >> $conffile
+	echo >> $conffile
+	echo "fetch.ftp.user = $FTP_USER" >> $conffile
+	echo "fetch.ftp.password = $FTP_PASSWORD" >> $conffile
+	echo "fetch.ftp.server = $FTP_SERVER" >> $conffile
+	echo "fetch.ftp.basedir = $DIR_HELIUMV" >> $conffile
+	echo "fetch.ftp.passive = true" >> $conffile
+	echo >> $conffile
+	echo "cmd.bsdiff = bsdiff" >> $conffile
+	echo "cmd.bspatch = bspatch" >> $conffile
+
+	# write heliumv.properties
+	conffile=$DIR_HELIUMV/conf/heliumv.properties
+	rm -f $conffile
+	echo "dir.helium.base=$DIR_DEST_HELIUM" >> $conffile
+	echo "db=POSTGRESQL" >> $conffile
+	echo "db.server.name=localhost" >> $conffile
+	echo "db.database.name=LP" >> $conffile
+	echo >> $conffile
+	echo "# initial permsize (in MB)" >> $conffile
+	echo "jvm.permsize = 64" >> $conffile
+	echo "# maxiaml  permsize (in MB)" >> $conffile
+	echo "jvm.maxpermsize = 256" >> $conffile
+	echo "# Initial Java Heap Size (in MB)" >> $conffile
+	echo "jvm.initmemory = 512" >> $conffile
+	echo "# Maximum Java Heap Size (in MB)" >> $conffile
+	echo "jvm.maxmemory = 768" >> $conffile
+	echo >> $conffile
+	echo "is.service=true" >> $conffile
+
+
+	builddir=$DIR_HELIUMV/$BUILDNUMBER/$DIR_FULL
+	get_dir $builddir
+	
+	# make all necessary files executable
+	$ANT_HOME/bin/ant -f $builddir/$FILE_ANT_INSTALL chmod.executables
+
+	# start the installation process
+	$ANT_HOME/bin/ant -f $builddir/$FILE_ANT_INSTALL install
+}
+
+function patch_pgconfig_value() {
+	key=$1
+	value=$2
+
+	regexporigline="^\($key[ =]*\)\(.*\)"
+	regexpcomorigline="^#\($key[ =]*\)\(.*\)"
+	regexphvline="$regexporigline$TAG_HV$"
+
+	tmpfile=$DIR_POSTGRESQL_DATA/tmp.conf
+	conffile=$DIR_POSTGRESQL_DATA/postgresql.conf
+	hvline=$(cat $conffile | grep "$regexphvline")
+
+	if [ ! "$hvline" == "" ]; then
+		# already line with hv-tag existent -> just replace value
+		sed -e "s/$regexphvline/\1$value $TAG_HV/" $conffile > $tmpfile
+	else
+		origline=$(cat $conffile | grep "$regexporigline")
+		if [ ! "$origline" == "" ]; then
+			# original uncommented line available -> comment and ad hv-tagged line
+			sed -e "s/$regexporigline/$TAG_HV \1\2\n\1$value $TAG_HV/" $conffile > $tmpfiecho 
+		else
+			comorigline=$(cat $conffile | grep "$regexpcomorigline")
+			if [ ! "$comorigline" == "" ]; then
+				# commented original - line available -> remains as is + add line below
+				sed -e "s/$regexpcomorigline/#\1\2\n\1$value $TAG_HV/" $conffile > $tmpfile
+			else
+				# nothing known about this parameter -> add at the bottom
+				cp $conffile $tmpfile
+				echo "$key = $value $TAG_HV" >> $tmpfile
+			fi
+		fi
+	fi
+	mv $tmpfile $conffile
+	rm -f $tmpfile
+}
+
+function configure_postgres() {
+	# patch postgresql.conf
+	patch_pgconfig_value listen_addresses "'*'"
+	patch_pgconfig_value port 5432
+	patch_pgconfig_value shared_buffers 32768
+	patch_pgconfig_value max_fsm_pages 50000
+	patch_pgconfig_value max_fsm_relations 1000
+  patch_pgconfig_value wal_buffers 32
+  patch_pgconfig_value effective_cache_size 65536
+	patch_pgconfig_value datestyle "'iso, dmy'"
+
+	# change password for postgres - user
+	su -l $USER_POSTGRES -c "psql -c \"ALTER ROLE postgres ENCRYPTED PASSWORD 'md59f4a562573c04981f8d52f8968d1b76e';\""
+
+	conffile=$DIR_POSTGRESQL_DATA/pg_hba.conf
+	hvmarker=$(cat $conffile | grep "^$TAG_HV")
+	if [ "$hvmarker" == "" ]; then   
+		# only insert if not done before!
+
+		# backup original	
+		cp $conffile $conffile.hv.bak
+
+		tmpfile=$DIR_POSTGRESQL_DATA/tmp.conf
+		# localhost eintraege auskommentieren:
+		sed -e "s/\(.*127\.0\.0\.1.*\)/$TAG_HV \1\nhost    all         all         127.0.0.1\/32         md5 $TAG_HV/" $conffile > $tmpfile
+		mv $tmpfile $conffile
+		rm -f $tmpfile
+
+		# patch pg_hba.conf
+		ipaddress=$(ifconfig $DEV_NETWORK | head -n2 | tail -n1 | cut -d':' -f2 | cut -d' ' -f1)
+		network=$(echo $ipaddress | sed -e 's/\(.*\.\)[0-9]*$/\10\/24/')
+		echo "ip-address: $ipaddress  --> network: $network"
+		echo "$TAG_HV  configuration added for heliumv" >> $conffile
+#		echo "host    all         all         127.0.0.1/32         md5" >> $conffile
+		echo "host    all         all         $network       md5" >> $conffile
+	fi
+
+	chown $USER_POSTGRES.$USER_POSTGRES $DIR_POSTGRESQL_DATA/*
+	service postgresql restart
+}
+
+
+
+function print_usage() {
+	echo "***********************************"
+	echo "Heliumv bootstrap script for linux."
+	echo "***********************************"
+	echo 
+	echo "USAGE"
+	echo "  $0 buildnumber"
+  echo 
+  echo "buildnumber is the buildnumber of the deploy you want to download and install."
+}
+
+###############################################################
+# do it
+###############################################################
+
+if [ $# -lt 1 ]; then
+	print_usage
+	exit 1
+fi
+
+BUILDNUMBER=$1
+
+configure_postgres
+
+mkdir $DIR_DEST_HELIUM
+mkdir $DIR_HELIUM_DOWNLOAD
+mkdir $DIR_DEST_BIN
+
+cd $DIR_HELIUM_DOWNLOAD
+pwd
+
+clean
+echo "export HELIUM_HOME=$DIR_DEST_HELIUM" >> $FILE_PROFILE
+
+install_packages
+install_bin
+install_java
+install_ant
+install_jboss
+
+cp $FILE_PROFILE /etc/profile.d/heliumv.sh
+. $FILE_PROFILE
+install_heliumv
+

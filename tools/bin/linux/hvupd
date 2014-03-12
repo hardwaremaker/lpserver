@@ -1,0 +1,98 @@
+#!/bin/bash
+#
+# wrapper script for hv update- and install- functions.
+#
+
+DIR_HELIUM=$HELIUM_HOME
+
+DIR_BUILDS=$HELIUM_HOME/download/heliumv
+
+EXIT_ERROR=1
+EXIT_SUCCESS=0
+
+NAME_FILE_BUILD_INSTALL=build-install.xml
+NAME_FILE_BUILD_PUBLISH=build.xml
+NAME_DIR_FULL=full
+
+CMD_ANT=ant
+
+function list_available() {
+	ls -1 $DIR_BUILDS | grep -e '^[0-9]\+$' | sort -n
+}
+
+function get_last_build() {
+	list_available | tail -n1
+}
+
+function get_buildnumber() {
+	if [ ! "$IN_BUILDNUMBER" = "" ]; then
+		echo $IN_BUILDNUMBER		
+	else
+		get_last_build
+	fi
+}
+
+function update() {
+	buildfile=$DIR_BUILDS/$(get_buildnumber)/$NAME_DIR_FULL/$NAME_FILE_BUILD_INSTALL
+	$CMD_ANT -f $buildfile update
+}
+
+function fetch() {
+	buildfile=$DIR_BUILDS/$(get_last_build)/$NAME_DIR_FULL/$NAME_FILE_BUILD_PUBLISH
+	$CMD_ANT -f $buildfile fetch.full -Dbuildnumber=$(get_buildnumber)
+}
+
+# Funktionen
+function print_usage() {
+	echo "heliumv update-script"
+	echo
+	echo "Usage: $0 command [-b buildnumber]"
+	echo
+	echo "command can be:" 
+	echo "list 		: list locally available builds"
+	echo "help 		: display this message"
+	echo "update	: applies last available update to hv-installation"
+	echo "fetch   : fetch new build (requires -b, optional: -p)"
+	echo
+	echo "possible options:"
+  echo "-b <value> : determines buildnumber to use by fetch or update"
+  echo "-p         : fetch patch instead of full version."
+
+		[[ $# -eq 1 ]] && exit $1 || exit $EXIT_ERROR
+}
+
+
+if [ $# -lt 1 ]; then
+	print_usage
+fi
+
+COMMAND=$1
+shift
+
+# Auswertung der Optionen
+while getopts ':vhb:' OPTION ; do
+	case $OPTION in
+	h)	print_usage $EXIT_SUCCESS
+			;;
+	b)	IN_BUILDNUMBER=$OPTARG
+			;;
+	\?)	echo "Unbekannte Option \"-$OPTARG\"."
+			print_usage $EXIT_ERROR
+			;;
+	esac
+done
+
+case $COMMAND in
+	list)	list_available
+			;;
+	update) update
+			;;
+  fetch) fetch
+			;;
+	help) print_usage $EXIT_SUCCESS
+			;;
+	*)	echo "Unbekannte Option \"-$OPTARG\"."
+			print_usage $EXIT_ERROR
+			;;
+esac
+

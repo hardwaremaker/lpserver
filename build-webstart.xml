@@ -1,0 +1,247 @@
+﻿<project name="build-webstart" basedir="." default="readme">
+	
+	<property environment="env"/>
+	<property name="name.build.webstart" value="build-webstart" />
+	<property file="${name.build.webstart}.properties.local" />
+	<property file="${name.build.webstart}.properties" />
+	<property file="build.properties"/>
+	<import file="${file.build.commons}"/>
+
+	<property name="dir.app" value="helium-client.war" />
+	<property name="dir.deploy" value="deploy/${dir.app}" />
+	<property name="dir.client" value="../lpclientpc/deploy" />
+	<property name="dir.webstart" value="webstart" />
+	
+<!-- 	<target name="install" depends="privateInit, self-signed-certs, privateCopyServer, privateCopyClient, privateSign" -->
+	<target name="install" depends="privateInit, self-signed-certs, privateCopyServer, privateCopyClient, publicSign"
+		description="Baut den Webstart Client lokal zusammen">
+	</target>
+
+	<target name="deploy" 
+		description="Kopiert den mittels 'install' erstellten Webstart Client ins endgültige Deploy-Verzeichnis">
+		<fail unless="deploydir" message="deploydir not set. cannot proceed!"/>
+
+		<var name="dir.deploy.webstart" value="${deploydir}/server/deploy/${dir.app}"/>
+
+		<delete dir="${dir.deploy.webstart}"/>
+		<mkdir dir="${dir.deploy.webstart}"/>
+
+		<copy todir="${dir.deploy.webstart}">
+			<fileset dir="${dir.deploy}">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+	</target>
+	
+    <target name="self-signed-certs"
+    	description="Create self signed public/private key pairs for client and server">
+  
+  		<echo message="keytool client.keystore" />
+		<exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+			 <arg value="-genkey" />
+			 <arg value="-alias" />
+			 <arg value="HVSSLClient" />
+			 <arg value="-keyalg" />
+			 <arg value="RSA" />
+			 <arg value="-validity" />
+			 <arg value="${laufzeit}" />
+			 <arg value="-keystore" />
+			 <arg value="client.keystore" />
+			 <arg value="-dname" />
+			 <arg value="cn=ClientCert,o=${organisationname},ou=Helium V IT-Solutions GmbH,l=${localityname},s=${statename},c=${country}" />
+			 <arg value="-keypass" />
+			 <arg value="${keypass}" />
+			 <arg value="-storepass" />
+			 <arg value="${storepass}" />
+		</exec> 
+   
+		<exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-list" />
+           <arg value="-keystore" />
+           <arg value="client.keystore" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+        </exec>
+
+        <echo message="keytool server.keystore" />
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-genkey" />
+           <arg value="-alias" />
+           <arg value="HVSSLServer" />
+           <arg value="-keyalg" />
+           <arg value="RSA" />
+           <arg value="-validity" />
+           <arg value="${laufzeit}" />
+           <arg value="-keystore" />
+           <arg value="server.keystore" />
+           <arg value="-dname" />
+           <arg value="cn=${hostname},o=${organisationname},ou=Helium V IT-Solutions GmbH,l=${localityname},s=${statename},c=${country}" />
+           <arg value="-keypass" />
+           <arg value="${keypass}" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+        </exec> 
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-list" />
+           <arg value="-keystore" />
+           <arg value="server.keystore" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+        </exec>
+
+        <!-- Export the public keys as x509 certs -->
+        <echo message="keytool export client.cer" />
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-export" />
+           <arg value="-alias" />
+           <arg value="HVSSLClient" />
+           <arg value="-keystore" />
+           <arg value="client.keystore" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+           <arg value="-file" />
+           <arg value="client.cer" />
+        </exec>
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-printcert" />
+           <arg value="-file" />
+           <arg value="client.cer" />
+        </exec>
+
+        <echo message="keytool export server.cer" />
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-export" />
+           <arg value="-alias" />
+           <arg value="HVSSLServer" />
+           <arg value="-keystore" />
+           <arg value="server.keystore" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+           <arg value="-file" />
+           <arg value="server.cer" />
+        </exec>
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-printcert" />
+           <arg value="-file" />
+           <arg value="server.cer" />
+        </exec>
+
+        <!-- Import the certs into truststores -->
+        <echo message="keytool import serverCert in client.truststore" />
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir="." inputstring="Ja">
+           <arg value="-import" />
+           <arg value="-alias" />
+           <arg value="HVSSLServer" />
+           <arg value="-keystore" />
+           <arg value="client.truststore" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+           <arg value="-file" />
+           <arg value="server.cer" />
+        </exec>
+
+        <echo message="keytool import clientCert in server.truststore" />
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir="." inputstring="Ja">
+           <arg value="-import" />
+           <arg value="-alias" />
+           <arg value="HVSSLClient" />
+           <arg value="-keystore" />
+           <arg value="server.truststore" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+           <arg value="-file" />
+           <arg value="client.cer" />
+        </exec>
+
+        <!-- List the keystore contents -->
+        <echo message="client.keystore contents:" />
+        <exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-list" />
+           <arg value="-keystore" />
+           <arg value="client.keystore" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+        </exec>
+    
+    	<echo message="server.keystore contents:" />
+        
+    	<exec executable="${env.JAVA_HOME}/bin/keytool" dir=".">
+           <arg value="-list" />
+           <arg value="-keystore" />
+           <arg value="server.keystore" />
+           <arg value="-storepass" />
+           <arg value="${storepass}" />
+        </exec>
+    </target>
+   
+	   	
+	<target name="privateInit">
+		<mkdir dir="${dir.deploy}"/>
+		<delete dir="${dir.deploy}" quiet="true" />
+	</target>
+	
+	<target name="privateCopyServer">
+	 	<copy todir="${dir.deploy}" verbose="true">
+	      	<flattenmapper />
+	  		<fileset dir="${dir.webstart}/res">
+	      	</fileset>
+	    </copy>
+	</target>
+	
+	<target name="privateCopyClient">
+	 	<copy todir="${dir.deploy}/lib" verbose="true" includeEmptyDirs="false">
+	      	<flattenmapper />
+	  		<fileset dir="${dir.client}/lib">
+	  			<exclude name="cglib-2.1.jar" />
+	  			<exclude name="iReport.jar" />
+	  			<exclude name="jcommon-1.0.6.jar" />
+	  			<exclude name="" />
+	  			<exclude name="/linux/**"/>
+	  			<exclude name="/mac/**"/>
+	  			<exclude name="/windows/**"/>
+	      	</fileset>
+	    </copy>
+		
+		<copy file="${dir.client}/lpclientpc.jar" todir="${dir.deploy}" />
+		<jar destfile="lpclientpc.jar" basedir="${dir.deploy}" update="true" >
+<!--			<manifest file="MANIFEST.MF" mode="update"> -->
+			<manifest>
+					<attribute name="Permissions" value="all-permissions"/> 
+					<attribute name="Application-Name" value="HELIUM V Webstart Client" />
+					<attribute name="Implementation-Vendor" value="HELIUM V IT Solutions GmbH"/>
+					<attribute name="Implementation-Version" value="12345"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="privateSign">
+		<signjar 
+			alias="HVSSLServer" 
+			keystore="server.keystore" storepass="${storepass}" 
+			preservelastmodified="true" lazy="true">
+				<path>
+						<fileset dir="${dir.deploy}" includes="**/*.jar" />
+				</path>
+		</signjar>
+	</target>
+
+	<target name="publicSign">
+		<signjar 
+			alias="heliumv_com" 
+			keystore="heliumv_com.jks" storepass="?ghp.logp.66!" 
+			preservelastmodified="true" lazy="true">
+				<path>
+						<fileset dir="${dir.deploy}" includes="**/*.jar" />
+				</path>
+		</signjar>
+	</target>
+
+	<!-- ToDo -->
+	<target name="readme" description="read me - how to use">
+		<echo>
+			<![CDATA[
+      ]]>
+		</echo>
+	</target>
+
+</project>

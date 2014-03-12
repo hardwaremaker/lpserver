@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pers_produktivitaetstagesstatistik_summary" pageWidth="812" pageHeight="595" orientation="Landscape" columnWidth="812" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="Person" class="java.lang.String"/>
+	<field name="Monat" class="java.lang.String"/>
+	<field name="Sollstunden" class="java.lang.Double"/>
+	<field name="Iststunden" class="java.lang.Double"/>
+	<variable name="MaxValue" class="java.lang.Double" calculation="Highest">
+		<variableExpression><![CDATA[$F{Sollstunden}.doubleValue() > $F{Iststunden}.doubleValue() ?
+$F{Sollstunden} :
+$F{Iststunden}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<detail>
+		<band splitType="Stretch">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="419" splitType="Stretch">
+			<barChart>
+				<chart isShowLegend="true" renderType="draw">
+					<reportElement key="Diagramm Soll Ist" x="0" y="10" width="812" height="200"/>
+					<chartTitle position="Top">
+						<font size="12" isBold="true" isUnderline="true"/>
+						<titleExpression><![CDATA[$P{Person}]]></titleExpression>
+					</chartTitle>
+					<chartSubtitle/>
+					<chartLegend position="Bottom"/>
+				</chart>
+				<categoryDataset>
+					<categorySeries>
+						<seriesExpression><![CDATA["Sollzeit"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{Monat}]]></categoryExpression>
+						<valueExpression><![CDATA[$F{Sollstunden}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA["Istzeit"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{Monat}]]></categoryExpression>
+						<valueExpression><![CDATA[$F{Iststunden}]]></valueExpression>
+					</categorySeries>
+				</categoryDataset>
+				<barPlot isShowLabels="true" isShowTickLabels="true" isShowTickMarks="false">
+					<plot labelRotation="0.0">
+						<seriesColor seriesOrder="0" color="#00FF00"/>
+						<seriesColor seriesOrder="1" color="#999999"/>
+						<seriesColor seriesOrder="2" color="#FFFF33"/>
+					</plot>
+					<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+					<categoryAxisFormat labelRotation="0.0">
+						<axisFormat verticalTickLabels="true">
+							<labelFont>
+								<font size="8"/>
+							</labelFont>
+							<tickLabelFont>
+								<font size="8"/>
+							</tickLabelFont>
+						</axisFormat>
+					</categoryAxisFormat>
+					<valueAxisLabelExpression><![CDATA["Stunden"]]></valueAxisLabelExpression>
+					<valueAxisFormat>
+						<axisFormat verticalTickLabels="false">
+							<labelFont>
+								<font size="8"/>
+							</labelFont>
+							<tickLabelFont>
+								<font size="8"/>
+							</tickLabelFont>
+						</axisFormat>
+					</valueAxisFormat>
+					<rangeAxisMaxValueExpression><![CDATA[$V{MaxValue}.doubleValue() * 1.1]]></rangeAxisMaxValueExpression>
+				</barPlot>
+			</barChart>
+			<lineChart>
+				<chart isShowLegend="false">
+					<reportElement x="0" y="219" width="812" height="200"/>
+					<chartTitle position="Top"/>
+					<chartSubtitle/>
+					<chartLegend position="Bottom"/>
+				</chart>
+				<categoryDataset>
+					<categorySeries>
+						<seriesExpression><![CDATA["Faktor"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{Monat}]]></categoryExpression>
+						<valueExpression><![CDATA[$F{Iststunden}.doubleValue() /
+$F{Sollstunden}.doubleValue()]]></valueExpression>
+					</categorySeries>
+				</categoryDataset>
+				<linePlot>
+					<plot labelRotation="0.0">
+						<seriesColor seriesOrder="0" color="#00FF00"/>
+						<seriesColor seriesOrder="1" color="#999999"/>
+						<seriesColor seriesOrder="2" color="#FFFF33"/>
+					</plot>
+					<categoryAxisFormat labelRotation="0.0">
+						<axisFormat verticalTickLabels="false">
+							<labelFont>
+								<font size="8"/>
+							</labelFont>
+							<tickLabelFont>
+								<font size="8"/>
+							</tickLabelFont>
+						</axisFormat>
+					</categoryAxisFormat>
+					<valueAxisLabelExpression><![CDATA["Faktor Iststunden / Sollstunden"]]></valueAxisLabelExpression>
+					<valueAxisFormat>
+						<axisFormat verticalTickLabels="false">
+							<labelFont>
+								<font size="8"/>
+							</labelFont>
+							<tickLabelFont>
+								<font size="8"/>
+							</tickLabelFont>
+						</axisFormat>
+					</valueAxisFormat>
+				</linePlot>
+			</lineChart>
+		</band>
+	</summary>
+</jasperReport>

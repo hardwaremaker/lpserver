@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<!-- ======================================================================= -->
+<!-- Antbuildfile zum Build eines HV-JBosses.                                -->
+<!--                                                                         -->
+<!-- $Id: build.xml,v 1.3 2009/05/25 10:18:14 heidi Exp $ -->
+<!--                                                                         -->
+<!-- ======================================================================= -->
+<project name="report" default="readme" basedir=".">
+	<property environment="env"/>
+	<property file="build.properties"/>
+	
+	<property name="dir.jboss.server" value="${dir.jboss.home}/server"/>
+	<property name="dir.jboss.helium" value="${dir.jboss.server}/helium"/>
+	<property name="dir.helium.report" value="${dir.jboss.helium}/report"/>
+	
+	<property name="name.dir.general" value="all"/>
+	<property name="name.dir.mssql" value="mssql"/>
+	<property name="name.dir.postgresql" value="pgsql"/>
+	
+	<import file="${file.build.commons}"/>
+
+
+<!-- **************************************************-->
+<!-- cleans hv-reports on jboss-server-->
+<!-- **************************************************-->	
+<target name="clean" >
+	<delete dir="${dir.helium.report}"/>
+</target>
+
+
+<!-- **************************************************-->
+<!-- copy all reports and report-specific files to jboss-server.-->
+<!-- **************************************************-->
+<target name="install" depends="clean"
+				description="copy all reports to jboss server">
+	
+	<unzip  dest=".">
+		<fileset dir=".">
+			<include name="${name.report.zip}"/>
+		</fileset>
+	</unzip>
+	
+	<antcall target="copy.subtree">
+		<param name="srcdir" value="${name.dir.general}"/>
+	</antcall>
+	<antcall target="copy.reports.db"/>
+</target>
+
+	
+<!-- **************************************************-->
+<!-- copy db-specific files .-->
+<!-- **************************************************-->
+<target name="copy.reports.db" depends="check.db.type">
+	<if>
+		<isset property="db.which.MSSQL"/>
+		<then>
+			<antcall target="copy.subtree">
+				<param name="srcdir" value="${name.dir.mssql}"/>
+			</antcall>
+		</then>
+		<else>
+			<antcall target="copy.subtree">
+				<param name="srcdir" value="${name.dir.postgresql}"/>
+			</antcall>
+		</else>
+	</if>
+</target>
+ 
+ 
+<!-- **************************************************-->
+<!-- helper-target to copy a given subtree..-->
+<!-- **************************************************-->
+<target name="copy.subtree">
+	<fail unless="srcdir" message="srcdir not set. cannot proceed!" />
+	<copy todir="${dir.helium.report}" >
+		<fileset dir="${srcdir}"/>
+	</copy>
+</target>
+
+
+<target name="cleandeploy" depends="clean, deploy"/>
+
+<!-- **************************************************-->
+<!-- target to prepare reports for deploy -->
+<!-- @param deploydir -->
+<!-- **************************************************-->
+<target name="deploy" depends="init">
+	<fail unless="deploydir" message="deploydir not set. Cannot proceed!"/>
+	<var name="dir.deploy.report" value="${deploydir}/report"/>
+	
+	<delete dir="${dir.deploy.report}"/>
+	<mkdir dir="${dir.deploy.report}"/>
+	
+	<!--alle reports in ein zip-->
+	<zip destfile="${dir.deploy.report}/${name.report.zip}"  basedir=".">
+		<exclude name="**/anwender/**"/>
+		<exclude name="*"/>
+	</zip>
+	<copy todir="${dir.deploy.report}">
+		<fileset dir=".">
+			<and>
+				<filename name="*"/>
+				<type type="file"/>
+			</and>
+		</fileset>
+	</copy>
+</target>
+
+
+<target name="backup.anwenderreports">
+	<fail unless="backupdir" message="backupdir not set, cannot proceed"/>
+	
+	<var name="dir.dest" value="${backupdir}/${name.anwenderreport.dir}"/>
+	<mkdir dir="${dir.dest}"/>
+	
+	<copy todir="${dir.dest}" >
+		<fileset dir="${dir.helium.report}">
+			<include name="**/anwender/**"/>
+		</fileset>
+	</copy>
+</target>
+
+
+<target name="restore.anwenderreports">
+	<fail unless="backupdir" message="backupdir not set, cannot proceed"/>
+	
+	<var name="dir.src" value="${backupdir}/${name.anwenderreport.dir}"/>
+	<copy todir="${dir.helium.report}" >
+		<fileset dir="${dir.src}"/>
+	</copy>
+</target>
+
+<target name="init">
+  <echo>Benoetigte Verzeichnisse erstellen</echo>
+</target>
+
+
+
+</project>
+
+

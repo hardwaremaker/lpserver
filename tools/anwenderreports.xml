@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<project name="anwenderreports">
+	<property environment="env"/>
+
+<!-- ***************************************************-->
+<!-- Sicherungsverzeichnis backupdir definieren: in Windows zB c:/sicherung, Linux /opt/backup -->
+<!-- ***************************************************-->
+	<property name="backupdir" value="c:/sicherung/anwenderreport"/>
+	
+	<property name="dir.jboss.home" value="${env.JBOSS_HOME}"/>
+	<property name="dir.jboss.server" value="${dir.jboss.home}/server"/>
+	<property name="dir.jboss.helium" value="${dir.jboss.server}/helium"/>
+	<property name="dir.helium.report" value="${dir.jboss.helium}/report"/>
+
+
+<!-- ***************************************************-->
+<!-- Zusaetzliche Task Definitionen -->
+<!-- ***************************************************-->
+<!-- ant-contrib: if, for, ... -->
+<taskdef resource="net/sf/antcontrib/antlib.xml">
+  <classpath>
+    <pathelement location="${env.ANT_HOME}/lib/ant-contrib-1.0b3.jar"/>
+  </classpath>
+</taskdef>
+
+
+<!-- ***************************************************-->
+<!-- Sichern der Anwenderreports unter dem verzeichnis backupdir/datum/... -->
+<!-- ***************************************************-->
+<target name="backup.anwenderreports">
+  <fail unless="backupdir" message="backupdir ist nicht gesetzt, Fortsetzung nicht moeglich"/>
+  <fail unless="dir.jboss.home" message="Umgebungsvariable JBOSS_HOME ist nicht gesetzt, Fortsetzung nicht moeglich"/>
+	
+	<tstamp/>
+	<var name="dir.dest" value="${backupdir}/${DSTAMP}-${TSTAMP}"/>
+	<mkdir dir="${dir.dest}"/>
+	
+	<copy todir="${dir.dest}" >
+		<fileset dir="${dir.helium.report}">
+			<include name="**/anwender/**"/>
+		</fileset>
+	</copy>
+</target>
+</project>
