@@ -14,7 +14,7 @@
 	</xsl:template>
 	<xsl:template match="belegnummer">
 Find your <xsl:value-of select="/mail/bezeichnung"/>&#160;<xsl:value-of select="."/> in the attached file.
-To view the document you may load Acrobat-Reader from our website www.HeliumV.com
+HELIUM V Business Software for sustainable corporate success.
 
 Best regards
 

@@ -2,8 +2,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pers_auftragszeitstatistik" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="524"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -90,7 +90,7 @@
 				<text><![CDATA[Auftragszeitstatistik]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="150" y="18" width="25" height="12"/>
+				<reportElement x="150" y="19" width="25" height="12"/>
 				<textElement verticalAlignment="Bottom">
 					<font size="9"/>
 				</textElement>
@@ -102,7 +102,7 @@
 				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$P{P_VON}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Transparent" x="270" y="18" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement mode="Transparent" x="270" y="19" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None" markup="none">
 					<font fontName="Arial" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
@@ -118,12 +118,12 @@
 	<columnHeader>
 		<band height="100" splitType="Stretch">
 			<staticText>
-				<reportElement x="0" y="86" width="80" height="12"/>
+				<reportElement x="0" y="86" width="70" height="12"/>
 				<textElement/>
 				<text><![CDATA[Person]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="80" y="36" width="16" height="62"/>
+				<reportElement x="70" y="36" width="26" height="62"/>
 				<textElement verticalAlignment="Bottom" rotation="Left">
 					<font size="6"/>
 				</textElement>
@@ -172,18 +172,25 @@
 		<band height="9" splitType="Stretch">
 			<rectangle>
 				<reportElement mode="Opaque" x="0" y="0" width="802" height="9" forecolor="#E5E5E5" backcolor="#E5E5E5">
-					<printWhenExpression><![CDATA[$F{Person}.startsWith("GESAMTSUMME")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{Person}.startsWith("~GESAMTSUMME")]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement mode="Opaque" x="0" y="0" width="802" height="9" forecolor="#FFFFFF" backcolor="#FF0000">
+					<printWhenExpression><![CDATA[$F{Nichtzuordenbar}.compareTo(new BigDecimal(0.00)) < 0 &&
+!$F{Person}.startsWith("~GESAMTSUMME")]]></printWhenExpression>
 				</reportElement>
 			</rectangle>
 			<textField>
-				<reportElement key="Person" mode="Transparent" x="0" y="0" width="80" height="8"/>
+				<reportElement key="Person" mode="Transparent" x="0" y="0" width="70" height="8"/>
 				<textElement verticalAlignment="Bottom">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Person}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{Person}.startsWith("~GESAMTSUMME") ? "Gesamt" :
+$F{Person}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.0" isBlankWhenNull="true">
-				<reportElement key="Nichtzuordenbar" mode="Transparent" x="80" y="0" width="16" height="8">
+				<reportElement key="Nichtzuordenbar" mode="Transparent" x="70" y="0" width="26" height="8">
 					<printWhenExpression><![CDATA[$F{Nichtzuordenbar}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
@@ -251,6 +258,17 @@ doubleValue()
 	<pageFooter>
 		<band splitType="Stretch"/>
 	</pageFooter>
+	<lastPageFooter>
+		<band height="25">
+			<staticText>
+				<reportElement x="0" y="0" width="802" height="25"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Werden unter Gesamt negative Werte angezeigt bzw. die Zeile rot hinterlegt dargestellt, dann deutet dies auf Fehler in der Konsistenz der Zeitdaten hin. Drucken Sie die Monatsabrechnung des Mitarbeiters des Zeitraumes aus und beheben Sie die Buchungsfehler. Die Auftragszeitstatistik kann nur bei richtig erfassten Zeitdaten stimmen.]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
 	<summary>
 		<band splitType="Stretch"/>
 	</summary>

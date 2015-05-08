@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_saldenliste_quer" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_saldenliste_quer" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="01f3abb5-9d67-4f08-96c6-bddaedd33e0a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
@@ -91,7 +91,8 @@
  $F{F_HABEN}.compareTo(new BigDecimal(0.00)) == 0 &&
  $F{F_EBWERT}.compareTo(new BigDecimal(0.00)) == 0 &&
  $F{F_SOLL_BIS}.compareTo(new BigDecimal(0.00)) == 0 &&
- $F{F_HABEN_BIS}.compareTo(new BigDecimal(0.00)) == 0
+ $F{F_HABEN_BIS}.compareTo(new BigDecimal(0.00)) == 0 &&
+ $F{F_EBWERT_BIS}.compareTo(new BigDecimal(0.00)) == 0
  ? 0 : 1) + $V{V_KontoKlasseZeilen}.intValue()]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
 	</variable>
@@ -113,12 +114,13 @@
 	<variable name="V_SUMMEHABEN_STK_Bis" class="java.math.BigDecimal" resetType="Group" resetGroup="STEUERKATEGORIE" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_HABEN_BIS}]]></variableExpression>
 	</variable>
-	<variable name="V_STK_Zeilen" class="java.lang.Integer" resetType="Group" resetGroup="KONTOKLASSE">
+	<variable name="V_STK_Zeilen" class="java.lang.Integer" resetType="Group" resetGroup="STEUERKATEGORIE">
 		<variableExpression><![CDATA[($F{F_SOLL}.compareTo(new BigDecimal(0.00)) == 0 &&
  $F{F_HABEN}.compareTo(new BigDecimal(0.00)) == 0 &&
  $F{F_EBWERT}.compareTo(new BigDecimal(0.00)) == 0 &&
  $F{F_SOLL_BIS}.compareTo(new BigDecimal(0.00)) == 0 &&
- $F{F_HABEN_BIS}.compareTo(new BigDecimal(0.00)) == 0
+ $F{F_HABEN_BIS}.compareTo(new BigDecimal(0.00)) == 0 &&
+ $F{F_EBWERT_BIS}.compareTo(new BigDecimal(0.00)) == 0
  ? 0 : 1) + $V{V_STK_Zeilen}.intValue()]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
 	</variable>
@@ -127,7 +129,9 @@
 /* Die Verwendung der Variablen geht nicht, da dies erst nach dem Detail interpretiert wird */]]></variableExpression>
 	</variable>
 	<group name="STEUERKATEGORIE">
-		<groupExpression><![CDATA[$F{F_STEUERKATEGORIE_C_BEZ}]]></groupExpression>
+		<groupExpression><![CDATA[!$P{P_KONTOTYP}.startsWith("Sachkonto") ?
+    $F{F_STEUERKATEGORIE_C_BEZ}         :
+    " "]]></groupExpression>
 		<groupHeader>
 			<band splitType="Stretch"/>
 		</groupHeader>
@@ -136,10 +140,10 @@
 				<printWhenExpression><![CDATA[!$P{P_KONTOTYP}.startsWith("Sachkonto") &&
 $V{V_STK_Zeilen}.intValue() > 0]]></printWhenExpression>
 				<rectangle>
-					<reportElement x="0" y="0" width="782" height="10" forecolor="#CCCCCC" backcolor="#CCCCCC"/>
+					<reportElement x="0" y="0" width="782" height="10" forecolor="#CCCCCC" backcolor="#CCCCCC" uuid="01986752-820b-421e-a4d4-f9638d388102"/>
 				</rectangle>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
-					<reportElement key="Steuerkategorie" mode="Transparent" x="0" y="0" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Steuerkategorie" mode="Transparent" x="0" y="0" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3e67c6bb-3457-4333-96c9-8feb880bc12f"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -149,10 +153,10 @@ $V{V_STK_Zeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Summe "+$F{F_STEUERKATEGORIE_C_BEZ}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Summe "+$F{F_STEUERKATEGORIE_C_BEZ}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-					<reportElement key="V_SUMME_EB" mode="Transparent" x="409" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMME_EB" mode="Transparent" x="409" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3377994b-97d0-4896-bede-eb527adbeeb8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -162,10 +166,10 @@ $V{V_STK_Zeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMME_EB_BIS_STK}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMME_EB_BIS_STK}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_SUMMESOLL_STK" mode="Transparent" x="460" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMMESOLL_STK" mode="Transparent" x="460" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e4dc0490-3855-4b20-98df-b7b58ff306fc"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -175,10 +179,10 @@ $V{V_STK_Zeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_STK}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMMESOLL_STK}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_SUMMEHABEN_STK" mode="Transparent" x="510" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMMEHABEN_STK" mode="Transparent" x="510" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2ce6635f-16ce-4ebf-9270-fc3e16e10060"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -188,10 +192,10 @@ $V{V_STK_Zeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMEHABEN_STK}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMMEHABEN_STK}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_Saldo_STK" mode="Transparent" x="560" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_Saldo_STK" mode="Transparent" x="560" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="bf6551cb-def1-47f6-ab35-bee830bfec2f"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -201,11 +205,11 @@ $V{V_STK_Zeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_STK}.subtract($V{V_SUMMEHABEN_STK}).
+					<textFieldExpression><![CDATA[$V{V_SUMMESOLL_STK}.subtract($V{V_SUMMEHABEN_STK}).
 add($V{V_SUMME_EB_STK})]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_SUMMESOLL_STK_kumm" mode="Transparent" x="620" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMMESOLL_STK_kumm" mode="Transparent" x="620" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="60ef23ba-0f4f-4c33-96d2-c638f23a5fd0"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -215,10 +219,10 @@ add($V{V_SUMME_EB_STK})]]></textFieldExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_STK_Bis}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMMESOLL_STK_Bis}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_SUMMEHABEN_STK_kumm" mode="Transparent" x="670" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMMEHABEN_STK_kumm" mode="Transparent" x="670" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1773775e-810b-490d-956e-4212c266e938"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -228,10 +232,10 @@ add($V{V_SUMME_EB_STK})]]></textFieldExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMEHABEN_STK_Bis}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMMEHABEN_STK_Bis}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="Saldo STK kumm" mode="Transparent" x="720" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Saldo STK kumm" mode="Transparent" x="720" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="22c1d79c-38a7-46ee-af3b-3838988c096c"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -241,7 +245,7 @@ add($V{V_SUMME_EB_STK})]]></textFieldExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_STK_Bis}.
+					<textFieldExpression><![CDATA[$V{V_SUMMESOLL_STK_Bis}.
 subtract($V{V_SUMMEHABEN_STK_Bis}).
 add($V{V_SUMME_EB_BIS_STK})]]></textFieldExpression>
 				</textField>
@@ -249,7 +253,10 @@ add($V{V_SUMME_EB_BIS_STK})]]></textFieldExpression>
 		</groupFooter>
 	</group>
 	<group name="KONTOKLASSE">
-		<groupExpression><![CDATA[$F{F_KONTONUMMER}.substring(0,1)]]></groupExpression>
+		<groupExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sachkonto") ?
+    $F{F_KONTONUMMER}.substring(0,1)   :
+    " "
+    ]]></groupExpression>
 		<groupHeader>
 			<band splitType="Stretch"/>
 		</groupHeader>
@@ -258,10 +265,10 @@ add($V{V_SUMME_EB_BIS_STK})]]></textFieldExpression>
 				<printWhenExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sachkonto") &&
 $V{V_KontoKlasseZeilen}.intValue() > 0]]></printWhenExpression>
 				<rectangle>
-					<reportElement x="0" y="0" width="782" height="10" forecolor="#CCCCCC" backcolor="#CCCCCC"/>
+					<reportElement x="0" y="0" width="782" height="10" forecolor="#CCCCCC" backcolor="#CCCCCC" uuid="48cf8e18-5a3a-4de5-b288-a86d856e32ce"/>
 				</rectangle>
 				<textField pattern="" isBlankWhenNull="false">
-					<reportElement key="Kontoklasse" mode="Transparent" x="0" y="0" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Kontoklasse" mode="Transparent" x="0" y="0" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6b0198aa-002e-4512-9cf2-db29f966465f"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -271,10 +278,10 @@ $V{V_KontoKlasseZeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Summe Kontoklasse "+$F{F_KONTONUMMER}.substring(0,1)]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Summe Kontoklasse "+$F{F_KONTONUMMER}.substring(0,1)]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-					<reportElement key="V_SUMME_EB" mode="Transparent" x="409" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMME_EB" mode="Transparent" x="409" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5dd5c670-02f9-4f1d-baaf-fe49c4c4b274"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -284,10 +291,10 @@ $V{V_KontoKlasseZeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMME_EB_BIS_KontoKlasse}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMME_EB_BIS_KontoKlasse}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_SUMMESOLL_KontoKlasse" mode="Transparent" x="460" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMMESOLL_KontoKlasse" mode="Transparent" x="460" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="966227a6-4451-4e4e-88d1-98af3c552bc9"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -297,10 +304,10 @@ $V{V_KontoKlasseZeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_KontoKlasse}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMMESOLL_KontoKlasse}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_SUMMEHABEN_KontoKlasse" mode="Transparent" x="510" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMMEHABEN_KontoKlasse" mode="Transparent" x="510" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e36165dd-4846-4dd4-85b1-1ab925d11b63"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -310,10 +317,10 @@ $V{V_KontoKlasseZeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMEHABEN_KontoKlasse}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMMEHABEN_KontoKlasse}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_Saldo" mode="Transparent" x="560" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_Saldo" mode="Transparent" x="560" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7caedbc9-d3a6-4579-9311-d6b817a10898"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -323,12 +330,12 @@ $V{V_KontoKlasseZeilen}.intValue() > 0]]></printWhenExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_KontoKlasse}.
+					<textFieldExpression><![CDATA[$V{V_SUMMESOLL_KontoKlasse}.
 subtract($V{V_SUMMEHABEN_KontoKlasse}).
 add($V{V_SUMME_EB_KontoKlasse})]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_SUMMESOLL_KontoKlasse_kumm" mode="Transparent" x="620" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMMESOLL_KontoKlasse_kumm" mode="Transparent" x="620" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="64465600-57d2-4283-b55e-89a72f95e595"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -338,10 +345,10 @@ add($V{V_SUMME_EB_KontoKlasse})]]></textFieldExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_KontoKlasse_Bis}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMMESOLL_KontoKlasse_Bis}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="V_SUMMEHABEN_KontoKlasse_kumm" mode="Transparent" x="670" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="V_SUMMEHABEN_KontoKlasse_kumm" mode="Transparent" x="670" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8cc7afd7-4759-458d-8e51-1a5552219ddb"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -351,10 +358,10 @@ add($V{V_SUMME_EB_KontoKlasse})]]></textFieldExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMEHABEN_KontoKlasse_Bis}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_SUMMEHABEN_KontoKlasse_Bis}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-					<reportElement key="Saldo_kumm" mode="Transparent" x="720" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Saldo_kumm" mode="Transparent" x="720" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2946e5a8-fd55-45f2-af00-795280b72e6a"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -364,7 +371,7 @@ add($V{V_SUMME_EB_KontoKlasse})]]></textFieldExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_KontoKlasse_Bis}.
+					<textFieldExpression><![CDATA[$V{V_SUMMESOLL_KontoKlasse_Bis}.
 subtract($V{V_SUMMEHABEN_KontoKlasse_Bis}).
 add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				</textField>
@@ -380,7 +387,7 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 	<pageHeader>
 		<band height="86" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="415" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="415" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c9334fe3-2d4a-4e8f-9bf9-0d1aecae4bea"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -390,10 +397,10 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Transparent" x="661" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="661" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2568701d-8ad6-4ffc-932b-1423a592be05"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -403,10 +410,10 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="761" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="761" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="916c2b55-f01a-42ed-a90d-7e89920100f2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -416,10 +423,10 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Saldenliste" mode="Opaque" x="0" y="20" width="110" height="24" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Saldenliste" mode="Opaque" x="0" y="20" width="110" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="f958add8-f188-444a-891e-f478f44b35d6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -432,7 +439,7 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<text><![CDATA[Saldenliste]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Kalenderjahr" mode="Opaque" x="110" y="20" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Kalenderjahr" mode="Opaque" x="110" y="20" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1d056439-a9ac-48e0-b6fa-bb4180177f74"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -445,14 +452,14 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<text><![CDATA[Kalenderjahr]]></text>
 			</staticText>
 			<textField pattern="yyyy">
-				<reportElement x="180" y="20" width="30" height="12"/>
+				<reportElement x="180" y="20" width="30" height="12" uuid="618eca31-a97e-4548-9b01-b836b81ee20d"/>
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Monat" mode="Opaque" x="210" y="20" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Monat" mode="Opaque" x="210" y="20" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="8d60aea1-f38d-4c58-b730-248d03d82fb9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -465,14 +472,14 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<text><![CDATA[Monat]]></text>
 			</staticText>
 			<textField pattern="MMMMM">
-				<reportElement x="250" y="20" width="100" height="12"/>
+				<reportElement x="250" y="20" width="100" height="12" uuid="ce35af8f-ab3b-430a-8e41-40feb5e714b8"/>
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Geschäftsjahr" mode="Opaque" x="110" y="32" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Geschäftsjahr" mode="Opaque" x="110" y="32" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="87c71566-2b32-4c79-8bf7-40623bd582e0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -485,7 +492,7 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<text><![CDATA[Geschäftsjahr]]></text>
 			</staticText>
 			<textField pattern="####" isBlankWhenNull="false">
-				<reportElement key="P_GESCHAEFTSJAHR" mode="Opaque" x="180" y="32" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="P_GESCHAEFTSJAHR" mode="Opaque" x="180" y="32" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="439ddceb-0ca7-4d56-b927-ba5a99d98d1c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -495,10 +502,10 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$P{P_GESCHAEFTSJAHR}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_GESCHAEFTSJAHR}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Periode" mode="Opaque" x="210" y="32" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Periode" mode="Opaque" x="210" y="32" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="baa4590d-3ca6-4241-b003-163786371ac1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -511,14 +518,14 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<text><![CDATA[Periode]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="250" y="32" width="30" height="12"/>
+				<reportElement x="250" y="32" width="30" height="12" uuid="6c6fc69e-5531-4512-94dd-4e8f7d82c022"/>
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$P{P_PERIODE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_PERIODE}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Mandant" mode="Opaque" x="350" y="32" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Mandant" mode="Opaque" x="350" y="32" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="e013c709-147d-4b43-ab47-b85d9daafc1e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -531,19 +538,19 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 				<text><![CDATA[Mandant]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="390" y="32" width="30" height="12"/>
+				<reportElement x="390" y="32" width="30" height="12" uuid="25970e18-003e-40bf-b1b6-4816762b4ba6"/>
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}.substring(0,3)
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}.substring(0,3)
 /* Die Verwendung der Variablen geht nicht, da dies erst nach dem Detail interpretiert wird */]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" isBlankWhenNull="true">
-				<reportElement key="Saldenfehler" mode="Opaque" x="596" y="20" width="185" height="12" forecolor="#FF0000" backcolor="#FFFFFF"/>
+				<reportElement key="Saldenfehler" mode="Opaque" x="596" y="20" width="185" height="12" forecolor="#FF0000" backcolor="#FFFFFF" uuid="05af99e5-949c-41d8-8c70-c3568965d3f5"/>
 				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
 					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($V{V_SUMME_EB_BIS}.compareTo( new BigDecimal(0.00) ) != 0 ||
+				<textFieldExpression><![CDATA[($V{V_SUMME_EB_BIS}.compareTo( new BigDecimal(0.00) ) != 0 ||
  $V{V_SUMME_EB}.compareTo( new BigDecimal(0.00) ) != 0 ||
  ($V{V_SUMMESOLL}.subtract($V{V_SUMMEHABEN}).add($V{V_SUMME_EB})).compareTo( new BigDecimal(0.00) ) != 0 ||
  ($V{V_SUMMESOLL_Bis}.subtract($V{V_SUMMEHABEN_Bis}).add($V{V_SUMME_EB_BIS})).compareTo( new BigDecimal(0.00) ) != 0 ) &&
@@ -553,7 +560,7 @@ add($V{V_SUMME_EB_BIS_KontoKlasse})]]></textFieldExpression>
 null]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="P_KONTOTYP" mode="Opaque" x="0" y="44" width="110" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="P_KONTOTYP" mode="Opaque" x="0" y="44" width="110" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c146ed8f-4c32-4ffe-b476-bc1b2f1dae7d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -563,17 +570,17 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_KONTOTYP}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_KONTOTYP}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement mode="Transparent" x="658" y="32" width="123" height="26" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement mode="Transparent" x="658" y="32" width="123" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="7a789974-b796-406b-af50-31a24804de86"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
 					<font fontName="Arial" size="18" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Konto Nr." mode="Opaque" x="0" y="72" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Konto Nr." mode="Opaque" x="0" y="72" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bac881b-25fb-48fa-b4e2-8c1f22e1d33f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -586,7 +593,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[Knt Nr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Bezeichnung" mode="Opaque" x="30" y="72" width="170" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Bezeichnung" mode="Opaque" x="30" y="72" width="170" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7a9a6a16-3d98-4c48-8f41-3d4074bb01e1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -599,7 +606,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[Bezeichnung]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Ergebnisgruppe" mode="Opaque" x="200" y="72" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Ergebnisgruppe" mode="Opaque" x="200" y="72" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c8198065-e503-4930-8442-abe34d99fdb3">
 					<printWhenExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sachkonto")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -614,7 +621,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[Ergebnisgruppe]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="UVA_Art" mode="Opaque" x="300" y="72" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="UVA_Art" mode="Opaque" x="300" y="72" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="5702d1d6-221c-402e-b933-9a3f007905a4">
 					<printWhenExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sachkonto")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -629,7 +636,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[UVA Art]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="FA Konto" mode="Opaque" x="360" y="72" width="49" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="FA Konto" mode="Opaque" x="360" y="72" width="49" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="3ba737d2-3976-4e1f-acca-65f8badedb59">
 					<printWhenExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sachkonto")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -644,21 +651,21 @@ null]]></textFieldExpression>
 				<text><![CDATA[FA Konto]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="409" y="72" width="50" height="12"/>
+				<reportElement x="409" y="72" width="50" height="12" uuid="a35c1954-d053-469b-8816-99e961dcc10b"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial"/>
 				</textElement>
 				<text><![CDATA[EB Wert]]></text>
 			</staticText>
 			<textField pattern="MMMMM">
-				<reportElement mode="Opaque" x="472" y="60" width="138" height="12" backcolor="#CCCCCC"/>
+				<reportElement mode="Opaque" x="472" y="60" width="138" height="12" backcolor="#CCCCCC" uuid="d80cb8d0-24cd-4c5b-9199-7a8595ea8b33"/>
 				<textElement textAlignment="Center">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Soll" mode="Opaque" x="460" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Soll" mode="Opaque" x="460" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="8eb76e21-f0ac-47fa-a2e8-0fb7f2042e23"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -671,7 +678,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[Soll]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Haben" mode="Opaque" x="510" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Haben" mode="Opaque" x="510" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1b63c1ec-0693-494d-aeee-0cc858d65f17"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -684,7 +691,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[Haben]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Saldo" mode="Opaque" x="560" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Saldo" mode="Opaque" x="560" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="f266206c-45e1-4984-bc1a-2d0ceb8f5581"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -697,14 +704,14 @@ null]]></textFieldExpression>
 				<text><![CDATA[Saldo]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="620" y="60" width="155" height="12" backcolor="#CCCCCC"/>
+				<reportElement mode="Opaque" x="620" y="60" width="155" height="12" backcolor="#CCCCCC" uuid="33d9d137-8e39-46e1-ae72-1fe3ecee1e9f"/>
 				<textElement textAlignment="Center">
 					<font fontName="Arial"/>
 				</textElement>
-				<text><![CDATA[kummuliert]]></text>
+				<text><![CDATA[kumuliert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Soll" mode="Opaque" x="620" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Soll" mode="Opaque" x="620" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="385fb32d-83b7-4af5-a5c2-4ea05977a984"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -717,7 +724,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[Soll]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Haben" mode="Opaque" x="670" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Haben" mode="Opaque" x="670" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="52c3fa9a-7309-4bb4-a537-1cb97cdfb317"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -730,7 +737,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[Haben]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Saldo" mode="Opaque" x="720" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Saldo" mode="Opaque" x="720" y="72" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="ef3a63d4-ac6e-4e57-94f1-2ddf9d9c09d9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -743,7 +750,7 @@ null]]></textFieldExpression>
 				<text><![CDATA[Saldo]]></text>
 			</staticText>
 			<line>
-				<reportElement key="line-2" mode="Opaque" x="0" y="85" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="line-2" mode="Opaque" x="0" y="85" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="8284c090-9a65-4b6b-a20d-5f072195f3c9"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
@@ -762,7 +769,7 @@ null]]></textFieldExpression>
   $F{F_HABEN_BIS}.compareTo(new BigDecimal(0.00)) == 0 &&
   $F{F_EBWERT_BIS}.compareTo(new BigDecimal(0.00)) == 0)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
-				<reportElement key="F_KONTONUMMER" mode="Opaque" x="0" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_KONTONUMMER" mode="Opaque" x="0" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="cefc704f-6852-4843-8e4c-53d5e0092bc5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -772,10 +779,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_KONTONUMMER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_KONTONUMMER}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
-				<reportElement key="F_KONTOBEZEICHNUNG" mode="Opaque" x="30" y="0" width="170" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_KONTOBEZEICHNUNG" mode="Opaque" x="30" y="0" width="170" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3e9a63b5-29dc-4e6b-a740-0942ff387696"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -785,10 +792,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_KONTOBEZEICHNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_KONTOBEZEICHNUNG}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="F_ERGEBNISGRUPPE" mode="Opaque" x="200" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_ERGEBNISGRUPPE" mode="Opaque" x="200" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="76f98b29-d4f4-4337-8a50-9214a41489ae"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -798,10 +805,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ERGEBNISGRUPPE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ERGEBNISGRUPPE}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="UVA_Art" mode="Opaque" x="300" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="UVA_Art" mode="Opaque" x="300" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8871aee8-295b-4b99-bec8-869dca25076e">
 					<printWhenExpression><![CDATA[!$F{F_UVAART}.startsWith("Nicht definiert")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -813,10 +820,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_UVAART}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_UVAART}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Finanzamt_des_Kontos" mode="Opaque" x="360" y="0" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Finanzamt_des_Kontos" mode="Opaque" x="360" y="0" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4ffc1451-ceb2-4a67-ae4e-e7322833351e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -826,10 +833,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_FINANZAMT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_FINANZAMT}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="Inkonsistent" mode="Transparent" x="409" y="1" width="49" height="10" forecolor="#FF0033" backcolor="#FFFFFF">
+				<reportElement key="Inkonsistent" mode="Transparent" x="409" y="1" width="49" height="10" forecolor="#FF0033" backcolor="#FFFFFF" uuid="ebd88c20-3523-45d8-887a-e5fbf0fdc37b">
 					<printWhenExpression><![CDATA[$F{F_KONTO_KONSISTENT} == false]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -841,19 +848,19 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["inkonsistent"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["inkonsistent"]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="F_EBWERT_BIS" x="409" y="0" width="50" height="10">
+				<reportElement key="F_EBWERT_BIS" x="409" y="0" width="50" height="10" uuid="c47d5a58-3ed7-459e-bbd1-50f185f4d391">
 					<printWhenExpression><![CDATA[$F{F_EBWERT_BIS}.compareTo(new BigDecimal(0.0000)) != 0]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_EBWERT_BIS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_EBWERT_BIS}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="F_SOLL" mode="Opaque" x="460" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="F_SOLL" mode="Opaque" x="460" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d606bd3c-363c-4795-97ce-e299d75eb7e6">
 					<printWhenExpression><![CDATA[$F{F_SOLL}.compareTo(new BigDecimal(0.0000)) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -865,10 +872,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_SOLL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_SOLL}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="F_HABEN" mode="Opaque" x="510" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="F_HABEN" mode="Opaque" x="510" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="322b0148-07b9-4ca6-a778-362d7051b5c9">
 					<printWhenExpression><![CDATA[$F{F_HABEN}.compareTo(new BigDecimal(0.0000)) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -880,10 +887,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_HABEN}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_HABEN}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="Saldo" mode="Opaque" x="560" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Saldo" mode="Opaque" x="560" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1269135f-48ed-4655-b1f1-263377337036">
 					<printWhenExpression><![CDATA[$F{F_SOLL}.subtract($F{F_HABEN}).add($F{F_EBWERT}).compareTo(new BigDecimal(0.0000)) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -895,10 +902,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_SOLL}.subtract($F{F_HABEN}).add($F{F_EBWERT})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_SOLL}.subtract($F{F_HABEN}).add($F{F_EBWERT})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="F_SOLL-kumm" mode="Opaque" x="620" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="F_SOLL-kumm" mode="Opaque" x="620" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c209a765-354f-4cdf-ad50-efaa9436f29e">
 					<printWhenExpression><![CDATA[$F{F_SOLL_BIS}.compareTo(new BigDecimal(0.0000)) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -910,10 +917,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_SOLL_BIS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_SOLL_BIS}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="F_HABEN-kumm" mode="Opaque" x="670" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="F_HABEN-kumm" mode="Opaque" x="670" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c90f616c-9663-4c85-a867-985d700a834d">
 					<printWhenExpression><![CDATA[$F{F_HABEN_BIS}.compareTo(new BigDecimal(0.0000)) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -925,10 +932,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_HABEN_BIS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_HABEN_BIS}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="Saldo-kumm" mode="Opaque" x="720" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Saldo-kumm" mode="Opaque" x="720" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="60f978fd-a323-4bb4-9ba1-318b0bf5f563">
 					<printWhenExpression><![CDATA[$F{F_SOLL_BIS}.subtract($F{F_HABEN_BIS}).add($F{F_EBWERT_BIS}).compareTo(new BigDecimal(0.0000)) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -940,7 +947,7 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_SOLL_BIS}.subtract($F{F_HABEN_BIS}).add($F{F_EBWERT_BIS})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_SOLL_BIS}.subtract($F{F_HABEN_BIS}).add($F{F_EBWERT_BIS})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -953,13 +960,13 @@ null]]></textFieldExpression>
 	<summary>
 		<band height="12" splitType="Stretch">
 			<line>
-				<reportElement key="line-4" mode="Opaque" x="0" y="1" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="line-4" mode="Opaque" x="0" y="1" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="a3d1af10-f4ad-40b6-920e-c3342a03db73"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="Gesamt in P_WAEHRUNG" mode="Opaque" x="0" y="2" width="169" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Gesamt in P_WAEHRUNG" mode="Opaque" x="0" y="2" width="169" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3614216c-56df-45e8-987e-dfa6b1f0c9ea"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -969,10 +976,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Gesamt "+$P{P_WAEHRUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Gesamt "+$P{P_WAEHRUNG}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="V_SUMME_EB" mode="Opaque" x="409" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="V_SUMME_EB" mode="Opaque" x="409" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1099e8d0-0620-4686-b35a-b2918eb49e80"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -982,10 +989,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMME_EB_BIS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_SUMME_EB_BIS}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="V_SUMMESOLL" mode="Opaque" x="460" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="V_SUMMESOLL" mode="Opaque" x="460" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="920e06c8-8d8a-4ac5-a0c6-1d05629f5301"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -995,10 +1002,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_SUMMESOLL}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="V_SUMMEHABEN" mode="Opaque" x="510" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="V_SUMMEHABEN" mode="Opaque" x="510" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f47265cd-a972-4e1b-8d5c-f852803b4e29"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1008,10 +1015,10 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMEHABEN}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_SUMMEHABEN}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="SALDO" mode="Opaque" x="560" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="SALDO" mode="Opaque" x="560" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f1ae6b64-646d-4191-8fc3-8ad67aaaae42"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1021,11 +1028,11 @@ null]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL}.subtract($V{V_SUMMEHABEN}).
+				<textFieldExpression><![CDATA[$V{V_SUMMESOLL}.subtract($V{V_SUMMEHABEN}).
 add($V{V_SUMME_EB})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="V_SUMMESOLL_kumm" mode="Opaque" x="620" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="V_SUMMESOLL_kumm" mode="Opaque" x="620" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b53305ae-0ed5-41ef-8dc9-cb79a272e6b9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1035,10 +1042,10 @@ add($V{V_SUMME_EB})]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_Bis}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_SUMMESOLL_Bis}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="V_SUMMEHABEN kumm" mode="Opaque" x="670" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="V_SUMMEHABEN kumm" mode="Opaque" x="670" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9d3f0cb5-7d6a-4909-8b64-b1798263724a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1048,10 +1055,10 @@ add($V{V_SUMME_EB})]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMEHABEN_Bis}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_SUMMEHABEN_Bis}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="false">
-				<reportElement key="SALDO_kumm" mode="Opaque" x="720" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="SALDO_kumm" mode="Opaque" x="720" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="47d11b13-1bd3-4f19-84c8-9d67d5138684"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1061,7 +1068,7 @@ add($V{V_SUMME_EB})]]></textFieldExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SUMMESOLL_Bis}.subtract($V{V_SUMMEHABEN_Bis}).
+				<textFieldExpression><![CDATA[$V{V_SUMMESOLL_Bis}.subtract($V{V_SUMMEHABEN_Bis}).
 add($V{V_SUMME_EB_BIS})]]></textFieldExpression>
 			</textField>
 		</band>

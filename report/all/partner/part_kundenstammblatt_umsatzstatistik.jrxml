@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="part_kundenstammblatt_umsatzstatistik" pageWidth="537" pageHeight="842" columnWidth="507" leftMargin="0" rightMargin="30" topMargin="0" bottomMargin="14">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="part_kundenstammblatt_umsatzstatistik" pageWidth="537" pageHeight="842" columnWidth="537" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="c94fccfe-0bb7-4713-879d-3e8cf3dc4a5f">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -8,10 +8,18 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String"/>
 	<field name="Umsatz" class="java.math.BigDecimal"/>
 	<field name="Jahr" class="java.lang.Integer"/>
 	<variable name="Gesamt" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{Umsatz}]]></variableExpression>
+	</variable>
+	<variable name="LISTE_UMS" class="java.util.List">
+		<variableExpression><![CDATA[($V{LISTE_UMS} == null ? new ArrayList() : $V{LISTE_UMS})]]></variableExpression>
+	</variable>
+	<variable name="LISTE_UMS_ADD" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{LISTE_UMS}.add(new java.lang.Object[] { ($F{Jahr}==null?"----":$F{Jahr}.toString()),
+                                           ($F{Umsatz}==null?new BigDecimal(0.00):$F{Umsatz})})]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -19,7 +27,7 @@
 	<title>
 		<band height="14" splitType="Stretch">
 			<staticText>
-				<reportElement key="Kalenderjahr" x="0" y="0" width="59" height="12"/>
+				<reportElement key="Kalenderjahr" x="0" y="0" width="59" height="12" uuid="6d839a34-3532-4822-ae79-bbc3657878ca"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -32,7 +40,7 @@
 				<text><![CDATA[Kalenderjahr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Umsatz" x="59" y="0" width="90" height="12"/>
+				<reportElement key="Umsatz" x="59" y="0" width="90" height="12" uuid="b37425c3-2dc1-4f1e-8496-380c5b05e319"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -45,7 +53,7 @@
 				<text><![CDATA[Umsatz]]></text>
 			</staticText>
 			<line>
-				<reportElement key="line-1" x="0" y="13" width="149" height="1"/>
+				<reportElement key="line-1" x="0" y="13" width="149" height="1" uuid="2e411ca0-fe55-4064-88dc-94f2c90c5ef9"/>
 			</line>
 		</band>
 	</title>
@@ -59,7 +67,7 @@
 		<band height="13" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean($F{Umsatz}.compareTo(new BigDecimal(0.00)) != 0)]]></printWhenExpression>
 			<textField isBlankWhenNull="false">
-				<reportElement key="Jahr" x="0" y="0" width="59" height="12"/>
+				<reportElement key="Jahr" x="0" y="0" width="59" height="12" uuid="340d2b5a-65e4-4733-ab93-1983a47e3de6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -69,10 +77,10 @@
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{Jahr}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="Umsatz" x="59" y="0" width="90" height="12"/>
+				<reportElement key="Umsatz" x="59" y="0" width="90" height="12" uuid="cf774336-aefa-4169-96db-b42da4ffa60b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -82,7 +90,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Umsatz}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Umsatz}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -93,15 +101,21 @@
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band height="16" splitType="Stretch">
+		<band height="25" splitType="Stretch">
 			<line>
-				<reportElement x="0" y="2" width="149" height="1"/>
+				<reportElement x="0" y="2" width="149" height="1" uuid="40e37748-1271-4c4e-b3f1-f907dca14a46"/>
 			</line>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Gesamt" x="59" y="3" width="90" height="13"/>
+				<reportElement key="Gesamt" x="59" y="3" width="90" height="13" uuid="bf2565d5-dbd3-45c4-9d68-6780f2d0ad58"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Gesamt}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{Gesamt}]]></textFieldExpression>
 			</textField>
+			<subreport>
+				<reportElement key="Subreport Grafik" x="167" y="-27" width="200" height="43" uuid="f14cb4f5-b957-4c5c-bfec-799e37dc87e4"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.ListOfArrayDataSource(com.lp.util.HelperReport.sortListNoNull($V{LISTE_UMS}),
+    new String[] {"Jahr", "Umsatz"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "part_kundenstammblatt_umsstat_graf.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</summary>
 </jasperReport>

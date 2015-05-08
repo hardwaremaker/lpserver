@@ -14,7 +14,7 @@
 </xsl:text>
 	</xsl:template>
 	<xsl:template match="belegnummer">
-Im Anhang finden Sie <xsl:value-of select="/mail/bezeichnung"/>&#160;<xsl:value-of select="."/>.
+im Anhang finden Sie <xsl:value-of select="/mail/bezeichnung"/>&#160;<xsl:value-of select="."/>.
 Projekt: <xsl:value-of select="/mail/projekt"/>&#160;<xsl:value-of select="."/>
 
 </xsl:template>
@@ -25,6 +25,6 @@ Projekt: <xsl:value-of select="/mail/projekt"/>&#160;<xsl:value-of select="."/>
 		<xsl:value-of select="/mail/bearbeiter"/>
 		
 		
-Zur Anzeige des Dokuments können Sie den Acrobat-Reader auch von www.HeliumV.com herunterladen.
+HELIUM V Business-Software für den nachhaltigen Unternehmenserfolg.	
 	</xsl:template>
 </xsl:stylesheet>

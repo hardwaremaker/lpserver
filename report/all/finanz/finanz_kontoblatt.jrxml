@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_buchungsjournal" pageWidth="595" pageHeight="842" columnWidth="533" leftMargin="42" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_buchungsjournal" pageWidth="595" pageHeight="842" columnWidth="533" leftMargin="42" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="47d8ce5c-f0e6-4113-b2e4-2c27a21f4cc0">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
@@ -99,6 +99,9 @@
 	<field name="AutomatischeEB" class="java.lang.Short">
 		<fieldDescription><![CDATA[1 wenn es sich bei diesem Detail um eine automatische EB handelt, ansonsten 0.]]></fieldDescription>
 	</field>
+	<field name="IstInkonsistent" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[Diese Buchung wurde nach der Eröffnung angelegt]]></fieldDescription>
+	</field>
 	<variable name="V_SOLL" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{Soll}==null ? new BigDecimal(0.00) : $F{Soll}]]></variableExpression>
 	</variable>
@@ -115,9 +118,12 @@
 .subtract($F{Haben}==null?new BigDecimal(0.000) : $F{Haben})]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0.000)]]></initialValueExpression>
 	</variable>
+	<variable name="V_Zeilensumme" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[($F{Soll}==null ? new BigDecimal(0.0000) : $F{Soll})
+.subtract($F{Haben}==null ? new BigDecimal(0.0000) : $F{Haben})]]></variableExpression>
+	</variable>
 	<variable name="V_Mitlaufender_Saldo" class="java.math.BigDecimal" calculation="Sum">
-		<variableExpression><![CDATA[($F{Soll}==null?new BigDecimal(0.000) : $F{Soll})
-.subtract($F{Haben}==null?new BigDecimal(0.000) : $F{Haben})]]></variableExpression>
+		<variableExpression><![CDATA[$V{V_Zeilensumme}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0.000)]]></initialValueExpression>
 	</variable>
 	<group name="Beleg">
@@ -131,7 +137,7 @@ new String("")]]></groupExpression>
 			<band height="15" splitType="Stretch">
 				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Beleg" )]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-					<reportElement key="Saldo Beleg" mode="Opaque" x="440" y="1" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Saldo Beleg" mode="Opaque" x="440" y="1" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="72268b12-919a-4143-b08c-43c0442960be"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -141,10 +147,10 @@ new String("")]]></groupExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_Beleg_Saldo}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_Beleg_Saldo}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement x="440" y="0" width="50" height="1"/>
+					<reportElement x="440" y="0" width="50" height="1" uuid="8a257045-099e-46d1-afe1-a2b72b228869"/>
 				</line>
 			</band>
 		</groupFooter>
@@ -160,7 +166,7 @@ new Integer(0)]]></groupExpression>
 			<band height="15" splitType="Stretch">
 				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				<textField pattern="" isBlankWhenNull="false">
-					<reportElement key="Saldo Auszug" mode="Opaque" x="340" y="1" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Saldo Auszug" mode="Opaque" x="340" y="1" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="fae76747-75ff-416b-914c-03ebd53caa08"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -170,10 +176,10 @@ new Integer(0)]]></groupExpression>
 					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Saldo Auszug "+($F{Auszug}==null?"?":$F{Auszug})]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Saldo Auszug "+($F{Auszug}==null?"?":$F{Auszug})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-					<reportElement key="Saldo Auszug_Betrag" mode="Opaque" x="440" y="1" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Saldo Auszug_Betrag" mode="Opaque" x="440" y="1" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a54976af-3677-43cc-ae42-b4682857b415"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -183,14 +189,14 @@ new Integer(0)]]></groupExpression>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_Auszug_Saldo}.add(
+					<textFieldExpression><![CDATA[$V{V_Auszug_Saldo}.add(
 $P{P_SALDOVORPERIODE}==null ?
 new BigDecimal(0.000) :
 $P{P_SALDOVORPERIODE}
 )]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement x="300" y="0" width="190" height="1"/>
+					<reportElement x="300" y="0" width="190" height="1" uuid="02cdecfc-a43d-46b6-929f-48ee3e816220"/>
 				</line>
 			</band>
 		</groupFooter>
@@ -204,7 +210,7 @@ $P{P_SALDOVORPERIODE}
 	<pageHeader>
 		<band height="77" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="420" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="420" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1f2b98d7-5459-43a0-bf3a-5ffff73d4f11"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -214,10 +220,10 @@ $P{P_SALDOVORPERIODE}
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Transparent" x="413" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="413" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1db343df-e2ef-4df5-8351-b303fecd9890"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -227,10 +233,10 @@ $P{P_SALDOVORPERIODE}
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="513" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="513" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d74b287b-9419-4fa8-b9ac-c8177b49753b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -240,10 +246,10 @@ $P{P_SALDOVORPERIODE}
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Buchungsjournal" mode="Opaque" x="0" y="20" width="65" height="16" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Buchungsjournal" mode="Opaque" x="0" y="20" width="65" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="ac3df867-e157-45b0-b5ca-45be9247b60e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -256,7 +262,7 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Kontoblatt]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Soll" mode="Opaque" x="295" y="52" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Soll" mode="Opaque" x="295" y="52" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="4cac95cc-e2b3-411b-99b8-ebee6c0a9ebd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -269,7 +275,7 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Soll]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Haben" mode="Opaque" x="345" y="52" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Haben" mode="Opaque" x="345" y="52" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="41bd56cd-36ae-45da-87c4-d737be4043d9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -282,13 +288,13 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Haben]]></text>
 			</staticText>
 			<line>
-				<reportElement key="line-2" mode="Opaque" x="0" y="65" width="533" height="1" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="line-2" mode="Opaque" x="0" y="65" width="533" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="0740699f-61e5-4c4d-a51d-e43a55626bb2"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<staticText>
-				<reportElement key="UST" mode="Opaque" x="395" y="52" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="UST" mode="Opaque" x="395" y="52" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="4121f869-62ef-4374-8a3d-4fb7834eca19"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -301,8 +307,9 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[UST]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Auszug" mode="Transparent" x="492" y="52" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
+				<reportElement key="Auszug" mode="Transparent" x="492" y="52" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="bd257c9d-4c83-4c7f-a288-9ed0b0e31e5d">
+					<printWhenExpression><![CDATA[!$P{P_DRUCK_SALDOVORPERIODE} ||
+$P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -316,7 +323,7 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Auszug]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Datum" mode="Opaque" x="0" y="52" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Datum" mode="Opaque" x="0" y="52" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="886c847e-d3ca-4f2c-9468-a17143a193a9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -329,7 +336,7 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Gegenkto" mode="Opaque" x="45" y="52" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Gegenkto" mode="Opaque" x="45" y="52" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="aafc62d4-4135-403c-adfd-6b831519c065"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -342,7 +349,7 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Gkt]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Art" mode="Opaque" x="85" y="52" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Art" mode="Opaque" x="85" y="52" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="99f1dad1-2385-4cdb-bfd0-89098b6a50e6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -355,7 +362,7 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Art]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Beleg" mode="Opaque" x="110" y="52" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Beleg" mode="Opaque" x="110" y="52" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="99b946be-75ff-4574-b46f-34623279c62f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -368,7 +375,7 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Beleg]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Text" mode="Opaque" x="160" y="52" width="135" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Text" mode="Opaque" x="160" y="52" width="135" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="f575aaba-2ec6-4393-8330-1ab60d5f24a9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -381,7 +388,7 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Text]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="UST" mode="Opaque" x="425" y="52" width="10" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="UST" mode="Opaque" x="425" y="52" width="10" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="e18ca496-66a8-41a6-93e5-88823c049102"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -394,63 +401,63 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement x="140" y="23" width="50" height="11"/>
+				<reportElement x="140" y="23" width="50" height="11" uuid="6ee38581-35b8-432c-8afb-d91b2947c34c"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_KONTONUMMER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_KONTONUMMER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="190" y="23" width="194" height="11"/>
+				<reportElement x="190" y="23" width="194" height="11" uuid="109329ae-0569-434e-ad17-e5d9fd113156"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_KONTOBEZEICHNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_KONTOBEZEICHNUNG}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="70" y="23" width="70" height="11"/>
+				<reportElement x="70" y="23" width="70" height="11" uuid="9b3404b4-5602-4c1f-a39d-ba2360639006"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_KONTOTYP}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_KONTOTYP}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="70" y="36" width="111" height="11"/>
+				<reportElement x="70" y="36" width="111" height="11" uuid="ad4ba848-868b-4c7d-ae9d-32ac6fe0d9be"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Sortiert nach: " + $P{P_SORTIERUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Sortiert nach: " + $P{P_SORTIERUNG}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="190" y="36" width="20" height="11"/>
+				<reportElement x="190" y="36" width="20" height="11" uuid="2266ec0c-2f83-4904-92f1-163d6f3a24c7"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[von: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="265" y="36" width="15" height="11"/>
+				<reportElement x="265" y="36" width="15" height="11" uuid="443a6e5a-b494-4ba5-b52d-3531a528ebe3"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[bis: ]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement x="210" y="36" width="50" height="11"/>
+				<reportElement x="210" y="36" width="50" height="11" uuid="3d1b58b8-8d95-4e28-bb06-f1bd183f67e3"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$P{P_TVON}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_TVON}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement x="280" y="36" width="50" height="11"/>
+				<reportElement x="280" y="36" width="50" height="11" uuid="fbd52f7c-d274-4265-a307-eeb04113b9af"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$P{P_TBIS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_TBIS}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Saldo" mode="Opaque" x="440" y="52" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Saldo" mode="Opaque" x="440" y="52" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="6d11df8c-40a0-4395-8525-373b16a0fa90"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -463,17 +470,17 @@ $P{P_SALDOVORPERIODE}
 				<text><![CDATA[Saldo]]></text>
 			</staticText>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement x="440" y="66" width="50" height="11" isRemoveLineWhenBlank="true">
+				<reportElement x="440" y="66" width="50" height="11" isRemoveLineWhenBlank="true" uuid="263a52f7-966e-4f9e-ad34-a58f6325e2aa">
 					<printWhenExpression><![CDATA[$P{P_SALDOVORPERIODE}!=null /* &&
 $P{P_SORTIERUNG}.startsWith( "Auszug" ) */]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$P{P_SALDOVORPERIODE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_SALDOVORPERIODE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Saldo Vorperiode" mode="Opaque" x="160" y="67" width="135" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Saldo Vorperiode" mode="Opaque" x="160" y="67" width="135" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="78e51963-5b28-4c00-aadb-b90bca492ff0">
 					<printWhenExpression><![CDATA[$P{P_SALDOVORPERIODE}!=null &&
 $P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				</reportElement>
@@ -486,10 +493,10 @@ $P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Saldo Vorperiode(n)"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Saldo Vorperiode(n)"]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="WAEHRUNG" mode="Transparent" x="405" y="23" width="125" height="26" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="WAEHRUNG" mode="Transparent" x="405" y="23" width="125" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="dd9639b6-2158-4e15-b04c-cb0d086842d5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -499,28 +506,28 @@ $P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
 					<font fontName="Arial" size="18" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="70" y="10" width="314" height="11" forecolor="#FF0000">
+				<reportElement x="70" y="10" width="314" height="11" forecolor="#FF0000" uuid="8fae7c04-40aa-4c24-beb7-396a6b5c4436">
 					<printWhenExpression><![CDATA[$P{P_KONTO_KONSISTENT} == false]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Achtung! Es gibt Buchungen die jünger als das Eröffnungsdatum sind!"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Achtung! Es gibt Buchungen die jünger als das Eröffnungsdatum sind!"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="10" width="70" height="11">
+				<reportElement x="0" y="10" width="70" height="11" uuid="e6d1b36c-b738-4fa3-a946-5fdce0c76f13">
 					<printWhenExpression><![CDATA[$P{P_KONTO_KONSISTENT} == false]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_EB_GESCHAEFTSJAHR} + ":" + $P{P_EB_ANGELEGT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_EB_GESCHAEFTSJAHR} + ":" + $P{P_EB_ANGELEGT}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Mitlaufender Saldo" mode="Transparent" x="492" y="47" width="38" height="17" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Mitlaufender Saldo" mode="Transparent" x="492" y="47" width="38" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="6b4e873a-b53f-4365-aea4-468199f5d628">
 					<printWhenExpression><![CDATA[($P{P_DRUCK_SALDOVORPERIODE} &&
 !$P{P_SORTIERUNG}.startsWith( "Auszug" ))]]></printWhenExpression>
 				</reportElement>
@@ -540,7 +547,7 @@ $P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 	<detail>
 		<band height="10" splitType="Stretch">
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="F_HABEN" mode="Opaque" x="345" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_HABEN" mode="Opaque" x="345" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="300b0825-7fa7-4468-8a44-2581c4dbabc9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -550,10 +557,10 @@ $P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Haben}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Haben}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="F_SOLL" mode="Opaque" x="295" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_SOLL" mode="Opaque" x="295" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c21dbe15-d63d-4431-8e82-8f613ba8a9e2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -563,10 +570,10 @@ $P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Soll}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Soll}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="F_UST" mode="Opaque" x="395" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="F_UST" mode="Opaque" x="395" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="42ef5e0b-a0b8-49ae-a88c-24d377a9daa7">
 					<printWhenExpression><![CDATA[!$P{P_ISTBANKKONTO}.booleanValue() &&
 $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				</reportElement>
@@ -579,10 +586,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{UstWert}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{UstWert}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="F_BUCHUNGSDATUM" mode="Opaque" x="0" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_BUCHUNGSDATUM" mode="Opaque" x="0" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a1eb5e53-2126-4927-a103-7334c3ad829c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -592,10 +599,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$F{Buchungsdatum}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Buchungsdatum}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="F_GEGENKONTONUMMER" mode="Opaque" x="45" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_GEGENKONTONUMMER" mode="Opaque" x="45" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1365418e-3e7e-46cc-833e-9f721acb3c42"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -605,10 +612,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Gegenkonto}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Gegenkonto}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="F_BUCHUNGSART" mode="Opaque" x="85" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_BUCHUNGSART" mode="Opaque" x="85" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="80a30d70-7267-435f-a93a-35af289218c1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -618,10 +625,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Buchungsart}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Buchungsart}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="F_BELEGNUMMER" mode="Opaque" x="110" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_BELEGNUMMER" mode="Opaque" x="110" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="22c414ad-103e-442a-a595-be77563d8d6c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -631,10 +638,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Beleg}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Beleg}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="F_TEXT" mode="Opaque" x="160" y="0" width="135" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_TEXT" mode="Opaque" x="160" y="0" width="135" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ab2b2c91-e1fb-4a8b-ac68-b55cd10a7aed"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -644,11 +651,11 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Text}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Text}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="F_AUSZUG" mode="Opaque" x="492" y="0" width="38" height="10" forecolor="#000000" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$P{P_SALDOVORPERIODE}==null ||
+				<reportElement key="F_AUSZUG" mode="Opaque" x="492" y="0" width="38" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="71f51049-ccc6-409e-8e19-bd9e08e91d84">
+					<printWhenExpression><![CDATA[!$P{P_DRUCK_SALDOVORPERIODE} ||
 $P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -660,10 +667,10 @@ $P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{Auszug}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Auszug}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
-				<reportElement key="F_UST" mode="Opaque" x="425" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="F_UST" mode="Opaque" x="425" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ebe02a8e-69fe-4ffe-b22f-cdc73e67844e">
 					<printWhenExpression><![CDATA[!$P{P_ISTBANKKONTO}.booleanValue() &&
 $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				</reportElement>
@@ -676,10 +683,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{UstProzent}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{UstProzent}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="Saldo" mode="Opaque" x="440" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Saldo" mode="Opaque" x="440" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b4ffd33b-8c7e-47ae-b8dc-884b5adaa6b2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -689,11 +696,11 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[($F{Soll}==null ? new BigDecimal(0.0000) : $F{Soll})
+				<textFieldExpression><![CDATA[($F{Soll}==null ? new BigDecimal(0.0000) : $F{Soll})
 .subtract($F{Haben}==null ? new BigDecimal(0.0000) : $F{Haben})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Mitlaufender Saldo" mode="Opaque" x="492" y="0" width="38" height="10" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Mitlaufender Saldo" mode="Opaque" x="492" y="0" width="38" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="785fb25a-a11f-4d6d-a4e4-995b9594885b">
 					<printWhenExpression><![CDATA[($P{P_DRUCK_SALDOVORPERIODE} &&
 !$P{P_SORTIERUNG}.startsWith( "Auszug" ))]]></printWhenExpression>
 				</reportElement>
@@ -706,14 +713,23 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_Mitlaufender_Saldo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_Mitlaufender_Saldo}.add($P{P_SALDOVORPERIODE}==null ? new BigDecimal(0.00) : $P{P_SALDOVORPERIODE})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="-31" y="0" width="28" height="10" uuid="9813e4c6-231b-4f6f-a9bc-9f081d62febd">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{IstInkonsistent}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="8">
 			<printWhenExpression><![CDATA[$F{Waehrung} != null && $P{P_ISTBANKKONTO} &&
 ($F{Kurs}.compareTo($F{KursZuDatum}) == 0)]]></printWhenExpression>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="F_SOLLFW" mode="Opaque" x="295" y="0" width="50" height="8" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_SOLLFW" mode="Opaque" x="295" y="0" width="50" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="71377b62-191c-4730-baca-c057b25f9f63"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -723,10 +739,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SollFW}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{SollFW}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="F_HABENFW" mode="Opaque" x="345" y="0" width="50" height="8" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_HABENFW" mode="Opaque" x="345" y="0" width="50" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="4ba396c4-b526-4644-a8d8-4789c92f9941"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -736,10 +752,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{HabenFW}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{HabenFW}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="F_WAEHRUNG" mode="Opaque" x="395" y="0" width="20" height="8" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_WAEHRUNG" mode="Opaque" x="395" y="0" width="20" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="aed2c6bc-8d27-4459-9823-74088c5fff7d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -749,10 +765,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Waehrung}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Waehrung}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.000000;-#,##0.000000" isBlankWhenNull="true">
-				<reportElement key="Kurs" mode="Opaque" x="415" y="0" width="50" height="8" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Kurs" mode="Opaque" x="415" y="0" width="50" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="3fff2103-de08-4415-814d-3592cad270cd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -762,14 +778,14 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Kurs}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Kurs}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="8">
 			<printWhenExpression><![CDATA[$F{Waehrung} != null && $P{P_ISTBANKKONTO} &&
 !($F{Kurs}.compareTo($F{KursZuDatum}) == 0)]]></printWhenExpression>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="F_SOLLFW" mode="Opaque" x="295" y="0" width="50" height="8" forecolor="#FF0000" backcolor="#FFFFFF"/>
+				<reportElement key="F_SOLLFW" mode="Opaque" x="295" y="0" width="50" height="8" forecolor="#FF0000" backcolor="#FFFFFF" uuid="fc3b43af-1e12-4f61-a3cf-98f251238369"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -779,10 +795,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{SollFW}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{SollFW}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="F_HABENFW" mode="Opaque" x="345" y="0" width="50" height="8" forecolor="#FF0000" backcolor="#FFFFFF"/>
+				<reportElement key="F_HABENFW" mode="Opaque" x="345" y="0" width="50" height="8" forecolor="#FF0000" backcolor="#FFFFFF" uuid="a7322874-bd1f-4936-ad81-baaad180d3d4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -792,10 +808,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{HabenFW}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{HabenFW}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="F_WAEHRUNG" mode="Opaque" x="395" y="0" width="20" height="8" forecolor="#FF0000" backcolor="#FFFFFF"/>
+				<reportElement key="F_WAEHRUNG" mode="Opaque" x="395" y="0" width="20" height="8" forecolor="#FF0000" backcolor="#FFFFFF" uuid="4243effb-308b-4552-9f10-1bc97be4774b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -805,10 +821,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Waehrung}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Waehrung}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.000000;-#,##0.000000" isBlankWhenNull="true">
-				<reportElement key="Kurs" mode="Opaque" x="415" y="0" width="50" height="8" forecolor="#FF0000" backcolor="#FFFFFF"/>
+				<reportElement key="Kurs" mode="Opaque" x="415" y="0" width="50" height="8" forecolor="#FF0000" backcolor="#FFFFFF" uuid="e75bab6c-6e33-4781-ad4c-9add30eb4cd9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -818,7 +834,7 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Kurs}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Kurs}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -832,13 +848,13 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 		<band height="16" splitType="Stretch">
 			<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith( "Auszug" )]]></printWhenExpression>
 			<line>
-				<reportElement key="line-4" mode="Opaque" x="0" y="0" width="533" height="1" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="line-4" mode="Opaque" x="0" y="0" width="533" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="1ee407ce-96da-434d-9cd2-91900c4758c5"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="Saldo" mode="Opaque" x="0" y="2" width="200" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Saldo" mode="Opaque" x="0" y="2" width="200" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="678e29aa-2561-4167-ab97-553ec0400687"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -848,10 +864,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Saldo in " +$P{P_WAEHRUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Saldo in " +$P{P_WAEHRUNG}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Soll" mode="Opaque" x="295" y="2" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Soll" mode="Opaque" x="295" y="2" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="25f9728a-41ef-4083-879b-213cf95606fd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -861,10 +877,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SOLL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_SOLL}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Haben" mode="Opaque" x="345" y="2" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Haben" mode="Opaque" x="345" y="2" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1df570b6-e1bb-4e29-bb98-cb2f6f79d73b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -874,10 +890,10 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_HABEN}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_HABEN}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Saldo" mode="Opaque" x="440" y="2" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Saldo" mode="Opaque" x="440" y="2" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b30f6441-dd93-4088-af06-d8ab54de4246"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -887,7 +903,7 @@ $F{UstWert}.compareTo(new BigDecimal(0.0)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{V_SOLL}.subtract($V{V_HABEN})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_SOLL}.subtract($V{V_HABEN})]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

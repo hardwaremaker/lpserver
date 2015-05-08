@@ -72,7 +72,7 @@
 
 		<var name="dir.deploy.jboss" value="${deploydir}/jboss" />
 		<copy todir="${dir.deploy.jboss}">
-			<fileset dir="." >
+			<fileset dir=".">
 				<include name="**/*" />
 				<exclude name="**/all/server/helium/lib/**" />
 			</fileset>
@@ -81,7 +81,7 @@
 		<var name="dir.deploy.jboss.lib" value="${deploydir}/jboss/all/server/helium/lib" />
 		<copy todir="${dir.deploy.jboss.lib}">
 			<flattenmapper />
-			<fileset dir="./all/server/helium/lib" >
+			<fileset dir="./all/server/helium/lib">
 				<include name="**/*.jar" />
 			</fileset>
 		</copy>
@@ -114,12 +114,12 @@ is.prod = true
 				<replacestring from="#{db.database.name}" to="${db.database.name}" />
 			</filterchain>
 		</copy>
-		
+
 		<!-- db-spezifische files kopieren -->
 		<antcall target="configure.jboss.db" />
 	</target>
 
-	
+
 	<target name="switch.database.eclipse" depends="check.db" description="switches the fastlane-reader.xml in ejb/build (for eclipse)">
 		<if>
 			<isset property="db.which.MSSQL" />
@@ -137,7 +137,7 @@ is.prod = true
 		<copy file="../${dir.templates}/${name.flr.template}" tofile="${file.flr.file}" />
 	</target>
 
-	
+
 	<!--
 		collects all filenames which are in the mssql- and 
 		psql- dirs and deletes these names in the jboss deploy dir.
@@ -347,11 +347,12 @@ is.prod = true
 			</fileset>
 		</copy>
 	</target>
-	
+
 	<target name="copy.subtree.deploy" description="alles aus jboss/../deploy kopieren">
 		<copy verbose="true" todir="${dir.helium.deploy}" overwrite="true">
 			<fileset dir="${name.dir.general}/server/helium/deploy">
 				<exclude name="**/CVS" />
+				<exclude name="**/*lpserver-ucs.ear"/>
 			</fileset>
 		</copy>
 	</target>
@@ -378,11 +379,11 @@ is.prod = true
 				<include name="**/xml-apis-ext.jar" />
 				<include name="**/jfreechart-*.jar" />
 				<include name="**/iText-2.1.7.js2.jar" />
-				<include name="**/jcommon-1.0-16.jar" />
+				<include name="**/jcommon-1.0.16.jar" />
 				<include name="**/swtgraphics2d.jar" />
 				<include name="**/jxl.jar" />
 				<include name="tidy.jar" />
-			<!--	<include name="**/iReport.jar" /> -->
+				<!--	<include name="**/iReport.jar" /> -->
 				<include name="jcr-1.0.jar" />
 			</fileset>
 		</copy>
@@ -465,10 +466,45 @@ is.prod = true
 		<delete dir="${dir.rar.unpack}" />
 	</target>
 
+	<target name="switch.db.mediarabbit" depends="check.db">
+		<property name="dir.rar.unpack" value="${name.rar.unpack}" />
+		<property name="file.mediarabbit.rar" value="${dir.jboss.deploy}/${name.media.server.rar}" />
+
+		<mkdir dir="${dir.rar.unpack}" />
+		<echo message="unzipping '${file.mediarabbit.rar}' to dir '${dir.rar.unpack}'" />
+		<unzip src="${file.mediarabbit.rar}" dest="${dir.rar.unpack}" />
+
+		<!-- richtiges repository.xml kopieren -->
+		<echo>Aendern des repository.xml fuer HV_KOMMUNIKATION DB</echo>
+		<if>
+			<isset property="db.which.MSSQL" />
+			<then>
+				<property name="name.rar.template" value="${name.media.repository.xml.mssql}" />
+			</then>
+			<else>
+				<property name="name.rar.template" value="${name.media.repository.xml.postgres}" />
+			</else>
+		</if>
+
+		<copy overwrite="true" verbose="true" file="${dir.templates}/${name.rar.template}" tofile="${dir.rar.unpack}/${name.media.repository.template}" />
+		<delete file="${dir.rar.unpack}/${name.media.repository.xml}" />
+
+		<echo>${db.server.name}</echo>
+		<copy file="${dir.rar.unpack}/${name.media.repository.template}" tofile="${dir.rar.unpack}/${name.media.repository.xml}">
+			<filterchain>
+				<replacestring from="#{db.server.name}" to="${db.server.name}" />
+			</filterchain>
+		</copy>
+		<delete file="${dir.rar.unpack}/${name.media.repository.template}" />
+
+		<zip destfile="${file.mediarabbit.rar}" update="true" duplicate="fail" basedir="${dir.rar.unpack}" />
+		<delete dir="${dir.rar.unpack}" />
+	</target>
 
 	<target name="setup.without.p6spy" depends="check.db, check.jboss.down">
 		<antcall target="setup.database.connection" />
 		<antcall target="switch.db.jackrabbit" />
+		<antcall target="switch.db.mediarabbit" />
 		<delete file="${dir.conf}/${name.spy.properties}" />
 		<delete file="${dir.helium.lib}/p6spy.jar" />
 	</target>
@@ -481,9 +517,10 @@ is.prod = true
 	<target name="setup.with.p6spy" depends="check.db, check.jboss.down">
 		<antcall target="setup.p6spy.database" />
 		<antcall target="switch.db.jackrabbit.p6spy" />
+		<antcall target="switch.db.mediarabbit.p6spy" />
 	</target>
-	
-	
+
+
 	<!-- P6Spy konfigurieren -->
 	<target name="setup.p6spy.database" depends="check.db, check.jboss.down">
 		<!-- abhaengig von der db das richtige template verwenden: -->
@@ -506,7 +543,7 @@ is.prod = true
 				<replacestring from="#{db.database.name}" to="${db.database.name}" />
 			</filterchain>
 		</copy>
-		
+
 		<!-- abhaengig von der db das richtige template fuer p6spy verwenden: -->
 		<if>
 			<isset property="db.which.MSSQL" />
@@ -550,7 +587,7 @@ is.prod = true
 		<copy overwrite="true" verbose="true" file="${dir.templates}/${name.rar.template}" tofile="${dir.rar.unpack}/${name.repository.template}" />
 		<delete file="${dir.rar.unpack}/${name.repository.xml}" />
 
-		<echo>${db.server.name}</echo>
+		<echo>Dokumente DB p6spy for server ${db.server.name}</echo>
 		<copy file="${dir.rar.unpack}/${name.repository.template}" tofile="${dir.rar.unpack}/${name.repository.xml}">
 			<filterchain>
 				<replacestring from="#{db.server.name}" to="${db.server.name}" />
@@ -559,6 +596,44 @@ is.prod = true
 		<delete file="${dir.rar.unpack}/${name.repository.template}" />
 
 		<zip destfile="${file.jackrabbit.rar}" update="true" duplicate="fail" basedir="${dir.rar.unpack}" />
+		<delete dir="${dir.rar.unpack}" />
+	</target>
+
+	<!--
+		changes the database dialect in the jackrabbit-x.rar file + changes the servername
+	-->
+	<target name="switch.db.mediarabbit.p6spy" depends="check.db">
+		<property name="dir.rar.unpack" value="${name.rar.unpack}" />
+		<property name="file.mediarabbit.rar" value="${dir.jboss.deploy}/${name.media.server.rar}" />
+
+		<mkdir dir="${dir.rar.unpack}" />
+		<echo message="unzipping '${file.mediarabbit.rar}' to dir '${dir.rar.unpack}'" />
+		<unzip src="${file.mediarabbit.rar}" dest="${dir.rar.unpack}" />
+
+		<!-- richtiges repository.xml kopieren -->
+		<echo>Aendern des repository.xml fuer HV_KOMMUNIKATION DB (p6spy)</echo>
+		<if>
+			<isset property="db.which.MSSQL" />
+			<then>
+				<property name="name.rar.template" value="${name.media.repository.xml.p6spy.mssql}" />
+			</then>
+			<else>
+				<property name="name.rar.template" value="${name.media.repository.xml.p6spy.postgres}" />
+			</else>
+		</if>
+
+		<copy overwrite="true" verbose="true" file="${dir.templates}/${name.rar.template}" tofile="${dir.rar.unpack}/${name.media.repository.template}" />
+		<delete file="${dir.rar.unpack}/${name.media.repository.xml}" />
+
+		<echo>Media DB p6spy for server ${db.server.name}</echo>
+		<copy file="${dir.rar.unpack}/${name.media.repository.template}" tofile="${dir.rar.unpack}/${name.media.repository.xml}">
+			<filterchain>
+				<replacestring from="#{db.server.name}" to="${db.server.name}" />
+			</filterchain>
+		</copy>
+		<delete file="${dir.rar.unpack}/${name.repository.template}" />
+
+		<zip destfile="${file.mediarabbit.rar}" update="true" duplicate="fail" basedir="${dir.rar.unpack}" />
 		<delete dir="${dir.rar.unpack}" />
 	</target>
 

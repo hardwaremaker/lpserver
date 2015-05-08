@@ -4,6 +4,7 @@
 
 <%
 	String address = java.net.InetAddress.getLocalHost().getHostName() ;
+	String port = "" + request.getLocalPort() ;	
 	String theArguments = "" ;
 	Map<String, String[]> parameters = request.getParameterMap();
 
@@ -25,7 +26,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp
 	spec="1.0+"
-		codebase="http://<%= address %>:8080/helium-client/">
+		xmlns:jfx="http://javafx.com" 
+		codebase="http://<%= address %>:<%= port %>/helium-client/">
 
 	<information>
 		<title>HELIUM V Webstart Client</title>
@@ -40,9 +42,9 @@
 	</security>
 
 	<resources>
-<!-- 		<j2se version="1.6+" java-vm-args="-Xms128m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=256m -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8989"/>  -->
-		<j2se version="1.6+" java-vm-args="-XX:PermSize=64m -XX:MaxPermSize=512m"/>
-        <property name="jnlp.java.naming.factory.initial" value="org.jnp.interfaces.NamingContextFactory" />
+ 		<j2se version="1.7.0_06+" java-vm-args="-XX:PermSize=64m -XX:MaxPermSize=512m"/>
+		<jfx:javafx-runtime version="2.1+"/>
+		<property name="jnlp.java.naming.factory.initial" value="org.jnp.interfaces.NamingContextFactory" />
 		<property name="jnlp.java.naming.provider.url" value="jnp://<%= address %>:2099" />
 		
 		<jar href="lpclientpc.jar" main="true" />
@@ -101,15 +103,20 @@
 		<jar href="lib/miglayout-4.0-swing.jar"/>
 		<jar href="lib/mstapisp.jar" />
 		<jar href="lib/outldd.jar" />
+		<jar href="lib/pdfbox-app-2.0.0_beta.jar" />
 		<jar href="lib/poi-3.9-20121203.jar" />
 		<jar href="lib/poi-scratchpad-3.9-20121203.jar" />
-		<jar href="lib/postgresql-8.1-405.jdbc3.jar" />
+		<jar href="lib/postgresql-9.3-1101.jdbc4.jar" />
 		<jar href="lib/RXTXcomm.jar" />
 		<jar href="lib/servlet-api.jar"/>
 		<jar href="lib/skinlf.jar" />
 		<jar href="lib/swtgraphics2d.jar" />
 		<jar href="lib/xml-apis.jar" />
 		<jar href="lib/xml-apis-ext.jar" />
+		<jar href="lib/jruby.jar" />
+		<jar href="lib/jackson-annotations-2.2.3.jar" />
+		<jar href="lib/jackson-core-2.2.3.jar" />
+		<jar href="lib/jackson-databind-2.2.3.jar" />
 	</resources>
 
 	<application-desc 

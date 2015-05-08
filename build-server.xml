@@ -20,9 +20,10 @@
 <!-- ======================================================================= -->
 
 <project name="build-server" basedir="." default="readme">
-	
+
 	<property environment="env" />
-	<property name="name.build.server" value="build-server-os" />
+	<local name="name.build.server"/>
+	<property name="name.build.server" value="${ant.project.name}${hv.edition}" />
 	<property file="${name.build.server}.properties.local" />
 	<property file="${name.build.server}.properties" />
 
@@ -36,11 +37,11 @@
 	<property name="file.manifest" value="${dir.src}/META-INF/MANIFEST.MF" />
 
 	<property name="dir.jboss.deploy" value="${dir.jboss.home}/server/helium/deploy" />
-	
-	<property name="db" value="POSTGRESQL"/>
-	
+
+	<property name="db" value="POSTGRESQL" />
+
 	<import file="${file.build.commons}" />
-	<import file="${file.build.jboss.libs}"/>
+	<import file="${file.build.jboss.libs}" />
 
 	<!-- Zusaetzliche Task Definitionen -->
 	<taskdef resource="net/sf/antcontrib/antlib.xml">
@@ -78,364 +79,371 @@
 	</target>
 
 	<target name="compile" depends="init, check.db.type" description="Kompiliere: ${file.application.basename}">
-		<echo message="Kompiliere: Server: ${dir.src}" />
+		<echo message="Kompiliere: Server: ${dir.src} - ${name.build.server} - ${ant.project.name}" />
 		<echo>JAVA_HOME: ${env.JAVA_HOME}</echo>
-	    
-		<echo message="Classpath=${toString:id.serverlibs}"/>
-		
-  		<javac destdir="${dir.classes}" includes="**/*.java" debug="true" deprecation="true" executable="${env.JAVA_HOME}/bin/javac" fork="true" memorymaximumsize="512m" compiler="modern">
+
+		<echo message="Classpath=${toString:id.serverlibs}" />
+
+		<javac destdir="${dir.classes}" includes="**/*.java" debug="true"
+		    deprecation="true" executable="${env.JAVA_HOME}/bin/javac" fork="true"
+		     memorymaximumsize="512m" compiler="modern">
 			<src path="${dir.src}" />
 			<classpath>
-				 <pathelement location="${lib.postgresql}"/>
-				 <pathelement location="${lib.mssql}"/>
-				 <path refid="id.serverlibs" />
+				<pathelement location="${lib.postgresql}" />
+				<pathelement location="${lib.mssql}" />
+				<path refid="id.serverlibs" />
 			</classpath>
 		</javac>
 
 		<echo>javadoc kompilieren </echo>
-<!--		<javadoc destdir="api" author="true"  version="true" use="true" windowtitle="HeliumV API" useexternalfile="true" maxmemory="512m" Verbose="no"> -->
-		<javadoc destdir="api" author="true"  version="true" use="true" windowtitle="HeliumV API" useexternalfile="true" maxmemory="512m" additionalparam="-quiet" >
-			<fileset dir="${dir.src}" defaultexcludes="yes" >
-<!-- 			      <exclude name="**/fastlanereader/**"/> -->
-				  <exclude name="**/MANIFEST.MF" />
-				  <exclude name="**/**.xml" />
-			      <exclude name="**/res/**"/>
+		<javadoc destdir="api" author="true" version="true" use="true" windowtitle="HELIUM V API" useexternalfile="true" maxmemory="768m" additionalparam="-quiet">
+			<fileset dir="${dir.src}" defaultexcludes="yes">
+				<!-- 			      <exclude name="**/fastlanereader/**"/> -->
+				<exclude name="**/MANIFEST.MF" />
+				<exclude name="**/**.xml" />
+				<exclude name="**/res/**" />
 			</fileset>
 			<classpath>
-				 <pathelement location="${lib.postgresql}"/>
-				 <pathelement location="${lib.mssql}"/>
-				 <path refid="id.serverlibs" />
+				<pathelement location="${lib.postgresql}" />
+				<pathelement location="${lib.mssql}" />
+				<path refid="id.serverlibs" />
 			</classpath>
 
-		    <doctitle><![CDATA[<h1>HELIUM V API</h1>]]></doctitle>
-		    <bottom><![CDATA[<i>Copyright &#169; 2004 - 2014 HELIUM V IT-Solutions GmbH</i>]]></bottom>
-		    <tag name="todo" scope="all" description="To do:"/>
-		    <group title="Server Packages" packages="com.lp.server.*"/>
-		    <link offline="true" href="http://java.sun.com/j2se/1.6.11/docs/api/" packagelistLoc="C:\tmp"/>
-		    <link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/>
-		</javadoc>
+			<doctitle>
+				<![CDATA[<h1>HELIUM V API</h1>]]></doctitle>
+		<bottom>
+			<![CDATA[<i>Copyright &#169; 2004 - 2015 HELIUM V IT-Solutions GmbH</i>]]></bottom>
+	<tag name="todo" scope="all" description="To do:" />
+	<group title="Server Packages" packages="com.lp.server.*" />
+	<link offline="true" href="http://java.sun.com/j2se/1.6.11/docs/api/" packagelistLoc="C:\tmp" />
+	<link href="http://developer.java.sun.com/developer/products/xml/docs/api/" />
+</javadoc>
 
-		<antcall target="configure.server.db" />
-	</target>
+<antcall target="configure.server.db" />
+</target>
 
-	<target name="build">
-		<antcall target="pack" />
-	</target>
+<target name="build">
+<antcall target="pack" />
+</target>
 
 
-	<!-- 
+<!-- 
 		creates the manifest file out of the jboss-lib dirs 
 	-->
-	<target name="create.manifest" description="creates the manifest for the ejb.jar ">
+<target name="create.manifest" description="creates the manifest for the ejb.jar ">
 
-		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" ${line.separator} " refid="id.serverlibs">
-			<mapper type="flatten" />
-		</pathconvert>
+	<pathconvert property="manifest.classpath" dirsep="/" pathsep=" ${line.separator} " refid="id.serverlibs">
+		<mapper type="flatten" />
+	</pathconvert>
+	
+	<!-- Ausgeben aller Libs zur Kontrolle -->
+	<echo message="Server: manifest.classpath: ${manifest.classpath}" />
+	
+	<manifest file="${file.manifest}">
+		<attribute name="Built-By" value="${user.name}" />
+	</manifest>
+	
+	<echo file="${file.manifest}" append="true" message="Class-Path: ${manifest.classpath} ${line.separator}" />
+</target>
 
-		<!-- Ausgeben aller Libs zur Kontrolle -->
-		<echo message="Server: manifest.classpath: ${manifest.classpath}" />
+<target name="cleanbuild" depends="clean">
+	<antcall target="pack" />
+</target>
 
-		<manifest file="${file.manifest}">
-			<attribute name="Built-By" value="${user.name}" />
-		</manifest>
-
-		<echo file="${file.manifest}" append="true" message="Class-Path: ${manifest.classpath} ${line.separator}" />
-	</target>
-
-	<target name="cleanbuild" depends="clean">
-		<antcall target="pack" />
-	</target>
-
-	<target name="cleaninstall" depends="clean.install">
-		<antcall target="install" />
-	</target>
-
-
-	<target name="deploy">
-		<fail unless="deploydir" message="deploydir not set. cannot proceed!" />
-
-		<var name="dir.deploy.server" value="${deploydir}/server" />
-		<!--lpserver.ear kopieren-->
-		<copy todir="${dir.deploy.server}" overwrite="true">
-			<fileset dir=".">
-				<include name="${dir.deploy}/lpserver.ear" />
-			</fileset>
-		</copy>
-
-		<!-- templates kopieren -->
-		<copy todir="${dir.deploy.server}" overwrite="true">
-			<fileset dir=".">
-				<include name="${dir.templates}/*" />
-			</fileset>
-		</copy>
-
-		<copy todir="${dir.deploy.server}" overwrite="true">
-			<fileset dir=".">
-				<include name="${name.build.server}.*" />
-			</fileset>
-			<mapper>
-				<globmapper from="${name.build.server}.*" to="build.*" />
-			</mapper>
-		</copy>
-
-		<!-- pfad auf build-commons richtig setzen -->
-		<echo file="${dir.deploy.server}/build.properties.local" message="file.build.commons = ../build-commons.xml" />
-	</target>
+<target name="cleaninstall" depends="clean.install">
+	<antcall target="install" />
+</target>
 
 
-	<!-- ********************************************-->
-	<!-- schreibt die versions- und releasenummer ins lp.properties -->
-	<!-- ********************************************-->
-	<target name="set.updatenumber" depends="declare.anttools">
-		<fail unless="updatenumber" message="updatenumber ist nicht gesetzt." />
-
-		<updatenumbersplit updatenumber="${updatenumber}" versionproperty="version" releaseproperty="release" />
-
-		<echo message="${file.lp.properties}" />
-		<replaceregexp file="${file.lp.properties}" byline="true">
-			<regexp pattern="(^lp\.version\.server[ ]*=[ ]*).*" />
-			<substitution expression="\1${prefix.helium.version}${version}.${release}" />
-		</replaceregexp>
-
-		<echo message="wrote server version (version: ${version}, release: ${release}) to file: ${file.lp.properties}" />
-
-		<antcall target="pushToGit">
-			<param name="message" value="set server version (version: ${version}, release: ${release})"/>
-		</antcall>
-
-	</target>
-
-
-	<!-- ********************************************-->
-	<!-- schreibt die buildnummer ins lp.properties -->
-	<!-- ********************************************-->
-	<target name="set.buildnumber">
-		<fail unless="buildnumber" message="buildnumber ist nicht gesetzt." />
-
-		<replaceregexp file="${file.lp.properties}" byline="true">
-			<regexp pattern="(^lp\.version\.server\.build[ ]*=[ ]*).*" />
-			<substitution expression="\1${buildnumber}" />
-		</replaceregexp>
-
-		<echo message="wrote server build number (${buildnumber} to file: ${file.lp.properties}" />
-
-		<antcall target="pushToGit">
-			<param name="message" value="set server buildnumber to ${buildnumber}"/>
-		</antcall>
-	</target>
-
-	<!-- ********************************************-->
-	<!-- git commit und push von lp.properties -->
-	<!-- parameter ${message} ist die commit message -->
-	<!-- ********************************************-->
-	<target name="pushToGit">
-		<exec executable="git" dir="${dir.git}">
-			<arg value="add" />
-			<arg value="${file.lp.properties.git}" />
-		</exec>
-		<exec executable="git" dir="${dir.git}">
-			<arg value="commit" />
-			<arg value="-m '${message}'" />
-			<arg value="${file.lp.properties.git}" />
-		</exec>
-		<exec executable="git" dir="${dir.git}">
-			<arg value="push" />
-		</exec>
-	</target>
-
-	<!-- ********************************************-->
-	<!-- copy the built jars, wars ans sars to jboss-deploy dir -->
-	<!-- ********************************************-->
-	<target name="install" depends="switch.db.ear" description="Server: Jars, Sars, Wars deployen.">
-		<echo message="deploying to ${dir.jboss.deploy}" />
-		<antcall target="rescopy"></antcall>
-
-		<!-- deploy the files -->
-		<copy todir="${dir.jboss.deploy}" overwrite="true">
-			<fileset dir="${dir.deploy}">
-				<include name="*.ear" />
-			</fileset>
-		</copy>
-	</target>
+<target name="deploy">
+	<fail unless="deploydir" message="deploydir not set. cannot proceed!" />
+	
+	<var name="dir.deploy.server" value="${deploydir}/server" />
+	<!--lpserver.ear kopieren-->
+	<copy todir="${dir.deploy.server}" overwrite="true">
+		<fileset dir=".">
+			<include name="${dir.deploy}/lpserver.ear" />
+		</fileset>
+	</copy>
+	
+	<!-- templates kopieren -->
+	<copy todir="${dir.deploy.server}" overwrite="true">
+		<fileset dir=".">
+			<include name="${dir.templates}/*" />
+		</fileset>
+	</copy>
+	
+	<copy todir="${dir.deploy.server}" overwrite="true">
+		<fileset dir=".">
+			<include name="${name.build.server}.*" />
+		</fileset>
+		<mapper>
+			<globmapper from="${name.build.server}.*" to="build.*" />
+		</mapper>
+	</copy>
+	
+	<!-- pfad auf build-commons richtig setzen -->
+	<echo file="${dir.deploy.server}/build.properties.local" message="file.build.commons = ../build-commons.xml" />
+</target>
 
 
-	<!-- ********************************************-->
-	<!-- kopiert das richtige xml fuer den fastlanereader -->
-	<!-- ********************************************-->
-	<target name="configure.server.db" depends="check.db.type">
-		<condition property="destdir" value="${dir.dest}" else="${dir.classes}">
-			<isset property="dir.dest" />
-		</condition>
+<!-- ********************************************-->
+<!-- schreibt die versions- und releasenummer ins lp.properties -->
+<!-- ********************************************-->
+<target name="set.updatenumber" depends="declare.anttools">
+<fail unless="updatenumber" message="updatenumber ist nicht gesetzt." />
 
-		<echo>Aendern des fastlanereader-service.xml fuer DB</echo>
-		<!-- abhaengig von der db das richtige template fuer fastlanereader-service.xml verwenden: -->
-		<property name="name.flr.template" value="${name.fastlanereader.service.postgres}" />
-		<copy overwrite="true" verbose="true" file="${dir.templates}/${name.flr.template}" tofile="${destdir}/${name.fastlanereader.service}" />
-	</target>
+<updatenumbersplit updatenumber="${updatenumber}" versionproperty="version" releaseproperty="release" />
 
-	<!--
+<echo message="${file.lp.properties}" />
+<replaceregexp file="${file.lp.properties}" byline="true">
+	<regexp pattern="(^lp\.version\.server[ ]*=[ ]*).*" />
+	<substitution expression="\1${prefix.helium.version}${version}.${release}" />
+</replaceregexp>
+
+<echo message="wrote server version (version: ${version}, release: ${release}) to file: ${file.lp.properties}" />
+
+<antcall target="pushToGit">
+	<param name="message" value="set server version (version: ${version}, release: ${release})" />
+</antcall>
+
+</target>
+
+
+<!-- ********************************************-->
+<!-- schreibt die buildnummer ins lp.properties -->
+<!-- ********************************************-->
+<target name="set.buildnumber">
+<fail unless="buildnumber" message="buildnumber ist nicht gesetzt." />
+
+<replaceregexp file="${file.lp.properties}" byline="true">
+	<regexp pattern="(^lp\.version\.server\.build[ ]*=[ ]*).*" />
+	<substitution expression="\1${buildnumber}" />
+</replaceregexp>
+
+<echo message="wrote server build number (${buildnumber} to file: ${file.lp.properties}" />
+
+<antcall target="pushToGit">
+	<param name="message" value="set server buildnumber to ${buildnumber}" />
+</antcall>
+</target>
+
+<!-- ********************************************-->
+<!-- git commit und push von lp.properties -->
+<!-- parameter ${message} ist die commit message -->
+<!-- ********************************************-->
+<target name="pushToGit">
+<exec executable="git" dir="${dir.git}">
+	<arg value="add" />
+	<arg value="${file.lp.properties.git}" />
+</exec>
+<exec executable="git" dir="${dir.git}">
+	<arg value="commit" />
+	<arg value="-m '${message}'" />
+	<arg value="${file.lp.properties.git}" />
+</exec>
+<exec executable="git" dir="${dir.git}">
+	<arg value="push" />
+	<arg value="-u" />
+	<arg value="origin" />
+	<arg value="master" />
+</exec>
+</target>
+
+<!-- ********************************************-->
+<!-- copy the built jars, wars ans sars to jboss-deploy dir -->
+<!-- ********************************************-->
+<target name="install" depends="switch.db.ear" description="Server: Jars, Sars, Wars deployen.">
+<echo message="deploying to ${dir.jboss.deploy}" />
+<antcall target="rescopy">
+</antcall>
+
+<!-- deploy the files -->
+<copy todir="${dir.jboss.deploy}" overwrite="true">
+	<fileset dir="${dir.deploy}">
+		<include name="*.ear" />
+	</fileset>
+</copy>
+</target>
+
+
+<!-- ********************************************-->
+<!-- kopiert das richtige xml fuer den fastlanereader -->
+<!-- ********************************************-->
+<target name="configure.server.db" depends="check.db.type">
+<condition property="destdir" value="${dir.dest}" else="${dir.classes}">
+	<isset property="dir.dest" />
+</condition>
+
+<echo>Aendern des fastlanereader-service.xml fuer DB</echo>
+<!-- abhaengig von der db das richtige template fuer fastlanereader-service.xml verwenden: -->
+<property name="name.flr.template" value="${name.fastlanereader.service.postgres}" />
+<copy overwrite="true" verbose="true" file="${dir.templates}/${name.flr.template}" tofile="${destdir}/${name.fastlanereader.service}" />
+</target>
+
+<!--
 		changes the fastlanereader dialect in the ear file.
 	-->
-	<target name="switch.db.ear" depends="check.db.type">
+<target name="switch.db.ear" depends="check.db.type">
 
-		<property name="dir.ear.unpack" value="${name.ear.unpack}" />
-		<property name="file.server.ear" value="${dir.deploy}/${name.server.ear}" />
+<property name="dir.ear.unpack" value="${name.ear.unpack}" />
+<property name="file.server.ear" value="${dir.deploy}/${name.server.ear}" />
 
-		<mkdir dir="${dir.ear.unpack}" />
-		<echo message="unzipping '${file.server.ear}' to dir '${dir.ear.unpack}'" />
-		<unzip src="${file.server.ear}" dest="${dir.ear.unpack}" />
+<mkdir dir="${dir.ear.unpack}" />
+<echo message="unzipping '${file.server.ear}' to dir '${dir.ear.unpack}'" />
+<unzip src="${file.server.ear}" dest="${dir.ear.unpack}" />
 
-		<property name="dir.ejb.unpack" value="${dir.ear.unpack}/${name.ejb.unpack}" />
-		<property name="file.ejb.jar" value="${dir.ear.unpack}/${name.ejb.jar}" />
+<property name="dir.ejb.unpack" value="${dir.ear.unpack}/${name.ejb.unpack}" />
+<property name="file.ejb.jar" value="${dir.ear.unpack}/${name.ejb.jar}" />
 
-		<mkdir dir="${dir.ejb.unpack}" />
-		<unzip src="${file.ejb.jar}" dest="${dir.ejb.unpack}" />
+<mkdir dir="${dir.ejb.unpack}" />
+<unzip src="${file.ejb.jar}" dest="${dir.ejb.unpack}" />
 
-		<!-- richtiges fastlanereader.xml kopieren -->
-		<antcall target="configure.server.db">
-			<param name="dir.dest" value="${dir.ejb.unpack}" />
-		</antcall>
+<!-- richtiges fastlanereader.xml kopieren -->
+<antcall target="configure.server.db">
+	<param name="dir.dest" value="${dir.ejb.unpack}" />
+</antcall>
 
-		<zip destfile="${file.ejb.jar}" update="true" duplicate="fail" basedir="${dir.ejb.unpack}" />
-		<delete dir="${dir.ejb.unpack}" />
+<zip destfile="${file.ejb.jar}" update="true" duplicate="fail" basedir="${dir.ejb.unpack}" />
+<delete dir="${dir.ejb.unpack}" />
 
-		<zip destfile="${file.server.ear}" update="true" duplicate="fail" basedir="${dir.ear.unpack}" />
-		<delete dir="${dir.ear.unpack}" />
-	</target>
+<zip destfile="${file.server.ear}" update="true" duplicate="fail" basedir="${dir.ear.unpack}" />
+<delete dir="${dir.ear.unpack}" />
+</target>
 
-	<target name="clean.install">
-		<echo>
-		</echo>
-		<echo>Loesche: Jars, Sars, temp, work, log, ...</echo>
-		<delete dir="${dir.jboss.helium}/log" />
-		<mkdir dir="${dir.jboss.helium}/log" />
+<target name="clean.install">
+<echo>
+</echo>
+<echo>Loesche: Jars, Sars, temp, work, log, ...</echo>
+<delete dir="${dir.jboss.helium}/log" />
+<mkdir dir="${dir.jboss.helium}/log" />
 
-		<delete dir="${dir.jboss.helium}/work" />
-		<mkdir dir="${dir.jboss.helium}/work" />
+<delete dir="${dir.jboss.helium}/work" />
+<mkdir dir="${dir.jboss.helium}/work" />
 
-		<delete dir="${dir.jboss.helium}/tmp" />
-		<mkdir dir="${dir.jboss.helium}/tmp" />
+<delete dir="${dir.jboss.helium}/tmp" />
+<mkdir dir="${dir.jboss.helium}/tmp" />
 
-		<delete file="${dir.jboss.deploy}\lpserver.ear" />
+<delete file="${dir.jboss.deploy}\lpserver.ear" />
 <!-- REMOVE
 		<delete file="${dir.jboss.deploy}\zemecs.war" />
  -->
-		<delete file="${dir.jboss.deploy}\heliumv.war" />
-		<delete>
-			<fileset dir="${dir.jboss.deploy}" includes="*.jar" />
-		</delete>
-	</target>
+<delete file="${dir.jboss.deploy}\heliumv.war" />
+<delete>
+	<fileset dir="${dir.jboss.deploy}" includes="*.jar" />
+</delete>
+</target>
 
-	<!-- ejb-jars erzeugen -->
-	<!-- deploy-target haengt von pack ab, beim Installieren, wenn die jars  -->
-	<!-- bereits vorhanden sind, nicht aber die sourcen, wird ${is.setup} -->
-	<!-- gesetzt und dieses target nicht ausgefuehrt                           -->
-	<target name="pack" unless="is.setup" depends="compile">
-		<!--, correct.jbosscmpjdbcxml.jb.bug">-->
-		<antcall target="rescopy" />
+<!-- ejb-jars erzeugen -->
+<!-- deploy-target haengt von pack ab, beim Installieren, wenn die jars  -->
+<!-- bereits vorhanden sind, nicht aber die sourcen, wird ${is.setup} -->
+<!-- gesetzt und dieses target nicht ausgefuehrt                           -->
+<target name="pack" unless="is.setup" depends="compile">
+<!--, correct.jbosscmpjdbcxml.jb.bug">-->
+<antcall target="rescopy" />
 
-		<copy todir="${dir.descriptors}">
-			<fileset dir="${dir.modules}">
-				<include name="**/*.xml" />
-				<include name="**/*.wsdl" />
-			</fileset>
+<copy todir="${dir.descriptors}">
+	<fileset dir="${dir.modules}">
+		<include name="**/*.xml" />
+		<include name="**/*.wsdl" />
+	</fileset>
 
-			<mapper type="regexp" from="^(.*)\${file.separator}META-INF\${file.separator}(.*)" to="\1\${file.separator}\2" />
-		</copy>
+	<mapper type="regexp" from="^(.*)\${file.separator}META-INF\${file.separator}(.*)" to="\1\${file.separator}\2" />
+</copy>
 
-		<jar destfile="${dir.deploy}/${name.ejb.jar}" manifest="${file.manifest}">
-			<metainf dir="${dir.src}/META-INF/" />
-			<fileset dir="${dir.classes}">
-				<include name="**/*.xml" />
-				<include name="**/*.class" />
-				<include name="**/*.properties" />
-			</fileset>
-		</jar>
+<jar destfile="${dir.deploy}/${name.ejb.jar}" manifest="${file.manifest}">
+	<metainf dir="${dir.src}/META-INF/" />
+	<fileset dir="${dir.classes}">
+		<include name="**/*.xml" />
+		<include name="**/*.class" />
+		<include name="**/*.properties" />
+	</fileset>
+</jar>
 
-		<!-- Erzeuge alle Warfiles  -->
-		<antcall target="war.mecs" />
-		<antcall target="war.heliumv" />
-		<antcall target="war.onlinehelp" />
+<!-- Erzeuge alle Warfiles  -->
+<antcall target="war.mecs" />
+<antcall target="war.heliumv" />
+<antcall target="war.onlinehelp" />
 
-		<copy todir="${dir.deploy}" overwrite="true">
-			<fileset dir="jboss/all/${name.lib.unterverzeichnis}">
-				<include name="*.jar" />
-			</fileset>
-		</copy>
+<copy todir="${dir.deploy}" overwrite="true">
+	<fileset dir="jboss/all/${name.lib.unterverzeichnis}">
+		<include name="*.jar" />
+	</fileset>
+</copy>
 
-		<copy todir="${dir.deploy}" overwrite="true">
-			<fileset dir="${dir.classes}/com/lp/util">
-				<include name="HelperReport.class" />
-			</fileset>
-		</copy>
+<copy todir="${dir.deploy}" overwrite="true">
+	<fileset dir="${dir.classes}/com/lp/util">
+		<include name="HelperReport.class" />
+	</fileset>
+</copy>
 
-		<ear destfile="${dir.deploy}/${name.server.ear}" appxml="module/META-INF/application.xml">
-			<fileset dir="${dir.deploy}" includes="*.jar,*.war,*.class" />
-		</ear>
+<ear destfile="${dir.deploy}/${name.server.ear}" appxml="module/META-INF/application.xml">
+	<fileset dir="${dir.deploy}" includes="*.jar,*.war,*.class" />
+</ear>
 
-		<delete includeemptydirs="true">
-			<fileset dir="${dir.deploy}">
-				<include name="**/*" />
-				<exclude name="${name.server.ear}" />
-			</fileset>
-		</delete>
-	</target>
-
-
-	<target name="rescopy" description="Resourcen kopieren.">
-		<copy todir="${dir.classes}">
-			<fileset dir="${dir.src}">
-				<include name="**/res/**" />
-				<include name="**/*.hbm.xml" />
-			</fileset>
-		</copy>
-
-		<copy todir="${dir.jboss.home}/server/helium/conf">
-			<fileset dir="jboss/all/server/helium/conf">
-				<exclude name="**/CVS" />
-			</fileset>
-		</copy>
-		<delete file="${dir.jboss.home}/server/helium/conf/log4j.xml" />
-	</target>
-
-	<target name="war.mecs" description="Build MECS Webapp.">
-		<war destfile="${dir.deploy}/zemecs.war" webxml="../zemecs/jsp/WEB-INF/web.xml">
-			<classes dir="${dir.classes}">
-				<include name="**/com/lp/webapp/frame/*.class" />
-				<include name="**/com/lp/webapp/zemecs/*.class" />
-				<include name="**/com/lp/service/*.class" />
-				<include name="**/com/lp/util/*.class" />
-			</classes>
-			<webinf dir="${dir.jsp.zemecs}/WEB-INF">
-				<include name="**/jboss-web.xml" />
-			</webinf>
-			<fileset dir="${dir.jsp.zemecs}">
-				<include name="**/*.jsp" />
-			</fileset>
-		</war>
-	</target>
+<delete includeemptydirs="true">
+	<fileset dir="${dir.deploy}">
+		<include name="**/*" />
+		<exclude name="${name.server.ear}" />
+	</fileset>
+</delete>
+</target>
 
 
-	<target name="war.heliumv" description="Build Helium V Webapp">
-		<war destfile="${dir.deploy}/heliumv.war" webxml="../heliumv/jsp/WEB-INF/web.xml">
-			<classes dir="${dir.classes}">
-				<include name="**/com/lp/webapp/frame/*.class" />
-				<include name="**/com/lp/webapp/heliumv/*.class" />
-				<include name="**/com/lp/service/*.class" />
-				<include name="**/com/lp/util/*.class" />
-			</classes>
-			<fileset dir="${dir.jsp.heliumv}">
-				<include name="**/*.jsp" />
-			</fileset>
-		</war>
-	</target>
+<target name="rescopy" description="Resourcen kopieren.">
+<copy todir="${dir.classes}">
+	<fileset dir="${dir.src}">
+		<include name="**/res/**" />
+		<include name="**/*.hbm.xml" />
+	</fileset>
+</copy>
 
-	<target name="war.onlinehelp" description="Build Helium Onlinehilfe">
-		<war destfile="${dir.deploy}/heliumhelp.war" webxml="../heliumhelp/jsp/WEB-INF/web.xml">
-			<fileset dir="${dir.heliumhelp}">
-				<include name="**/*" />
-			</fileset>
-		</war>
-	</target>
+<copy todir="${dir.jboss.home}/server/helium/conf">
+	<fileset dir="jboss/all/server/helium/conf">
+		<exclude name="**/CVS" />
+	</fileset>
+</copy>
+<delete file="${dir.jboss.home}/server/helium/conf/log4j.xml" />
+</target>
+
+<target name="war.mecs" description="Build MECS Webapp.">
+<war destfile="${dir.deploy}/zemecs.war" webxml="../zemecs/jsp/WEB-INF/web.xml">
+	<classes dir="${dir.classes}">
+		<include name="**/com/lp/webapp/frame/*.class" />
+		<include name="**/com/lp/webapp/zemecs/*.class" />
+		<include name="**/com/lp/service/*.class" />
+		<include name="**/com/lp/util/*.class" />
+	</classes>
+	<webinf dir="${dir.jsp.zemecs}/WEB-INF">
+		<include name="**/jboss-web.xml" />
+	</webinf>
+	<fileset dir="${dir.jsp.zemecs}">
+		<include name="**/*.jsp" />
+	</fileset>
+</war>
+</target>
+
+
+<target name="war.heliumv" description="Build Helium V Webapp">
+<war destfile="${dir.deploy}/heliumv.war" webxml="../heliumv/jsp/WEB-INF/web.xml">
+	<classes dir="${dir.classes}">
+		<include name="**/com/lp/webapp/frame/*.class" />
+		<include name="**/com/lp/webapp/heliumv/*.class" />
+		<include name="**/com/lp/service/*.class" />
+		<include name="**/com/lp/util/*.class" />
+	</classes>
+	<fileset dir="${dir.jsp.heliumv}">
+		<include name="**/*.jsp" />
+	</fileset>
+</war>
+</target>
+
+<target name="war.onlinehelp" description="Build Helium Onlinehilfe">
+<war destfile="${dir.deploy}/heliumhelp.war" webxml="../heliumhelp/jsp/WEB-INF/web.xml">
+	<fileset dir="${dir.heliumhelp}">
+		<include name="**/*" />
+	</fileset>
+</war>
+</target>
 
 </project>

@@ -11,8 +11,10 @@
 
 <project name="build-main" basedir="." default="readme">
 	<property environment="env" />
-	<property file="build-os.properties" />
-
+	<local name="name.build.server"/>
+	<property name="name.build.server" value="build${hv.edition}" />
+	<property file="${name.build.server}.properties" />
+	
 	<import file="${file.build.commons}" />
 	<import file="${file.build.jboss.libs}" />
 
@@ -94,7 +96,11 @@
 			<propertyset refid="id.db.properties" />
 		</ant>
 
-		<echo>Helium V Server-files deployen</echo>
+		<ant antfile="${file.build.jboss}" target="switch.db.mediarabbit" inheritall="false">
+			<propertyset refid="id.db.properties" />
+		</ant>
+
+		<echo>HELIUM V Server-files deployen</echo>
 		<ant antfile="${file.build.server}" target="install" inheritall="false">
 			<propertyset refid="id.db.properties" />
 		</ant>
@@ -413,6 +419,10 @@
 			<property name="deploydir" value="${deploydir}" />
 		</ant>
 
+		<ant antfile="${file.build.script}" target="deploy" inheritall="false" inheritrefs="false">
+			<property name="deploydir" value="${deploydir}" />
+		</ant>
+		
 		<copy todir="${deploydir}">
 			<fileset dir=".">
 				<include name="build-commons.xml" />

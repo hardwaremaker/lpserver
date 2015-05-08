@@ -14,7 +14,7 @@
 </xsl:text>
 	</xsl:template>
 	<xsl:template match="belegnummer">
-Im Anhang befindet sich <xsl:value-of select="/mail/bezeichnung"/>&#160;<xsl:value-of select="."/>.
+im Anhang befindet sich <xsl:value-of select="/mail/bezeichnung"/>&#160;<xsl:value-of select="."/>.
 
 </xsl:template>
 	<xsl:template match="fusstext">
@@ -24,7 +24,7 @@ Im Anhang befindet sich <xsl:value-of select="/mail/bezeichnung"/>&#160;<xsl:val
 		<xsl:value-of select="/mail/bearbeiter"/>
 		
 
-Zur Anzeige des Dokuments können Sie den Acrobat-Reader auch von www.HeliumV.com herunterladen.	
+HELIUM V Business-Software für den nachhaltigen Unternehmenserfolg.	
 	</xsl:template>
 </xsl:stylesheet>
 
@@ -45,6 +45,7 @@ text
 bearbeiter_vorname ... der das EMail echt versendet.
 bearbeiter_nachname
 bearbeiter_titel
+bearbeiter_ntitel
 bearbeiter_telefonfirma
 bearbeiter_telefondwfirma
 bearbeiter_email
@@ -58,6 +59,7 @@ bearbeiter_unterschriftstext
 vertreter_vorname ... der Vertreter aus dem Beleg, wenn nicht vorhanden, dann der Bearbeiter.
 vertreter_nachname
 vertreter_titel
+vertreter_ntitel
 vertreter_telefonfirma
 vertreter_telefondwfirma
 vertreter_email
@@ -78,19 +80,14 @@ firma_strasse
 kundenbestellnummer
 abnummer
 
-vertreter_vorname ... das ist der hinterlegte Vertreter also gleichlautend mit bearbeiter
-vertreter_nachname
-vertreter_titel
-vertreter_telefonfirma
-vertreter_telefondwfirma
-vertreter_email
-vertreter_mobil
-vertreter_telefonfirmamitdw
-vertreter_direktfax
-vertreter_faxdwfirma
-vertreter_faxfirmamitdw
-vertreter_unterschriftsfunktion
-vertreter_unterschriftstext
+rekla_kndlsnr
+rekla_kndreklanr
+rekla_lieferschein
+rekla_rechung
+rekla_we_lsdatum
+rekla_we_lsnr
+rekla_we_wedatum
+
 
 Die Templates (apply-templates) werden der Reihe nach abgearbeitet
 Die Inhalte werden durch das template match konstrukt definiert.
