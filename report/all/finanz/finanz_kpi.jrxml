@@ -1,0 +1,730 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 6.18.1-9d75d1969e774d4f179fb3be8401e98a0e6d1611  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_kpi" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="523" leftMargin="42" rightMargin="30" topMargin="20" bottomMargin="20" uuid="d5148cb5-3b9f-4744-a610-f14956e449d8">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.3636363636363635"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="1364"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_REPORT_DATENSAETZE" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExcecutor" isForPrompting="false"/>
+	<parameter name="P_KPI_VARIABLEN" class="com.lp.server.kpi.service.KpiReportStorage" isForPrompting="false">
+		<parameterDescription><![CDATA[Report-Variablen-Speicher]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_LOGO_IMAGE" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Logo]]></parameterDescription>
+	</parameter>
+	<field name="F_VON" class="java.util.Date"/>
+	<field name="F_BIS" class="java.util.Date"/>
+	<variable name="VRepAuftragAlle" class="java.lang.String">
+		<initialValueExpression><![CDATA[com.lp.server.kpi.service.HelperKpiReport.printAuftragAlle($P{P_KPI_VARIABLEN})]]></initialValueExpression>
+	</variable>
+	<variable name="VRepRechnungAlle" class="java.lang.String">
+		<initialValueExpression><![CDATA[com.lp.server.kpi.service.HelperKpiReport.printRechnungAlle($P{P_KPI_VARIABLEN})]]></initialValueExpression>
+	</variable>
+	<variable name="VRepAblieferungsstatistik" class="java.lang.String">
+		<initialValueExpression><![CDATA[com.lp.server.kpi.service.HelperKpiReport.printAblieferungsstatistik($P{P_KPI_VARIABLEN})]]></initialValueExpression>
+	</variable>
+	<variable name="VRepArbeitszeitstatistik" class="java.lang.String">
+		<initialValueExpression><![CDATA[com.lp.server.kpi.service.HelperKpiReport.printArbeitszeitstatistik($P{P_KPI_VARIABLEN})]]></initialValueExpression>
+	</variable>
+	<variable name="VRepReklamationFehlerarten" class="java.lang.String">
+		<initialValueExpression><![CDATA[com.lp.server.kpi.service.HelperKpiReport.printFehlerarten($P{P_KPI_VARIABLEN})]]></initialValueExpression>
+	</variable>
+	<variable name="ABeingang" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("Auftragseingang")]]></variableExpression>
+	</variable>
+	<variable name="REausgang" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("RE_Ausgang")
+/*
+$P{P_KPI_VARIABLEN} == null
+? BigDecimal.TEN
+: (BigDecimal)$P{P_KPI_VARIABLEN}.get("RE_Ausgang") */
+/* (BigDecimal)$P{P_KPI_VARIABLEN}.get("RE_AusgangV") */]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="RABeingang" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("EingangRahmen")]]></variableExpression>
+	</variable>
+	<variable name="LosAblieferungWert" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("Losablieferung_Wert")]]></variableExpression>
+	</variable>
+	<variable name="LosAblieferungAzWert" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("AblieferstatistikAZWert")]]></variableExpression>
+	</variable>
+	<variable name="LosAblieferungArtikelPositionen" class="java.lang.Integer">
+		<variableExpression><![CDATA[(Integer)$P{P_KPI_VARIABLEN}.get("FertAblieferungArtikelpositionen")]]></variableExpression>
+	</variable>
+	<variable name="LosAblieferungGesamtMenge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("FertAblieferungGesamtMenge")]]></variableExpression>
+	</variable>
+	<variable name="ReklamationArbeitskosten" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("ReklamationArbeitGesamt")]]></variableExpression>
+	</variable>
+	<variable name="ReklamationMaterialkosten" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("ReklamationMaterialGesamt")]]></variableExpression>
+	</variable>
+	<variable name="ReklamationsAnzahl" class="java.lang.Integer">
+		<variableExpression><![CDATA[(Integer)$P{P_KPI_VARIABLEN}.get("ReklamationsanzahlGesamt")]]></variableExpression>
+	</variable>
+	<variable name="ArbeitszeitGesamtkosten" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("ArbeitszeitstatistikGesamtkosten")]]></variableExpression>
+	</variable>
+	<variable name="ArbeitszeitstatistikGesamtstunden" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("ArbeitszeitstatistikGesamtstunden")]]></variableExpression>
+	</variable>
+	<variable name="VRepRechnungOffene" class="java.lang.String">
+		<initialValueExpression><![CDATA[com.lp.server.kpi.service.HelperKpiReport.printRechnungOffene($P{P_KPI_VARIABLEN})]]></initialValueExpression>
+	</variable>
+	<variable name="VRepEingangsrechnungOffene" class="java.lang.String">
+		<initialValueExpression><![CDATA[com.lp.server.kpi.service.HelperKpiReport.printEingangsrechnungOffene($P{P_KPI_VARIABLEN})]]></initialValueExpression>
+	</variable>
+	<variable name="REOffene" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[(BigDecimal)$P{P_KPI_VARIABLEN}.get("RE_OFFEN_SUMME_WERT")]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<background>
+		<band height="802" splitType="Stretch">
+			<image scaleImage="RetainShape" hAlign="Right" vAlign="Top" isUsingCache="false">
+				<reportElement key="image-2" mode="Transparent" x="0" y="0" width="523" height="60" forecolor="#000000" backcolor="#FFFFFF" uuid="768295c7-bf98-4f04-86ad-fa641ec72de1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+				<imageExpression><![CDATA[new java.io.File($P{P_LOGO_IMAGE}).toURL()]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement mode="Opaque" x="-12" y="0" width="12" height="802" forecolor="#000000" backcolor="#CCCCCC" uuid="1e2eafe6-ff13-427b-ae69-58c6eebe2458"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[preliminary]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="523" y="0" width="12" height="802" forecolor="#000000" backcolor="#CCCCCC" uuid="b8464181-2298-44bf-8226-f0951748799d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[preliminary]]></text>
+			</staticText>
+			<textField hyperlinkType="Reference">
+				<reportElement x="0" y="790" width="523" height="12" uuid="636b67bd-b58c-4bfd-b084-984b84e73220"/>
+				<textElement textAlignment="Center" markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Copyright HELIUM V IT-Solutions GmbH, www.helium5.com"]]></textFieldExpression>
+				<hyperlinkReferenceExpression><![CDATA["www.helium5.com"]]></hyperlinkReferenceExpression>
+			</textField>
+		</band>
+	</background>
+	<title>
+		<band height="140" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="REPORT_INFORMATION" mode="Transparent" x="0" y="60" width="415" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c97aa214-7440-4af9-908a-dadd1db2eea0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="405" y="60" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9dbf19f9-03eb-4d87-89bb-45acc9f2e38a">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="508" y="60" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4153537b-0019-4585-ae80-7967fe70eec4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="482" y="100" width="41" height="20" uuid="f1e004c3-9f37-45ad-a2e2-edec48566b03">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{P_REPORT_DATENSAETZE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement isPrintRepeatedValues="false" x="0" y="124" width="338" height="11" uuid="2f5ec31f-c9ba-4fee-82d1-c023dc7a5a69">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[com.lp.server.kpi.service.HelperKpiReport.printAuftragAlle($P{P_KPI_VARIABLEN})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="100" width="340" height="15" uuid="a784cdf5-9ebb-4e12-b7e2-188edf708823"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Ausgewählte Reports liefern entsprechende Key Performance Indikatoren]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Überschrift" mode="Opaque" x="0" y="76" width="400" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="835bff35-b9c6-49ad-b12b-083f7689d1b0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="18" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[KPI Report]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<detail>
+		<band height="412" splitType="Stretch">
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="0" y="0" width="100" height="10" uuid="a079ecb7-ebf3-41dd-abbc-f28e6660916c"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_VON}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="117" y="0" width="100" height="10" uuid="e2cdb360-b161-4af4-a4d0-50b0c3201058"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BIS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="20" width="340" height="15" uuid="15c17d9d-3919-4b5b-8094-49c4ea52f9e8"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Auftragsdaten:]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="35" width="373" height="10" uuid="1d7b901d-de6d-4e5a-b25d-ff17edc02c89"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("AB_Filter") == null ?
+"Kein Auftragseingang im Zeitraum" :
+$P{P_KPI_VARIABLEN}.get("AB_Filter")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="35" width="150" height="10" uuid="860ca360-9d8b-4b0c-954d-0cb0a99a2b88"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Zeitraum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="87" width="340" height="15" uuid="ecf36a9a-4afd-491f-8b84-ad43d6179f03"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Rechnungsdaten:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="102" width="150" height="10" uuid="fe841c05-e780-4912-8a46-5cfe266d8b74"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Zeitraum]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="102" width="373" height="10" uuid="d1211879-1fd9-4099-be3a-446c544202c9"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("RE_Filter") == null ?
+"keine Ausgangsrechnungen im Zeitraum" :
+$P{P_KPI_VARIABLEN}.get("RE_Filter")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="45" width="100" height="10" uuid="3d981252-870b-40c4-b37b-3f31b7a332c9">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("Auftragseingang")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="45" width="150" height="10" uuid="1a1f36fc-60e6-4283-b076-22b7dee8d65e"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Auftragseingang freie Aufträge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="112" width="150" height="10" uuid="2d922704-9f16-4a58-9a2b-377de39e8fb4"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Rechnungs Ausgang]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="112" width="100" height="10" uuid="3baabec1-6dc4-4a7d-b9fe-38989853ff3d">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("RE_Ausgang")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="45" width="80" height="10" uuid="fdeae3c6-d877-4b6b-90f1-4f313c4c197e"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ABeingang}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="112" width="80" height="10" uuid="c5d981d8-fe31-421a-a5f0-685c91a8b79a"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{REausgang}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="55" width="100" height="10" uuid="db0cf093-c7e1-46c7-b8c4-71bc9d97a413">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("EingangRahmen")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="55" width="150" height="10" uuid="912d9714-433d-453c-9c15-cb9c1b94483d"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Auftragseingang Rahmenaufträge]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="55" width="80" height="10" uuid="58c9b2a5-7545-47fb-9fbf-0153335958a8"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{RABeingang}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="65" width="150" height="10" uuid="a5bac034-f66c-495a-bb2e-e7c011f06988"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Gesamt Auftragseingang]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="65" width="80" height="10" uuid="68c7bf4f-ca59-4161-973f-64f04ac2fd06"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ABeingang}.add($V{RABeingang})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="154" width="340" height="15" uuid="24ee2c45-f5cf-4714-922b-f7151394a85f"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Fertigung, Ablieferung:]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="179" width="100" height="10" uuid="bc68439d-5367-4471-a729-5f23d093142c">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("Losablieferung_Wert")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="179" width="150" height="10" uuid="14967d8d-3440-4a74-a4e1-d4883b46469e"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Wert:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="189" width="150" height="10" uuid="282a6b4f-8a5f-4d79-8d10-514a957e6f39"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[AZ-Wert:]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="189" width="100" height="10" uuid="00ff774b-8a06-420d-a714-cee71fff509e">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("AblieferstatistikAZWert")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="333" width="340" height="15" uuid="5b4f175e-b028-4317-8a99-7c8ff6c72c28"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Arbeitszeit:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="358" width="150" height="10" uuid="976ff27a-1bef-4bfb-8620-e35cff4f226c"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Gesamtstunden]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="358" width="100" height="10" uuid="3a733970-59a0-4f72-a5e2-872b5bba17d5">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("ArbeitszeitstatistikGesamtstunden")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="169" width="150" height="10" uuid="b8edb3ea-0f74-4c66-ac1e-019a89d02924"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Zeitraum]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="169" width="373" height="10" uuid="bddfb57e-890a-4c52-aa8b-127b1fec0844"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("LosAblieferung_Filter") == null ?
+"keine Ablieferung im Zeitraum" :
+$P{P_KPI_VARIABLEN}.get("LosAblieferung_Filter")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="179" width="80" height="10" uuid="7078775b-9fb7-472d-8361-14df6adf7ae0"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LosAblieferungWert}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="244" width="340" height="15" uuid="12586d4e-cf75-44c6-8532-0d2cbc3cc261"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Reklamation:]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="269" width="100" height="10" uuid="14a0b62c-ce17-492a-a1ca-9ecf28965107">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("ReklamationArbeitGesamt")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="269" width="150" height="10" uuid="33bf0bcf-7592-4f9f-8bba-313a40cc0fc1"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Arbeitskosten Gesamt:]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="279" width="100" height="10" uuid="8d2ea367-3506-45f3-b8df-6ffc9c71b7e4">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("MaterialGesamt")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="279" width="150" height="10" uuid="7738e7da-2b25-4976-b9b4-725f10a1d53e"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Materialkosten Gesamt:]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="189" width="80" height="10" uuid="050fede0-6bc1-4430-84ea-34121d458224"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LosAblieferungAzWert}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="368" width="80" height="10" uuid="88563acc-6713-4f00-8922-78d81a06b5ff"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ArbeitszeitGesamtkosten}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="199" width="150" height="10" uuid="3c78e668-61ec-451a-81e9-ffb1bcef3e26"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Gefertigte Baugruppen:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="209" width="150" height="10" uuid="9061ccfe-2b86-4353-ac39-ba86c4650fa1"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Anzahl unterschiedliche Baugruppen:]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="390" y="209" width="50" height="10" uuid="2e2431e4-c108-438a-b110-2b1c009bc52c"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LosAblieferungArtikelPositionen}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="390" y="199" width="50" height="10" uuid="01281262-5d34-4f1d-9d05-d426a70eeefe"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LosAblieferungGesamtMenge}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="259" width="150" height="10" uuid="b0083d07-3a37-4181-b056-8e9506e3bfdb"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Anzahl Reklamationen:]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="390" y="259" width="50" height="10" uuid="136f8408-d136-4052-ba58-1a67277a9475"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ReklamationsAnzahl}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="269" width="80" height="10" uuid="725c2251-dfd5-494a-b2d0-4fed6bb1dd8d"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ReklamationArbeitskosten}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="279" width="80" height="10" uuid="9d974458-4da4-4ea4-8af6-82b18c4a930b"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ReklamationMaterialkosten}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Ablieferungen Menge" mode="Transparent" x="140" y="301" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fc271927-97c2-4ab4-98af-70cb9e4b0805">
+					<printWhenExpression><![CDATA[$V{ReklamationsAnzahl}!=null &&
+$V{LosAblieferungGesamtMenge}!=null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[ppm]]></text>
+			</staticText>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement key="Ablieferungen Menge" mode="Transparent" x="105" y="301" width="35" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="39e50d8e-598a-49aa-9a02-1b67950f2039"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ReklamationsAnzahl}.doubleValue() * 1000000.00 /
+$V{LosAblieferungGesamtMenge}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Ablieferungen Menge" mode="Transparent" x="0" y="301" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3ebf1f7c-5831-4f10-9918-f3a838a1c14b">
+					<printWhenExpression><![CDATA[$V{ReklamationsAnzahl}!=null &&
+$V{LosAblieferungGesamtMenge}!=null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Fehler pro 1Mio Ablieferung]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="348" width="373" height="10" uuid="e5299b44-8272-4f9e-a610-7a4b1319e03e"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("Arbeitszeitstatistik_Filter") == null ?
+"Keine Arbeitszeiten im Zeitraum erfasst" :
+$P{P_KPI_VARIABLEN}.get("Arbeitszeitstatistik_Filter")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="348" width="150" height="10" uuid="cfd2a276-3f98-4c2a-81b4-ef72e403a128"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Zeitraum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="368" width="150" height="10" uuid="51f57604-ac74-48e7-93aa-c69111fddb78"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Gesamtkosten]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="368" width="100" height="10" uuid="9a9cd598-da0f-472b-8417-6c141c37c8b8">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.get("ArbeitszeitstatistikGesamtkosten")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="390" y="358" width="50" height="10" uuid="2ea11c3c-b654-4fee-9e99-da9b43b4dbbc"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ArbeitszeitstatistikGesamtstunden}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="440" y="358" width="20" height="10" uuid="fe58d75c-dc58-45b3-93e6-6f073b517f48">
+					<printWhenExpression><![CDATA[$V{ArbeitszeitstatistikGesamtstunden}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Std]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="440" y="259" width="20" height="10" uuid="c80fc362-137f-4391-8290-3b6238c54a6c">
+					<printWhenExpression><![CDATA[$V{ReklamationsAnzahl}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Rekla.]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
+				<reportElement x="150" y="259" width="240" height="10" uuid="5a902d47-f7c9-4734-b9b9-1a5777ab550f">
+					<printWhenExpression><![CDATA[$V{ReklamationsAnzahl}==null ||
+$V{ReklamationsAnzahl}.intValue() == 0]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["keine Reklamationen im Zeitraum"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="122" width="150" height="10" uuid="cda27898-98f0-4206-8631-8e16ce47085b"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Rechnung Offene]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight" pattern="#,##0.##¤;#,##0.##- ¤">
+				<reportElement x="150" y="122" width="100" height="10" backcolor="#99FF00" uuid="f48f595c-b2fd-4344-8f2a-e2a5a8bb5da4">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(java.math.BigDecimal) $P{P_KPI_VARIABLEN}.get("RE_OFFEN_SUMME_WERT")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="440" y="123" width="80" height="10" uuid="92afd99a-8f8c-4ba9-be6b-e8734c9255e9">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{REOffene}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="26" splitType="Stretch">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<textField>
+				<reportElement x="0" y="0" width="523" height="12" uuid="640317e4-325b-4f00-bfbf-7f4c28671b0a"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Summary"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="12" width="150" height="10" uuid="5d565db8-f8c2-4ef6-8ab5-f490487390f2"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Summe AB+RAB+REausgang (test)]]></text>
+			</staticText>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00">
+				<reportElement x="419" y="12" width="100" height="10" uuid="2bafbaa9-8c33-436b-a22b-8000aa84609f"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ABeingang}.add($V{RABeingang}).add($V{REausgang})]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

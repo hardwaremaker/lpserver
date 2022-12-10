@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pers_auftragszeitstatistik_kopf" columnCount="39" printOrder="Horizontal" pageWidth="670" pageHeight="842" columnWidth="17" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pers_auftragszeitstatistik_kopf" columnCount="39" printOrder="Horizontal" pageWidth="670" pageHeight="842" columnWidth="17" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="ba1be827-548f-4a77-b7e0-1f56b26754a3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -11,25 +11,34 @@
 	<parameter name="KOPFFLAG" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[Unterscheidung ob Überschrift oder Inhalt zu drucken]]></parameterDescription>
 	</parameter>
+	<parameter name="AnzahlAuftraege" class="java.lang.Integer"/>
 	<field name="Beleg" class="java.lang.String"/>
 	<field name="Projekt" class="java.lang.String"/>
 	<field name="Kunde" class="java.lang.String"/>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
-	<title>
-		<band splitType="Stretch"/>
-	</title>
-	<pageHeader>
-		<band splitType="Stretch"/>
-	</pageHeader>
-	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
+	<variable name="DatensatzNr" class="java.lang.Integer">
+		<variableExpression><![CDATA[$V{DatensatzNr}.intValue()+1]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(-1)]]></initialValueExpression>
+	</variable>
+	<variable name="Zebra_Lieferant" class="java.lang.Integer">
+		<variableExpression><![CDATA[new Integer($V{DatensatzNr}.intValue() / 39).intValue()]]></variableExpression>
+	</variable>
+	<variable name="Datensaetze" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{Beleg}]]></variableExpression>
+		<initialValueExpression><![CDATA[""]]></initialValueExpression>
+	</variable>
 	<detail>
-		<band height="97" splitType="Stretch">
+		<band height="48" splitType="Stretch">
+			<printWhenExpression><![CDATA[$P{AnzahlAuftraege}.intValue()>78]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="Zebra-Lieferant" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="16" height="48" forecolor="#D8EFF6" backcolor="#D8EFF6" uuid="78480b63-45ef-4725-a5b0-77bebdba1d02">
+					<printWhenExpression><![CDATA[!((new Integer($V{Zebra_Lieferant}.intValue() / 2).intValue() * 2) == $V{Zebra_Lieferant}.intValue())]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Beleg + Kunde" x="0" y="0" width="8" height="97"/>
+				<reportElement key="Beleg + Kunde" x="0" y="0" width="8" height="48" uuid="8fa50b52-6872-440f-adf3-5e803a6b55b4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -39,10 +48,10 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
 					<font fontName="Arial" size="6"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Beleg}+"  "+$F{Kunde}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Beleg} /* +"  "+$F{Kunde} */]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Projekt" x="8" y="0" width="8" height="97"/>
+				<reportElement key="Projekt" x="8" y="0" width="8" height="48" uuid="2cf30d33-e71b-4d18-b8b5-4521711599b4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -52,23 +61,58 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
 					<font fontName="Arial" size="6"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Projekt}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Kunde}
+/* $F{Projekt} */]]></textFieldExpression>
 			</textField>
 			<line direction="BottomUp">
-				<reportElement x="17" y="0" width="1" height="97"/>
+				<reportElement x="16" y="0" width="1" height="48" uuid="942bfe4d-d8db-41a1-b08f-ab51488706de"/>
+				<graphicElement>
+					<pen lineWidth="0.25"/>
+				</graphicElement>
+			</line>
+		</band>
+		<band height="98">
+			<printWhenExpression><![CDATA[$P{AnzahlAuftraege}.intValue()<=78]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="Zebra-Lieferant" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="16" height="98" forecolor="#D8EFF6" backcolor="#D8EFF6" uuid="52018a9f-1ff7-4c26-a0b8-509f7f9505ab">
+					<printWhenExpression><![CDATA[!((new Integer($V{Zebra_Lieferant}.intValue() / 2).intValue() * 2) == $V{Zebra_Lieferant}.intValue())]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement key="Beleg + Kunde" x="0" y="0" width="8" height="98" uuid="ad623c4d-9b66-4843-b6df-0036a783e137"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Beleg}+"  "+$F{Kunde}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="Projekt" x="8" y="0" width="8" height="98" uuid="e783cc71-4288-40f2-b577-b58b33ec8678"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Projekt}]]></textFieldExpression>
+			</textField>
+			<line direction="BottomUp">
+				<reportElement x="16" y="0" width="1" height="98" uuid="2fe76f4c-3e29-40ac-9cd0-8f90ba98fef6"/>
 				<graphicElement>
 					<pen lineWidth="0.25"/>
 				</graphicElement>
 			</line>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
-	<pageFooter>
-		<band splitType="Stretch"/>
-	</pageFooter>
-	<summary>
-		<band splitType="Stretch"/>
-	</summary>
 </jasperReport>

@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	<xsl:preserve-space elements="*"/>
 	<xsl:output method="text" encoding="UTF-8"/>
-	<xsl:template match="fb_export_datev-csv">
+	<xsl:template match="mail">
 		<xsl:apply-templates select="umsatz"/>
 		<xsl:apply-templates select="bu-schluessel"/>
 		<xsl:apply-templates select="gegenkonto"/>
@@ -22,8 +22,15 @@
 		<xsl:apply-templates select="basiswaehrungskennung"/>
 		<xsl:apply-templates select="kurs"/>
 		<xsl:apply-templates select="extrechnung"/>
+		<xsl:apply-templates select="faelligkeit"/>
+		<xsl:apply-templates select="partnerkbz"/>
+<!--		
+		<xsl:apply-templates select="auftragsnummer"/>
+		<xsl:apply-templates select="buchungstyp"/>
+		<xsl:apply-templates select="bestellnummer"/>
+-->
 	</xsl:template>
-	<xsl:template match="umsatz | bu-schluessel | gegenkonto | belegfeld2 | datum | konto | kostfeld1 | kostfeld2 | kostmenge | skonto | buchungstext | ustid | eu-steuersatz | waehrungskennung | basiswaehrungsbetrag | basiswaehrungskennung | kurs | extrechnung">
+	<xsl:template match="umsatz | bu-schluessel | gegenkonto | belegfeld2 | datum | konto | kostfeld1 | kostfeld2 | kostmenge | skonto | buchungstext | ustid | eu-steuersatz | waehrungskennung | basiswaehrungsbetrag | basiswaehrungskennung | kurs | extrechnung | faelligkeit">
 		<xsl:value-of select="."/>;</xsl:template>
 	<xsl:template match="belegfeld1">
  		<xsl:choose>

@@ -2,12 +2,20 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_ergebnisuebersicht" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="84ab36db-1992-495d-9b1e-2f567838b407">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Überschrift">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[!$F{F_BEZEICHNUNG}.startsWith(" ") &&
+!($F{F_TYP}.intValue()==1) &&
+!($F{F_TYP}.intValue()==2)]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#E6E6E6" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
 	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
 		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
 	</parameter>
@@ -24,7 +32,9 @@
 		<parameterDescription><![CDATA[Geschaeftsjahr]]></parameterDescription>
 	</parameter>
 	<parameter name="P_PERIODE" class="java.lang.Integer"/>
-	<parameter name="P_PERIODE_KALENDERDATUM" class="java.util.Date"/>
+	<parameter name="P_PERIODE_KALENDERDATUM" class="java.util.Date">
+		<parameterDescription><![CDATA[Das ist das Beginndatum des Geschäftsjahres]]></parameterDescription>
+	</parameter>
 	<parameter name="P_100PROZ_PERIODE" class="java.math.BigDecimal" isForPrompting="false">
 		<parameterDescription><![CDATA[Bezugswert für 100% in der Periode]]></parameterDescription>
 	</parameter>
@@ -40,6 +50,22 @@
 	<parameter name="P_TYP" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="P_DETAIL" class="java.lang.Boolean" isForPrompting="false"/>
 	<parameter name="P_BILANZSTICHTAG" class="java.util.Date"/>
+	<parameter name="P_NICHT_ZUGEORDNET" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_NICHT_ZUGEORDNETDETAIL" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_JAHRESGEWINN_PERIODE" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="P_KONTO_I_ID_GEWINNVORTRAG" class="java.lang.Integer" isForPrompting="false">
+		<parameterDescription><![CDATA[Buchungsparameter Konto IID Gewinnvortrag]]></parameterDescription>
+	</parameter>
+	<parameter name="P_KONTO_I_ID_JAHRESGEWINN" class="java.lang.Integer" isForPrompting="false">
+		<parameterDescription><![CDATA[Buchungsparameter Konto IID Jahresgewinn]]></parameterDescription>
+	</parameter>
+	<parameter name="P_KONTO_C_NR_GEWINNVORTRAG" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KONTO_C_BEZ_GEWINNVORTRAG" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KONTO_C_NR_JAHRESGEWINN" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KONTO_C_BEZ_JAHRESGEWINN" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_LOGO_IMAGE" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Logo]]></parameterDescription>
+	</parameter>
 	<field name="F_BEZEICHNUNG" class="java.lang.String">
 		<fieldDescription><![CDATA[Text]]></fieldDescription>
 	</field>
@@ -63,8 +89,17 @@
 	</field>
 	<field name="F_KONTO_CNR" class="java.lang.String"/>
 	<field name="F_KONTO_BEZEICHNUNG" class="java.lang.String"/>
+	<field name="F_JAHRESGEWINN" class="java.lang.Boolean">
+		<fieldDescription><![CDATA['true' wenn Zeile ist Jahresgewinn]]></fieldDescription>
+	</field>
 	<variable name="IS_ERGEBNISGRUPPE" class="java.lang.Boolean">
 		<variableExpression><![CDATA[$F{F_TYP}.intValue()==0 || $F{F_TYP}.intValue()==4 || $F{F_TYP}.intValue() == 5]]></variableExpression>
+	</variable>
+	<variable name="GF_BeginnMonat" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[(new SimpleDateFormat("MMMM", $P{REPORT_LOCALE})).format(
+com.lp.util.Helper.addiereTageZuDatum(
+com.lp.util.HelperReport.getLetztenTagDesMonats($P{P_BILANZSTICHTAG}, $P{P_PERIODE}.intValue()*-1) , 1)
+)]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -88,7 +123,7 @@
 				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Transparent" x="660" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b89a0762-682f-4fb5-80d9-a106eead430b"/>
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="560" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b89a0762-682f-4fb5-80d9-a106eead430b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -101,7 +136,7 @@
 				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="760" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f4c6e463-8475-46c5-b841-bab1a56f2520"/>
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="660" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f4c6e463-8475-46c5-b841-bab1a56f2520"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -121,7 +156,7 @@
 				<textFieldExpression><![CDATA[$P{P_TYP}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Geschäftsjahr" mode="Opaque" x="680" y="15" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7b61e362-5c6b-46ff-9514-1360e22550e6"/>
+				<reportElement key="Geschäftsjahr" mode="Opaque" x="580" y="15" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7b61e362-5c6b-46ff-9514-1360e22550e6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -134,7 +169,7 @@
 				<text><![CDATA[Geschäftsjahr:]]></text>
 			</staticText>
 			<textField pattern="####" isBlankWhenNull="false">
-				<reportElement key="P_GESCHAEFTSJAHR" mode="Opaque" x="750" y="15" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="0364a8f4-bb9f-4eea-9b78-c7ee7f3f95d5"/>
+				<reportElement key="P_GESCHAEFTSJAHR" mode="Opaque" x="650" y="15" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="0364a8f4-bb9f-4eea-9b78-c7ee7f3f95d5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -147,7 +182,7 @@
 				<textFieldExpression><![CDATA[$P{P_GESCHAEFTSJAHR}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Periode" mode="Opaque" x="680" y="27" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="99e76561-e6eb-4cf0-8667-5ee3746e1066"/>
+				<reportElement key="Periode" mode="Opaque" x="580" y="27" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="99e76561-e6eb-4cf0-8667-5ee3746e1066"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -160,14 +195,14 @@
 				<text><![CDATA[Periode:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="750" y="27" width="30" height="12" uuid="14117811-a430-40aa-b5b1-d0285bcb4a77"/>
+				<reportElement x="650" y="27" width="30" height="12" uuid="14117811-a430-40aa-b5b1-d0285bcb4a77"/>
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_PERIODE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="Beträge in P_WAEHRUNG" mode="Opaque" x="680" y="39" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7341b08d-f27d-4238-87c5-afe706446eba"/>
+				<reportElement key="Beträge in P_WAEHRUNG" mode="Opaque" x="580" y="39" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7341b08d-f27d-4238-87c5-afe706446eba"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -180,7 +215,7 @@
 				<textFieldExpression><![CDATA["Beträge in:"]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="Beträge in P_WAEHRUNG" mode="Opaque" x="750" y="39" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="3f64d02e-d921-436d-87ab-83c234771773"/>
+				<reportElement key="Beträge in P_WAEHRUNG" mode="Opaque" x="650" y="39" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="3f64d02e-d921-436d-87ab-83c234771773"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -193,7 +228,7 @@
 				<textFieldExpression><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Bezeichnung" mode="Opaque" x="0" y="66" width="190" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="38dad241-3e31-4e01-962b-8dde600b41bf"/>
+				<reportElement key="Bezeichnung" mode="Opaque" x="0" y="66" width="112" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="38dad241-3e31-4e01-962b-8dde600b41bf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,14 +245,20 @@
 				<textElement textAlignment="Center">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_PERIODE}.intValue() == $P{P_PERIODE_KALENDERDATUM}.getMonth()+1 ?
+$P{P_PERIODE_KALENDERDATUM} : /* 2021-12-02wh wenn das GF Jahr abweichend ist, dann das GF andrucken */
+"GF: "+$P{P_GESCHAEFTSJAHR}.toString()]]></textFieldExpression>
 			</textField>
 			<textField pattern="MMMMM">
-				<reportElement key="Monat lfd" x="200" y="66" width="70" height="12" uuid="838f0104-15ea-46e7-9839-7a35c9237a2a"/>
+				<reportElement key="Monat lfd" x="93" y="66" width="177" height="12" uuid="838f0104-15ea-46e7-9839-7a35c9237a2a"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_PERIODE}.intValue() == $P{P_PERIODE_KALENDERDATUM}.getMonth()+1 ?
+$P{P_PERIODE_KALENDERDATUM} : /* 2021-12-02wh wenn das GF Jahr abweichend ist, dann das GF andrucken */
+(new SimpleDateFormat("MMMMM yyyy", Locale.GERMAN)).format($P{P_PERIODE_KALENDERDATUM})
+
+/* auf das leine yyyy achten. Das YYYY liefert das Jahr der Woche des Datums */]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="Anteil lfd" mode="Opaque" x="270" y="66" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="fa18258e-38d0-4ff6-92c3-2ea166de3f05"/>
@@ -259,28 +300,34 @@
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="421" y="53" width="79" height="26" forecolor="#FF0000" uuid="8da51df8-0806-4c1b-95fc-307ef08a7c47">
+				<reportElement x="421" y="43" width="54" height="36" forecolor="#FF0000" uuid="8da51df8-0806-4c1b-95fc-307ef08a7c47">
 					<printWhenExpression><![CDATA[$P{P_100PROZ_KUMMULIERT} == null && $P{P_TYP}.startsWith("Erfolgsrechnung")]]></printWhenExpression>
 				</reportElement>
-				<textElement textAlignment="Center" markup="none"/>
+				<textElement textAlignment="Center" markup="none">
+					<font fontName="Arial"/>
+				</textElement>
 				<text><![CDATA[100% Basis nicht definiert]]></text>
 			</staticText>
 			<textField>
-				<reportElement key="Vorjahr" mode="Opaque" x="500" y="53" width="210" height="12" forecolor="#000000" backcolor="#CCCCCC" uuid="efe3808c-3951-4f81-bb79-788006496144"/>
+				<reportElement key="Vorjahr" mode="Opaque" x="475" y="53" width="210" height="12" forecolor="#000000" backcolor="#CCCCCC" uuid="efe3808c-3951-4f81-bb79-788006496144"/>
 				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Vorjahr ("+($P{P_PERIODE_KALENDERDATUM}.getYear()-1+1900)+")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_PERIODE}.intValue() == $P{P_PERIODE_KALENDERDATUM}.getMonth()+1 ?
+"Vorjahr ("+($P{P_PERIODE_KALENDERDATUM}.getYear()-1+1900)+")" : /* 2021-12-02wh wenn das GF Jahr abweichend ist, dann das GF andrucken */
+"Vorjahr GF: "+((Integer)($P{P_GESCHAEFTSJAHR}.intValue()-1)).toString()]]></textFieldExpression>
 			</textField>
 			<textField pattern="MMMMM">
-				<reportElement key="Monat_Vorjahr" x="500" y="66" width="70" height="12" uuid="8778873f-ea25-4196-bb2f-0196f4e08a1f"/>
+				<reportElement key="Monat_Vorjahr" x="421" y="66" width="124" height="12" uuid="8778873f-ea25-4196-bb2f-0196f4e08a1f"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{P_PERIODE_KALENDERDATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_PERIODE}.intValue() == $P{P_PERIODE_KALENDERDATUM}.getMonth()+1 ?
+$P{P_PERIODE_KALENDERDATUM} : /* 2021-12-02wh wenn das GF Jahr abweichend ist, dann das GF andrucken */
+(new SimpleDateFormat("MMMMM yyyy", Locale.GERMAN)).format(com.lp.util.HelperReport.getLetztenTagDesMonats($P{P_PERIODE_KALENDERDATUM},-12))]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Anteil Vorjahr lfd" mode="Opaque" x="570" y="66" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a40070d6-3aa2-4bf3-bf48-2ca5c3a7c842"/>
+				<reportElement key="Anteil Vorjahr lfd" mode="Opaque" x="545" y="66" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a40070d6-3aa2-4bf3-bf48-2ca5c3a7c842"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -293,7 +340,7 @@
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="kumuliert Vorjahr" mode="Opaque" x="610" y="66" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="aa2741e8-4042-4835-a542-d94a55d3b8a6"/>
+				<reportElement key="kumuliert Vorjahr" mode="Opaque" x="585" y="66" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="aa2741e8-4042-4835-a542-d94a55d3b8a6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -306,7 +353,7 @@
 				<text><![CDATA[kumuliert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Anteil Vorjahr kumuliert" mode="Opaque" x="680" y="66" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="230f0db9-96a6-4cc2-b81b-8cdd377680d9"/>
+				<reportElement key="Anteil Vorjahr kumuliert" mode="Opaque" x="655" y="66" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="230f0db9-96a6-4cc2-b81b-8cdd377680d9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -324,12 +371,59 @@
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
+			<staticText>
+				<reportElement key="kum_delta" mode="Opaque" x="685" y="66" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="aa4415a2-d18f-42d5-a35e-7b0b27db50e7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[kum.Abw.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Anteil Vorjahr kumuliert" mode="Opaque" x="755" y="66" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="d15fd86f-5870-497b-8457-9170d7ab3df1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<image scaleImage="RetainShape" hAlign="Right" vAlign="Top" isUsingCache="false">
+				<reportElement key="image-2" mode="Transparent" x="685" y="0" width="95" height="54" forecolor="#000000" backcolor="#FFFFFF" uuid="02605119-7ebd-4589-976e-f9cd5222f2a3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+				<imageExpression><![CDATA[new java.io.File($P{P_LOGO_IMAGE}).toURL()]]></imageExpression>
+			</image>
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="11" splitType="Stretch">
 			<printWhenExpression><![CDATA[!($F{F_BEZEICHNUNG}==null &&
 ($F{F_TYP}.intValue() == 0 || $F{F_TYP}.intValue() == 4 || $F{F_TYP}.intValue() == 5))]]></printWhenExpression>
+			<rectangle>
+				<reportElement mode="Opaque" x="0" y="0" width="782" height="11" forecolor="#CCCCCC" backcolor="#CCCCCC" uuid="0d42b97b-04bd-4c2e-bf44-abc7b2cb4bf2">
+					<printWhenExpression><![CDATA[false &&
+!$F{F_BEZEICHNUNG}.startsWith(" ") &&
+!($F{F_TYP}.intValue()==1) &&
+!($F{F_TYP}.intValue()==2)]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
 			<textField>
 				<reportElement key="Leerzeile" positionType="Float" x="0" y="0" width="100" height="11" uuid="6065b260-efb6-434a-8b85-3a62eb36c8f9">
 					<printWhenExpression><![CDATA[$F{F_TYP}.intValue()==1]]></printWhenExpression>
@@ -344,8 +438,31 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
-				<reportElement key="F_BEZEICHNUNG" mode="Transparent" x="0" y="0" width="190" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="1dd718a8-4c1e-468f-bc8e-ddce0a423d11">
-					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE}]]></printWhenExpression>
+				<reportElement key="F_BEZEICHNUNG_Überschrift" mode="Transparent" x="0" y="0" width="190" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b6696e96-bace-4f5f-be03-2997da48fba1">
+					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE} &&
+$F{F_BEZEICHNUNG}.contains("~") &&
+!($F{F_TYP}.intValue()==1) &&
+!($F{F_TYP}.intValue()==2)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="9" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BEZEICHNUNG}.replace("~","")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="F_BEZEICHNUNG" mode="Transparent" x="0" y="0" width="190" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="5ee635a6-bf98-4d34-9b8e-db58e257077a">
+					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE} &&
+!(
+  $F{F_BEZEICHNUNG}.contains("~") &&
+  !($F{F_TYP}.intValue()==1) &&
+  !($F{F_TYP}.intValue()==2)
+)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -356,7 +473,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{F_BEZEICHNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_BEZEICHNUNG}.replace("~","")]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="true">
 				<reportElement key="F_SALDO_MONAT" mode="Transparent" x="200" y="0" width="70" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="cd9211f2-444a-4809-b2d9-7067c494c67c">
@@ -431,7 +548,7 @@ $F{F_SALDO_KUMMULIERT}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpress
 : null]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="true">
-				<reportElement key="F_SALDO_MONAT_VORJAHR" mode="Transparent" x="500" y="0" width="70" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="5598bcc2-4f0c-4562-bcb3-931161abfdd5">
+				<reportElement key="F_SALDO_MONAT_VORJAHR" mode="Transparent" x="475" y="0" width="70" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="5598bcc2-4f0c-4562-bcb3-931161abfdd5">
 					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE} &&
 $F{F_SALDO_MONAT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				</reportElement>
@@ -447,7 +564,7 @@ $F{F_SALDO_MONAT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpr
 				<textFieldExpression><![CDATA[$F{F_SALDO_MONAT_VORJAHR}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
-				<reportElement key="Anteil lfd" mode="Transparent" x="570" y="0" width="30" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="405bceb3-df51-4d28-a1d5-1a001b4c141d">
+				<reportElement key="Anteil lfd" mode="Transparent" x="545" y="0" width="30" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="405bceb3-df51-4d28-a1d5-1a001b4c141d">
 					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -467,7 +584,7 @@ $F{F_SALDO_MONAT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpr
 : null]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="true">
-				<reportElement key="F_SALDO_KUMMULIERT_VORJAHR" mode="Transparent" x="610" y="0" width="70" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="2df2507c-b156-401d-b3f5-2e415b0054ec">
+				<reportElement key="F_SALDO_KUMMULIERT_VORJAHR" mode="Transparent" x="585" y="0" width="70" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="2df2507c-b156-401d-b3f5-2e415b0054ec">
 					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE} &&
 $F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				</reportElement>
@@ -483,7 +600,7 @@ $F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhe
 				<textFieldExpression><![CDATA[$F{F_SALDO_KUMMULIERT_VORJAHR}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
-				<reportElement key="Anteil kummuliert lfd" mode="Transparent" x="680" y="0" width="30" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="469236e4-8f3f-4309-a90f-762c3b1c0939">
+				<reportElement key="Anteil kummuliert lfd" mode="Transparent" x="655" y="0" width="30" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="469236e4-8f3f-4309-a90f-762c3b1c0939">
 					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -515,6 +632,62 @@ $F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhe
 					<printWhenExpression><![CDATA[$F{F_TYP}.intValue()==3]]></printWhenExpression>
 				</reportElement>
 			</break>
+			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="true">
+				<reportElement key="F_SALDO_KUMMULIERT_VORJAHR" mode="Transparent" x="685" y="0" width="70" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e7154de9-b7f0-44e2-95a3-c80c94f97c3c">
+					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE} &&
+$F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0 &&
+$F{F_SALDO_KUMMULIERT}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_SALDO_KUMMULIERT}.subtract(
+$F{F_SALDO_KUMMULIERT_VORJAHR})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
+				<reportElement key="Anteil kummuliert lfd" mode="Transparent" x="755" y="0" width="25" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="adfb9a78-fe28-41eb-8f3e-abc484c74f72">
+					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE} &&
+$F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0 &&
+$F{F_SALDO_KUMMULIERT}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{F_SALDO_KUMMULIERT_VORJAHR} != null &&
+ $F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0 &&
+ $F{F_SALDO_KUMMULIERT} != null &&
+ $F{F_SALDO_KUMMULIERT}.compareTo(new BigDecimal(0.00)) != 0) ?
+(($F{F_SALDO_KUMMULIERT}.subtract($F{F_SALDO_KUMMULIERT_VORJAHR}))
+.divide($F{F_SALDO_KUMMULIERT_VORJAHR},RoundingMode.HALF_EVEN))
+: null]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="true">
+				<reportElement key="F_SALDO_MONAT" mode="Opaque" x="415" y="0" width="55" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFCF98" uuid="e923e0e6-4b05-4fc7-94dc-58f3994a4c31">
+					<printWhenExpression><![CDATA[$F{F_JAHRESGEWINN}!=null && $F{F_JAHRESGEWINN}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["-> "+$P{P_KONTO_C_NR_JAHRESGEWINN}]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="9">
 			<printWhenExpression><![CDATA[$F{F_BEZEICHNUNG}==null &&
@@ -524,16 +697,16 @@ $F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhe
   $F{F_SALDO_MONAT_VORJAHR}.compareTo( new BigDecimal (0.00)) == 0 &&
   $F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo( new BigDecimal (0.00)) == 0)]]></printWhenExpression>
 			<textField isBlankWhenNull="true">
-				<reportElement key="F_KONTO_CNR" x="40" y="0" width="38" height="9" uuid="98e5c812-b739-4b50-956e-9b3b67a37449"/>
+				<reportElement key="F_KONTO_CNR" x="20" y="0" width="38" height="9" uuid="98e5c812-b739-4b50-956e-9b3b67a37449"/>
 				<textElement>
-					<font size="7" isItalic="true"/>
+					<font fontName="Arial" size="7" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_KONTO_CNR}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement key="F_KONTO_BEZEICHNUNG" x="93" y="0" width="115" height="9" uuid="fb73b881-66ab-4e06-9488-b7c31e3bdefe"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="F_KONTO_BEZEICHNUNG" x="58" y="0" width="172" height="9" uuid="fb73b881-66ab-4e06-9488-b7c31e3bdefe"/>
 				<textElement>
-					<font size="7" isItalic="true"/>
+					<font fontName="Arial" size="7" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_KONTO_BEZEICHNUNG}]]></textFieldExpression>
 			</textField>
@@ -570,7 +743,7 @@ $F{F_SALDO_KUMMULIERT}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpress
 				<textFieldExpression><![CDATA[$F{F_SALDO_KUMMULIERT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="true">
-				<reportElement key="F_SALDO_MONAT_VORJAHR" mode="Transparent" x="530" y="0" width="70" height="9" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="4147f67c-c1ad-4000-8cec-975c9091e1d5">
+				<reportElement key="F_SALDO_MONAT_VORJAHR" mode="Transparent" x="505" y="0" width="70" height="9" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="4147f67c-c1ad-4000-8cec-975c9091e1d5">
 					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE} &&
 $F{F_SALDO_MONAT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				</reportElement>
@@ -586,7 +759,7 @@ $F{F_SALDO_MONAT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpr
 				<textFieldExpression><![CDATA[$F{F_SALDO_MONAT_VORJAHR}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="true">
-				<reportElement key="F_SALDO_KUMMULIERT_VORJAHR" mode="Transparent" x="640" y="0" width="70" height="9" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="2eb40df0-de88-408e-86c1-13481a3e113a">
+				<reportElement key="F_SALDO_KUMMULIERT_VORJAHR" mode="Transparent" x="615" y="0" width="70" height="9" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="2eb40df0-de88-408e-86c1-13481a3e113a">
 					<printWhenExpression><![CDATA[$V{IS_ERGEBNISGRUPPE} &&
 $F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				</reportElement>
@@ -607,6 +780,52 @@ $F{F_SALDO_KUMMULIERT_VORJAHR}.compareTo(new BigDecimal(0.00)) != 0]]></printWhe
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="41" splitType="Stretch">
+			<printWhenExpression><![CDATA[$P{P_DETAIL} &&
+($P{P_NICHT_ZUGEORDNET}.length()!=0)]]></printWhenExpression>
+			<staticText>
+				<reportElement key="Nicht zugeordnete Konten:" mode="Opaque" x="0" y="10" width="400" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9da8f3d9-be11-4dab-af30-e949683b9519"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="true" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Konten mit Umsätzen im Zeitraum, die weder einer Ergebnisgruppe noch einer Bilanzgruppe zugeordnet sind:]]></text>
+			</staticText>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="20" width="780" height="10" uuid="dc678144-b163-411d-85da-5eeb48274f80"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_NICHT_ZUGEORDNET}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="30" width="782" height="10" uuid="ad92ac13-94f4-414d-873c-f3b1cb1bd7e6"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_NICHT_ZUGEORDNETDETAIL}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00##;-#,##0.00##" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement key="F_SALDO_MONAT" mode="Opaque" x="490" y="9" width="295" height="11" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFCF98" uuid="c7decfe6-642f-48e7-a437-5480ccfc34f0">
+					<printWhenExpression><![CDATA[$P{P_KONTO_C_NR_JAHRESGEWINN}!=null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Der Gewinn des aktuellen Monates wird bei Druck der Erfolgsrechnung verbucht."]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA["Beachten Sie, dass nur der Gewinn des aktuellen Monates verbucht wird. D.h. für eine lückenlose Darstellung muss die Erfolgsrechnung für jedes Monat errechnet UND ausgedruckt werden. Definition der Konten siehe Finanzamt, Buchungsparameter"]]></hyperlinkTooltipExpression>
+			</textField>
+		</band>
 	</summary>
 </jasperReport>

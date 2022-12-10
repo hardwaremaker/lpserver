@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fert_fehlmengen_allerlose" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="793" leftMargin="30" rightMargin="19" topMargin="20" bottomMargin="20" uuid="2a2c9b66-0672-46e0-936a-58995d52bd07">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fert_fehlmengen_allerlose" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="803" leftMargin="20" rightMargin="19" topMargin="42" bottomMargin="20" uuid="2a2c9b66-0672-46e0-936a-58995d52bd07">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="65"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Dringend">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_DRINGEND}]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#FF8B00" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[!$F{F_DRINGEND} &&
+new Boolean($V{Artikel_Zebra}.intValue() % 2 == 0)]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#EEEEEE" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
 	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
 		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
 	</parameter>
@@ -23,14 +34,14 @@
 	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
 		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
 	</parameter>
-	<parameter name="P_SORTIERTNACHARTIKELNUMMER" class="java.lang.Boolean" isForPrompting="false">
-		<parameterDescription><![CDATA[1 ... Sortiert nach Artikelnummer]]></parameterDescription>
-	</parameter>
 	<parameter name="P_ALLEOHNEEIGENGEFERTIGTEARTIKEL" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[0 ... mit eigengefertigte Artikel
 1 ... ohne eigengefertigte Artikel]]></parameterDescription>
 	</parameter>
-	<parameter name="P_NUREIGENGEFERTIGTEARTIKEL" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_OHNEBESTELLTEARTIKEL" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_NUR_DRINGENDE" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_OPTION_STUECKLISTE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_FERTIGUNGSGRUPPE" class="java.lang.String" isForPrompting="false"/>
 	<field name="F_BELEGNUMMER" class="java.lang.String">
 		<fieldDescription><![CDATA[Belegnummer]]></fieldDescription>
 	</field>
@@ -47,7 +58,7 @@
 		<fieldDescription><![CDATA[Stueckliste-Bezeichnung]]></fieldDescription>
 	</field>
 	<field name="F_TERMIN" class="java.util.Date">
-		<fieldDescription><![CDATA[Termin]]></fieldDescription>
+		<fieldDescription><![CDATA[Termin der Bestellung]]></fieldDescription>
 	</field>
 	<field name="F_PROJEKT" class="java.lang.String">
 		<fieldDescription><![CDATA[Projektbezeichnung]]></fieldDescription>
@@ -90,6 +101,11 @@
 	<field name="F_PRODUKTIONSENDE" class="java.util.Date"/>
 	<field name="F_ARTIKELSPERREN" class="java.lang.String"/>
 	<field name="F_POENALE_AUS_AUFTRAG" class="java.lang.Boolean"/>
+	<field name="F_DRINGEND" class="java.lang.Boolean"/>
+	<field name="F_STUECKLISTEREFERENZNUMMER" class="java.lang.String"/>
+	<field name="F_ARTIKELREFERENZNUMMER" class="java.lang.String"/>
+	<field name="ArtikelAnzahlAngeboten" class="java.lang.Long"/>
+	<field name="ArtikelAnzahlAngefragt" class="java.lang.Long"/>
 	<variable name="V_SUMMEFEHLMENGEN" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_FEHLMENGE}]]></variableExpression>
 	</variable>
@@ -129,7 +145,7 @@
 				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Transparent" x="673" y="0" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="88e135c8-4738-4b67-9507-5d4bccc8afaa"/>
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="683" y="0" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="88e135c8-4738-4b67-9507-5d4bccc8afaa"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -143,7 +159,7 @@
 				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Transparent" x="773" y="0" width="20" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="5aec0439-30b4-45a3-9004-4a3ab586a3a0"/>
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="783" y="0" width="20" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="5aec0439-30b4-45a3-9004-4a3ab586a3a0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -157,7 +173,7 @@
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Fehlmengen" mode="Transparent" x="0" y="12" width="780" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="95f4e138-2903-4608-b6d9-c0fbf72df5dd"/>
+				<reportElement key="Fehlmengen" mode="Transparent" x="0" y="12" width="210" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="95f4e138-2903-4608-b6d9-c0fbf72df5dd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -171,7 +187,7 @@
 				<text><![CDATA[Fehlmengen aller Lose]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="P_SORTIERUNG" mode="Transparent" x="0" y="36" width="780" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="01edbb8b-3737-4ec1-8453-6856ca98b403"/>
+				<reportElement key="P_SORTIERUNG" mode="Transparent" x="230" y="20" width="532" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="01edbb8b-3737-4ec1-8453-6856ca98b403"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -182,10 +198,12 @@
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{P_SORTIERUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Sortiert nach: "+$P{P_SORTIERUNG}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="P_FILTER" mode="Transparent" x="0" y="48" width="780" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="5f4142b2-d67a-418b-9489-f55de1d2ec43"/>
+				<reportElement key="P_FILTER" mode="Transparent" x="0" y="38" width="780" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="5f4142b2-d67a-418b-9489-f55de1d2ec43">
+					<printWhenExpression><![CDATA[$P{P_FILTER}!=null]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -196,10 +214,10 @@
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{P_FILTER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Nur für die Artikel folgender Lose: "+$P{P_FILTER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Ohne eigengefertigte Stücklisten" mode="Transparent" x="0" y="60" width="175" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="c7747869-e387-4942-adb3-958d5a96d149">
+				<reportElement key="Ohne eigengefertigte Stücklisten" mode="Transparent" x="0" y="50" width="180" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="c7747869-e387-4942-adb3-958d5a96d149">
 					<printWhenExpression><![CDATA[$P{P_ALLEOHNEEIGENGEFERTIGTEARTIKEL}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -213,6 +231,52 @@
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Alle, ausser eigengefertigte Stücklisten"]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Nur eigengefertigte Stücklisten" mode="Transparent" x="180" y="50" width="150" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="df13bf31-1b94-4fa3-9123-11d8d21c18c3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_OPTION_STUECKLISTE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Ohne bestellte Artikel" mode="Transparent" x="330" y="50" width="170" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e0f70b81-5ee2-4e11-a0b6-2dd2983bf5d3">
+					<printWhenExpression><![CDATA[$P{P_OHNEBESTELLTEARTIKEL}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Ohne Artikel die bereits bestellt sind"]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Dringende" mode="Transparent" x="500" y="50" width="170" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="97d46a10-0c9c-41ce-b642-dbba9ff79ad6">
+					<printWhenExpression><![CDATA[$P{P_NUR_DRINGENDE}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Nur dringende Los-Positionen"]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -258,7 +322,7 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Stkl.Ident]]></text>
+				<text><![CDATA[► Stkl.Ident]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="Stkl.Bez" mode="Transparent" x="160" y="0" width="88" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a78aeab4-d033-40f8-bd92-da9d6f91e8b6"/>
@@ -286,7 +350,7 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Artikelnr.]]></text>
+				<text><![CDATA[► Artikelnr.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="Bezeichnung" mode="Transparent" x="318" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1ff79fa9-0850-426e-a2b2-9f5936439401"/>
@@ -303,7 +367,7 @@
 				<text><![CDATA[Bezeichnung]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Termin" mode="Transparent" x="418" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ece5c47a-52f0-47d0-8ad3-e0cc00e921cd"/>
+				<reportElement key="Termin" mode="Transparent" x="428" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ece5c47a-52f0-47d0-8ad3-e0cc00e921cd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -317,7 +381,7 @@
 				<text><![CDATA[Termin]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Fehlmenge" mode="Transparent" x="463" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4cca1f50-bd9d-4e1b-9a03-71280ec99aa7"/>
+				<reportElement key="Fehlmenge" mode="Transparent" x="468" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4cca1f50-bd9d-4e1b-9a03-71280ec99aa7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -331,7 +395,7 @@
 				<text><![CDATA[Fehlmenge]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Fikt. Lagerstand" mode="Transparent" x="503" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="10c04347-4e54-4354-abec-6249b5d25125"/>
+				<reportElement key="Kummulierte Fehlmenge" mode="Transparent" x="513" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="10c04347-4e54-4354-abec-6249b5d25125"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -342,10 +406,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Fikt. LS]]></text>
+				<text><![CDATA[kum. FM]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Lagerstand" mode="Transparent" x="543" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="552d3bd2-fb7c-4644-a91e-acdc79320c6e"/>
+				<reportElement key="Lagerstand" mode="Transparent" x="553" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="552d3bd2-fb7c-4644-a91e-acdc79320c6e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -356,10 +420,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Lagerstand]]></text>
+				<text><![CDATA[Lagerstnd]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Offen" mode="Transparent" x="583" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8558ccc6-a206-4c91-a31a-dd73b677eb24"/>
+				<reportElement key="Offen" mode="Transparent" x="593" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8558ccc6-a206-4c91-a31a-dd73b677eb24"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -373,7 +437,7 @@
 				<text><![CDATA[Offen]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Bestellt" mode="Transparent" x="623" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6fdfef26-e7eb-457a-a987-731b6feb7940"/>
+				<reportElement key="Bestellt" mode="Transparent" x="633" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6fdfef26-e7eb-457a-a987-731b6feb7940"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -387,7 +451,7 @@
 				<text><![CDATA[Bestellt]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Reserviert" mode="Transparent" x="663" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7f7cb8cf-dfd8-4233-af67-e163fa8edc41"/>
+				<reportElement key="Reserviert" mode="Transparent" x="673" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7f7cb8cf-dfd8-4233-af67-e163fa8edc41"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -401,7 +465,7 @@
 				<text><![CDATA[Reserviert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="MS" mode="Transparent" x="703" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="06b60942-9549-4981-b20b-87715e731c4d"/>
+				<reportElement key="MS" mode="Transparent" x="713" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="06b60942-9549-4981-b20b-87715e731c4d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -415,7 +479,7 @@
 				<text><![CDATA[MS]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="AB Nr" mode="Transparent" x="718" y="0" width="75" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="77658d6b-5499-4dee-9234-ff5ba60e2520"/>
+				<reportElement key="AB Nr" mode="Transparent" x="733" y="0" width="75" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="77658d6b-5499-4dee-9234-ff5ba60e2520"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -429,7 +493,7 @@
 				<text><![CDATA[AB Nr]]></text>
 			</staticText>
 			<line>
-				<reportElement key="line-3" mode="Opaque" x="0" y="11" width="793" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="f74b6127-a158-45b8-a3d9-98c5ebc580e7"/>
+				<reportElement key="line-3" mode="Opaque" x="0" y="11" width="803" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="f74b6127-a158-45b8-a3d9-98c5ebc580e7"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
@@ -439,11 +503,28 @@
 	<detail>
 		<band height="10" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="0" width="792" height="10" forecolor="#EEEEEE" backcolor="#EEEEEE" uuid="6ff49166-9104-473c-8016-51414a24b1d9">
+				<reportElement key="rectangle-1" x="0" y="0" width="803" height="10" forecolor="#EEEEEE" backcolor="#EEEEEE" uuid="6ff49166-9104-473c-8016-51414a24b1d9">
 					<printWhenExpression><![CDATA[new Boolean($V{Artikel_Zebra}.intValue() % 2 == 0)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="Angefragt" x="593" y="0" width="40" height="10" forecolor="#FFA132" backcolor="#FFA132" uuid="3ca0458a-5a7d-44b9-bdd4-6e0a86f30c62">
+					<printWhenExpression><![CDATA[$F{ArtikelAnzahlAngefragt}.intValue()>0 &&
+$F{ArtikelAnzahlAngeboten}.intValue()==0]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="Angeboten" x="593" y="0" width="40" height="10" forecolor="#FFFF33" backcolor="#FFB865" uuid="d905f977-7419-49ed-b4a2-829bcee390b9">
+					<printWhenExpression><![CDATA[$F{ArtikelAnzahlAngeboten}.intValue()>0]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="2.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<textField pattern="" isBlankWhenNull="true">
@@ -474,7 +555,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_BELEGNUMMER}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" hyperlinkType="GOTO">
 				<reportElement key="F_STUECKLISTEIDENT" mode="Transparent" x="90" y="0" width="70" height="10" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="0e534ff1-a2c4-4cf4-a4c7-d7002dfad063"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -487,6 +568,12 @@
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_STUECKLISTEIDENT}]]></textFieldExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_STUECKLISTE_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{F_STUECKLISTEIDENT}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="F_STUECKLISTEBEZEICHNUNG" mode="Transparent" x="160" y="0" width="88" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="210ee430-041b-4f4e-8f8a-ff66a48f4c33"/>
@@ -502,7 +589,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_STUECKLISTEBEZEICHNUNG}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
+			<textField isBlankWhenNull="true" hyperlinkType="GOTO">
 				<reportElement key="F_IDENT" mode="Transparent" x="248" y="0" width="70" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4c118fb2-399f-424b-8408-e49e0927e1a6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -515,8 +602,14 @@
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_IDENT}]]></textFieldExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ARTIKEL_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{F_IDENT}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
+			<textField isBlankWhenNull="true">
 				<reportElement key="F_BEZEICHNUNG" isPrintRepeatedValues="false" mode="Transparent" x="318" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9a760658-da5f-4873-8ce4-d04d715fc792"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -531,7 +624,7 @@
 				<textFieldExpression><![CDATA[$F{F_BEZEICHNUNG}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="F_TERMIN" mode="Transparent" x="418" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9dea735f-b280-453c-ac8d-d8015fdc0f6f"/>
+				<reportElement key="F_TERMIN" style="Dringend" mode="Opaque" x="428" y="0" width="45" height="10" uuid="9dea735f-b280-453c-ac8d-d8015fdc0f6f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -542,10 +635,12 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{F_TERMIN}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_BELEGART}.startsWith( "Bes" ) ?
+($F{F_ABTERMIN} == null || $F{F_ABTERMIN}.compareTo($F{F_TERMIN}) == 0 ? $F{F_TERMIN} : $F{F_ABTERMIN}) :
+$F{F_BELEGART}.startsWith( "Los" ) ? $F{F_PRODUKTIONSBEGINN} : $F{F_TERMIN}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
-				<reportElement key="F_FEHLMENGE" mode="Transparent" x="463" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="aecc05b5-ab23-46fd-8011-58b06ae06f2e"/>
+				<reportElement key="F_FEHLMENGE" style="Dringend" mode="Opaque" x="473" y="0" width="40" height="10" uuid="aecc05b5-ab23-46fd-8011-58b06ae06f2e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -559,7 +654,7 @@
 				<textFieldExpression><![CDATA[$F{F_FEHLMENGE}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.0" isBlankWhenNull="true">
-				<reportElement key="F_FIKTIVERLAGERSTAND" mode="Transparent" x="503" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="671a1a89-9f5a-4590-a885-ac65c186ac18"/>
+				<reportElement key="F_FIKTIVERLAGERSTAND" mode="Transparent" x="513" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="671a1a89-9f5a-4590-a885-ac65c186ac18"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -573,7 +668,7 @@
 				<textFieldExpression><![CDATA[$F{F_FIKTIVERLAGERSTAND}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.0" isBlankWhenNull="true">
-				<reportElement key="F_LAGERSTAND" mode="Transparent" x="543" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="758c4e2d-b2ab-4c8c-b31b-d5fa75513d54">
+				<reportElement key="F_LAGERSTAND" mode="Transparent" x="553" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="758c4e2d-b2ab-4c8c-b31b-d5fa75513d54">
 					<printWhenExpression><![CDATA[new Boolean ($F{F_LAGERSTAND}.compareTo ( new BigDecimal(0.0000)) != 0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -589,7 +684,7 @@
 				<textFieldExpression><![CDATA[$F{F_LAGERSTAND}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
-				<reportElement key="F_OFFEN" mode="Transparent" x="583" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5b57f1df-0e32-40b7-bd51-51dfd94421a2"/>
+				<reportElement key="F_OFFEN" mode="Transparent" x="593" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5b57f1df-0e32-40b7-bd51-51dfd94421a2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -603,7 +698,7 @@
 				<textFieldExpression><![CDATA[$F{F_OFFEN}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
-				<reportElement key="F_BESTELLT" mode="Transparent" x="623" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2e3118d2-9aca-4180-976b-57b732536947"/>
+				<reportElement key="F_BESTELLT" mode="Transparent" x="633" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2e3118d2-9aca-4180-976b-57b732536947"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -617,7 +712,7 @@
 				<textFieldExpression><![CDATA[$F{F_BESTELLT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
-				<reportElement key="F_RESERVIERT" mode="Transparent" x="663" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="108f9237-8134-4498-8f4b-b91f4fbb50d7">
+				<reportElement key="F_RESERVIERT" mode="Transparent" x="673" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="108f9237-8134-4498-8f4b-b91f4fbb50d7">
 					<printWhenExpression><![CDATA[new Boolean($F{F_RESERVIERT}.compareTo( new BigDecimal(0.0000) ) != 0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -633,7 +728,7 @@
 				<textFieldExpression><![CDATA[$F{F_RESERVIERT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#0" isBlankWhenNull="true">
-				<reportElement key="F_MAHNSTUFE" mode="Transparent" x="703" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fe17914c-03f6-4ad3-8b60-f05945d40742"/>
+				<reportElement key="F_MAHNSTUFE" mode="Transparent" x="713" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fe17914c-03f6-4ad3-8b60-f05945d40742"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -647,7 +742,7 @@
 				<textFieldExpression><![CDATA[$F{F_MAHNSTUFE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="F_ABNUMMER" mode="Transparent" x="718" y="0" width="75" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="aef8afc8-78fa-47aa-88be-e084b0a82691"/>
+				<reportElement key="F_ABNUMMER" mode="Transparent" x="733" y="0" width="75" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="aef8afc8-78fa-47aa-88be-e084b0a82691"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -660,14 +755,108 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_ABNUMMER}]]></textFieldExpression>
 			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="F_TERMIN" mode="Transparent" x="418" y="0" width="10" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="713bb546-790a-4101-9608-94e5cedfa3e4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BELEGART}.startsWith( "Bes" ) ?
+($F{F_ABTERMIN} == null ? "B" : "Ab") :
+$F{F_BELEGART}.startsWith( "Los" ) ? "L" : ""]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<columnFooter>
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band splitType="Stretch"/>
+		<band height="1" splitType="Stretch"/>
 	</pageFooter>
+	<lastPageFooter>
+		<band height="20">
+			<staticText>
+				<reportElement key="Erklaerung" mode="Transparent" x="0" y="0" width="670" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="01c0427e-68ff-4346-a4a0-0206009f4ae2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[MS ... Mahnstufe der Bestellung, kum. FM ... kummulierte Fehlmengen des Artikels zum Los-Beginntermin, Termin: L ... Los-Beginntermin, B ... Bestelltermin, Ab ... bestätigter Termin]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Dringend" mode="Opaque" x="753" y="0" width="50" height="10" forecolor="#000000" backcolor="#FF8B00" uuid="525fba16-e7e3-4c5f-985f-aa4e87ee706a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Dringend]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Erklaerung2" mode="Transparent" x="0" y="10" width="670" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="414c2321-6813-4377-bc3b-793f78a151cb"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Beinhaltet nur die echten Fehlmengen. D.h. Fehlmengen in Losen die duch lagernde Artikel abgedeckt sind werden nicht aufgeführt.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="angefragt" mode="Opaque" x="671" y="8" width="40" height="12" forecolor="#000000" backcolor="#FFA132" uuid="665940a0-d779-41e4-8d15-330975b1e33b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[angefragt]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="711" y="8" width="40" height="12" forecolor="#FFFF00" backcolor="#FFA132" uuid="1ba7e6e7-b58d-4a22-8703-8ac2bd32ffc4"/>
+				<graphicElement>
+					<pen lineWidth="3.0"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement key="angeboten" mode="Transparent" x="711" y="8" width="40" height="12" forecolor="#000000" backcolor="#FFB865" uuid="fb0f3310-9183-43c0-8f19-aa40feb933de"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[angeboten]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
 	<summary>
 		<band splitType="Stretch"/>
 	</summary>

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proj_projektzeitdaten" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="cb6e6f65-4089-496f-a971-ac5f7868c0ae">
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proj_projektzeitdaten" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="cb6e6f65-4089-496f-a971-ac5f7868c0ae">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.zoom" value="1.652892561983471"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -34,62 +35,94 @@
 	<field name="Kommentar" class="java.lang.String"/>
 	<field name="Kosten" class="java.math.BigDecimal"/>
 	<field name="Telefonzeit" class="java.lang.Boolean"/>
+	<field name="Ebene" class="java.lang.Integer"/>
+	<field name="ZEITDATEN_I_ID" class="java.lang.Integer"/>
 	<variable name="Gesamtdauer" class="java.lang.Double" calculation="Sum">
 		<variableExpression><![CDATA[$F{Dauer}]]></variableExpression>
 	</variable>
-	<variable name="Gesamtdauer_Person" class="java.lang.Double" resetType="Group" resetGroup="Person" calculation="Sum">
+	<variable name="Gesamtdauer_Gruppe" class="java.lang.Double" resetType="Group" resetGroup="Gruppe" calculation="Sum">
 		<variableExpression><![CDATA[$F{Dauer}]]></variableExpression>
 	</variable>
-	<variable name="Gesamtdauer_Beleg" class="java.lang.Double" resetType="Group" resetGroup="Beleg" calculation="Sum">
-		<variableExpression><![CDATA[$F{Dauer}]]></variableExpression>
+	<variable name="LISTE_MA" class="java.util.List">
+		<variableExpression><![CDATA[($V{LISTE_MA} == null ? new ArrayList() : $V{LISTE_MA})]]></variableExpression>
 	</variable>
-	<group name="Beleg">
-		<groupExpression><![CDATA[$F{Belegart} + $F{Belegnummer}]]></groupExpression>
+	<variable name="LISTE_MA_ADD" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{LISTE_MA}.add(new java.lang.Object[] { $F{Person},
+                                          $F{Dauer} } )]]></variableExpression>
+	</variable>
+	<variable name="LISTE_TAT" class="java.util.List">
+		<variableExpression><![CDATA[($V{LISTE_TAT} == null ? new ArrayList() : $V{LISTE_TAT})]]></variableExpression>
+	</variable>
+	<variable name="LISTE_TAT_ADD" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{LISTE_TAT}.add(new java.lang.Object[] { $F{Artikel}+" "+$F{Bezeichnung},
+                                           $F{Dauer} } )]]></variableExpression>
+	</variable>
+	<variable name="LISTE_BLG" class="java.util.List">
+		<variableExpression><![CDATA[($V{LISTE_BLG} == null ? new ArrayList() : $V{LISTE_BLG})]]></variableExpression>
+	</variable>
+	<variable name="LISTE_BLG_ADD" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{LISTE_BLG}.add(new java.lang.Object[] { $F{Belegart}.substring(0,10)+$F{Belegnummer},
+                                          $F{Dauer} } )]]></variableExpression>
+	</variable>
+	<variable name="Beginndatum" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$F{Beginn}.getYear()+"-"+$F{Beginn}.getMonth()+"-"+$F{Beginn}.getDate()]]></variableExpression>
+	</variable>
+	<variable name="Gruppierung" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit") ?
+    $F{Artikel} :
+    ($P{P_SORTIERUNG}.startsWith("Beleg") ?
+        $F{Belegart}+$F{Belegnummer} :
+            ($P{P_SORTIERUNG}.startsWith("Datum") ?
+                $V{Beginndatum} : $F{Person}
+            )
+    )]]></variableExpression>
+	</variable>
+	<group name="Gruppe">
+		<groupExpression><![CDATA[$V{Gruppierung}]]></groupExpression>
 		<groupHeader>
-			<band height="15">
-				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
+			<band height="35">
+				<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement key="Tätigkeit" positionType="Float" mode="Transparent" x="0" y="15" width="40" height="10" isRemoveLineWhenBlank="true" uuid="1f22bb78-8c02-4270-bed7-536da3cf1d2f">
+						<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Artikel}]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement positionType="Float" mode="Transparent" x="45" y="15" width="150" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="774af206-89ae-46b6-8eea-a6e68874f7c9">
+						<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Bezeichnung}]]></textFieldExpression>
+				</textField>
 				<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm">
-					<reportElement key="F_BEGINN" mode="Transparent" x="25" y="5" width="60" height="10" uuid="713bdbc3-dd9d-4c20-ae3e-3e31f29c600c"/>
+					<reportElement key="Belegnummer" positionType="Float" mode="Transparent" x="45" y="25" width="60" height="10" isRemoveLineWhenBlank="true" uuid="713bdbc3-dd9d-4c20-ae3e-3e31f29c600c">
+						<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
+					</reportElement>
 					<textElement>
 						<font size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{Belegnummer}]]></textFieldExpression>
 				</textField>
 				<textField pattern="dd.MM.yyyy HH:mm">
-					<reportElement key="F_BEGINN" mode="Transparent" x="0" y="5" width="25" height="10" uuid="cdb071dd-9eaa-425e-8d1a-0482e43af776"/>
+					<reportElement key="Belegart" positionType="Float" mode="Transparent" x="0" y="25" width="45" height="10" isRemoveLineWhenBlank="true" uuid="cdb071dd-9eaa-425e-8d1a-0482e43af776">
+						<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
+					</reportElement>
 					<textElement>
 						<font size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{Belegart}]]></textFieldExpression>
 				</textField>
-			</band>
-		</groupHeader>
-		<groupFooter>
-			<band height="15">
-				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
-				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="500" y="2" width="35" height="10" uuid="c2914315-5fd0-48bc-8b6d-e067cfc99914"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$V{Gesamtdauer_Beleg}]]></textFieldExpression>
-				</textField>
-				<line>
-					<reportElement x="405" y="0" width="130" height="1" uuid="8d009703-3c60-4c95-8dd8-d8399f75a8ac"/>
-					<graphicElement>
-						<pen lineWidth="0.5"/>
-					</graphicElement>
-				</line>
-			</band>
-		</groupFooter>
-	</group>
-	<group name="Person">
-		<groupExpression><![CDATA[$F{Person}]]></groupExpression>
-		<groupHeader>
-			<band height="15">
-				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Person")]]></printWhenExpression>
 				<textField pattern="">
-					<reportElement key="F_BEGINN" mode="Transparent" x="0" y="5" width="150" height="10" uuid="0cc5cc45-ca1b-4577-a1ae-cb36889b8851"/>
+					<reportElement key="Person" mode="Transparent" x="0" y="5" width="150" height="10" isRemoveLineWhenBlank="true" uuid="0cc5cc45-ca1b-4577-a1ae-cb36889b8851">
+						<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Person")]]></printWhenExpression>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8"/>
 					</textElement>
@@ -99,7 +132,6 @@
 		</groupHeader>
 		<groupFooter>
 			<band height="15">
-				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Person")]]></printWhenExpression>
 				<line>
 					<reportElement x="405" y="0" width="130" height="1" uuid="a29f8880-76ee-4f47-84cd-174ecb914488"/>
 					<graphicElement>
@@ -107,11 +139,11 @@
 					</graphicElement>
 				</line>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="500" y="2" width="35" height="10" uuid="17390b1f-b238-4060-9157-ee50981cdcfd"/>
+					<reportElement x="500" y="1" width="35" height="10" uuid="17390b1f-b238-4060-9157-ee50981cdcfd"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{Gesamtdauer_Person}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{Gesamtdauer_Gruppe}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -123,9 +155,9 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="100" splitType="Stretch">
+		<band height="132" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="REPORT_INFORMATION" mode="Transparent" x="0" y="0" width="415" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="947bf1c8-6b2c-49af-b0e4-403714027d02"/>
+				<reportElement key="REPORT_INFORMATION" mode="Transparent" x="0" y="0" width="415" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="947bf1c8-6b2c-49af-b0e4-403714027d02"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -133,12 +165,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Transparent" x="415" y="0" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="6d10e031-b426-4d74-b327-272a2cd109a6"/>
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="415" y="0" width="100" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="6d10e031-b426-4d74-b327-272a2cd109a6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -146,12 +178,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="515" y="0" width="20" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="ef9b8cfa-1618-4ee4-9dba-75deb786721c"/>
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="515" y="0" width="20" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="ef9b8cfa-1618-4ee4-9dba-75deb786721c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -159,12 +191,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="Zeiten für PJ Nr" mode="Transparent" x="0" y="24" width="350" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="b9863faa-4ac8-4bd7-a1a2-9f3048ae962a"/>
+				<reportElement key="Zeiten für PJ Nr" mode="Transparent" x="0" y="15" width="300" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="b9863faa-4ac8-4bd7-a1a2-9f3048ae962a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -172,26 +204,34 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="18" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="18" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Zeiten für Projekt Nr. "+$P{P_PROJEKT}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="P_SORTIERUNG" x="435" y="34" width="100" height="10" uuid="af35ca04-7cd6-4579-9abe-2d71035deb76"/>
+				<reportElement key="P_SORTIERUNG" x="365" y="25" width="170" height="10" uuid="af35ca04-7cd6-4579-9abe-2d71035deb76"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_SORTIERUNG}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="P_SORTIERUNG" x="385" y="34" width="50" height="10" uuid="0d407313-c777-46fb-a9cd-b45339314672"/>
+				<reportElement key="P_SORTIERUNG" x="315" y="25" width="50" height="10" uuid="0d407313-c777-46fb-a9cd-b45339314672"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Sortiert nach:"]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="0" y="37" width="535" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="cb8ce889-8b88-4a53-b1a6-f8e4e1d71064"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_TITEL}]]></textFieldExpression>
+			</textField>
 			<staticText>
-				<reportElement key="Person" mode="Transparent" x="0" y="58" width="150" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="32fa55e2-9af8-49b0-ad58-218859e83079">
+				<reportElement key="Person" positionType="Float" mode="Transparent" x="0" y="58" width="150" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="32fa55e2-9af8-49b0-ad58-218859e83079">
 					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Person")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -201,7 +241,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Person]]></text>
 			</staticText>
@@ -216,7 +256,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Beleg]]></text>
@@ -232,7 +272,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Nummer]]></text>
@@ -248,7 +288,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Bemerkung / Kommentar]]></text>
 			</staticText>
@@ -263,9 +303,9 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<text><![CDATA[Beginn]]></text>
+				<text><![CDATA[► Beginn]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="Ende" mode="Transparent" x="475" y="68" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="d4e520eb-9d80-4f1e-b470-d3ab369b4da4">
@@ -278,7 +318,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Ende]]></text>
 			</staticText>
@@ -293,33 +333,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Dauer[h]]]></text>
 			</staticText>
-			<line>
-				<reportElement key="line-1" positionType="Float" mode="Opaque" x="0" y="99" width="535" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="da20acf4-3f34-42b3-ba8f-cc513a7fe276"/>
-				<graphicElement fill="Solid">
-					<pen lineWidth="0.5" lineStyle="Solid"/>
-				</graphicElement>
-			</line>
 			<staticText>
-				<reportElement key="Person" mode="Transparent" x="20" y="88" width="120" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a9c2c063-18f5-4a91-9289-bcdf7ed0b1f2">
-					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<text><![CDATA[Person]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="Belegart" positionType="Float" mode="Transparent" x="0" y="78" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="4876906b-bf19-42d7-9f7f-23bd909e83f1">
+				<reportElement key="Belegart" positionType="Float" mode="Transparent" x="0" y="99" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="4876906b-bf19-42d7-9f7f-23bd909e83f1">
 					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -329,13 +348,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Beleg]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Belegnummer" positionType="Float" mode="Transparent" x="25" y="78" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="0bfcae97-473a-45b9-9079-408ffd74f5c7">
+				<reportElement key="Belegnummer" positionType="Float" mode="Transparent" x="25" y="99" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="0bfcae97-473a-45b9-9079-408ffd74f5c7">
 					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -345,13 +364,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Nummer]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Bemerkung" mode="Transparent" x="140" y="88" width="265" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="bcb247b1-972c-4bb0-8935-c9a500ea1732">
+				<reportElement key="Person" mode="Transparent" x="20" y="109" width="120" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a9c2c063-18f5-4a91-9289-bcdf7ed0b1f2">
 					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -361,12 +380,27 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Person]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Bemerkung" mode="Transparent" x="140" y="109" width="265" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="bcb247b1-972c-4bb0-8935-c9a500ea1732">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Bemerkung / Kommentar]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Beginn" mode="Transparent" x="405" y="88" width="65" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b9eec6a0-8240-4ff9-8e03-e38d677f3de6">
+				<reportElement key="Beginn" mode="Transparent" x="405" y="109" width="65" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b9eec6a0-8240-4ff9-8e03-e38d677f3de6">
 					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -376,12 +410,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<text><![CDATA[Beginn]]></text>
+				<text><![CDATA[► Beginn]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Ende" mode="Transparent" x="475" y="88" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="fb73c36d-1c97-4ace-897d-e67813a5ed1f">
+				<reportElement key="Ende" mode="Transparent" x="475" y="109" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="fb73c36d-1c97-4ace-897d-e67813a5ed1f">
 					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -391,12 +425,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Ende]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Dauer" mode="Transparent" x="500" y="88" width="35" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="7d7a4ea5-174f-4809-ab38-cef3361e550d">
+				<reportElement key="Dauer" mode="Transparent" x="500" y="109" width="35" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="7d7a4ea5-174f-4809-ab38-cef3361e550d">
 					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Beleg")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -406,24 +440,264 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Dauer[h]]]></text>
 			</staticText>
+			<line>
+				<reportElement key="line-1" positionType="Float" mode="Opaque" x="0" y="130" width="535" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="da20acf4-3f34-42b3-ba8f-cc513a7fe276"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="Tätigkeit" positionType="Float" mode="Transparent" x="0" y="79" width="115" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="ba91dedd-9ff9-4d94-8cde-e8f5616058be">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Tätigkeit]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Beginn" mode="Transparent" x="405" y="89" width="65" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="651d1f62-430b-44cc-9691-991379a0f74c">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[► Beginn]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Ende" mode="Transparent" x="475" y="89" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="f0cb67da-175e-4731-a683-f08f41a770ef">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Ende]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Dauer" mode="Transparent" x="500" y="89" width="35" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="f12339a0-2afd-463f-b375-b7af9cb16398">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Dauer[h]]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Person" mode="Transparent" x="20" y="89" width="100" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="5a408492-9562-4f30-8a0c-81448161f6c3">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Person]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Bemerkung" mode="Transparent" x="215" y="89" width="190" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="afae5f19-460f-47ca-96a4-538c862409c7">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Bemerkung / Kommentar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Belegart" positionType="Float" mode="Transparent" x="120" y="89" width="35" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a7965e8b-de7c-4059-b2fe-f6a4b787dfdf">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Beleg]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Belegnummer" positionType="Float" mode="Transparent" x="155" y="89" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e87562f1-c3a0-4bcc-91c6-d4772b809cb5">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Nummer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Dauer" mode="Transparent" x="500" y="119" width="35" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a2aaad0d-d482-478e-b52b-e396c351d877">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Dauer[h]]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Ende" mode="Transparent" x="475" y="119" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="860442a1-7266-411c-959a-bf52249776c1">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Ende]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Beginn" mode="Transparent" x="405" y="119" width="65" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="599150b6-7970-4fa0-9518-981c3b10c84f">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[► Beginn]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Person" mode="Transparent" x="0" y="119" width="100" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="3672d3ef-32da-466a-aba5-760a59dcd5ec">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Person]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Belegnummer" positionType="Float" mode="Transparent" x="135" y="119" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a59325c0-bbbd-4567-98be-bfea7c026406">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Nummer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Belegart" positionType="Float" mode="Transparent" x="100" y="119" width="35" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6cc7c3c1-c349-4db7-b8a9-9402e21fb13a">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Beleg]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Bemerkung" mode="Transparent" x="195" y="119" width="210" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="4da23361-325e-479a-81cc-1628911d87bf">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Bemerkung / Kommentar]]></text>
+			</staticText>
 		</band>
 	</pageHeader>
-	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
 	<detail>
 		<band height="20" splitType="Stretch">
 			<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Person")]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="GOTO">
 				<reportElement key="F_BEGINN" mode="Transparent" x="405" y="0" width="65" height="10" uuid="dba55752-27b6-4336-a2cb-129ee525981a"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Beginn}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA["Springe auf Tag für Person"]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ZEITERFASSUNG_ZEITDATEN()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{ZEITDATEN_I_ID}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="HH:mm" isBlankWhenNull="true">
 				<reportElement key="Ende am Tag danach" mode="Transparent" x="475" y="0" width="25" height="10" uuid="47535872-a16f-4a64-ba53-df63891fd2fb"/>
@@ -454,18 +728,35 @@
 				<textFieldExpression><![CDATA[$F{Bemerkung}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy HH:mm">
-				<reportElement key="F_BEGINN" mode="Transparent" x="20" y="0" width="25" height="10" uuid="a40814e7-6bfd-496b-9596-353d4c1e8aca"/>
+				<reportElement key="Belegart" mode="Transparent" x="20" y="0" width="25" height="10" uuid="a40814e7-6bfd-496b-9596-353d4c1e8aca"/>
 				<textElement>
 					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Belegart}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="">
-				<reportElement key="F_BEGINN" mode="Transparent" x="45" y="0" width="60" height="10" uuid="8c5a11f3-b933-4555-9cb9-97f01627897a"/>
+				<reportElement key="Belegnummer" mode="Transparent" x="45" y="0" width="60" height="10" uuid="8c5a11f3-b933-4555-9cb9-97f01627897a"/>
 				<textElement>
-					<font size="7"/>
+					<font fontName="Arial" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Belegnummer}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="545" y="0" width="15" height="10" uuid="c1738001-37ee-462f-8a31-373b4c620af8">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[1]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Unterprojekt" mode="Transparent" x="45" y="10" width="60" height="10" isRemoveLineWhenBlank="true" uuid="1fbba057-1a48-4089-a030-1c1d1e0e6000"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Belegnummer}.compareTo($P{P_PROJEKT}) != 0 ?
+"Unterprojekt" : null]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="20">
@@ -485,7 +776,7 @@
 				<textFieldExpression><![CDATA[$F{Dauer}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="Bemerkung" mode="Transparent" x="140" y="0" width="265" height="10" isRemoveLineWhenBlank="true" uuid="7aa508ed-ba88-441a-ab2c-31ea4ea82abc"/>
+				<reportElement key="Bemerkung" mode="Transparent" x="159" y="0" width="246" height="10" isRemoveLineWhenBlank="true" uuid="7aa508ed-ba88-441a-ab2c-31ea4ea82abc"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
@@ -505,12 +796,198 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Kommentar}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="GOTO">
 				<reportElement key="F_BEGINN" mode="Transparent" x="405" y="0" width="65" height="10" uuid="403df628-4b18-4a6d-9865-69b38910ee29"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Beginn}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA["Springe auf Tag für Person"]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ZEITERFASSUNG_ZEITDATEN()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{ZEITDATEN_I_ID}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="545" y="0" width="15" height="10" uuid="03a82e4b-7f9c-40d9-a324-41eefaeb57ee">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[2]]></text>
+			</staticText>
+		</band>
+		<band height="20">
+			<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Tätigkeit")]]></printWhenExpression>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="F_DAUER" mode="Transparent" x="500" y="0" width="35" height="10" uuid="de1cb397-a430-42cd-b697-fbd01033e450"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Dauer}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement key="F_BEGINN" mode="Transparent" x="405" y="0" width="65" height="10" uuid="5af05be8-7a51-4649-8d11-e9ef249ff317"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Beginn}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA["Springe auf Tag für Person"]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ZEITERFASSUNG_ZEITDATEN()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{ZEITDATEN_I_ID}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="HH:mm" isBlankWhenNull="true">
+				<reportElement key="Ende am Tag danach" mode="Transparent" x="475" y="0" width="25" height="10" uuid="d26a4164-b7b9-46ae-a048-92773aa149f8"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Ende}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement key="F_BEGINN" mode="Transparent" x="20" y="0" width="100" height="10" uuid="57fb2350-7e65-4011-83e3-fcffa8a3f509"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Person}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Kommentar" mode="Transparent" x="215" y="10" width="190" height="10" isRemoveLineWhenBlank="true" uuid="857acdd0-d334-4685-bc59-8bb416ea874c"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Kommentar}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Bemerkung" mode="Transparent" x="215" y="0" width="190" height="10" isRemoveLineWhenBlank="true" uuid="5963bb0f-c4b9-46bf-b8a1-764728b81c10"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Bemerkung}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="Belegnummer" mode="Transparent" x="155" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1d50779a-db86-4641-9be0-317b3e481860"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Belegnummer}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="Belegart" mode="Transparent" x="120" y="0" width="35" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="339c4b04-af4a-4efd-9796-0fba23b6ffa8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Belegart}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="545" y="0" width="15" height="10" uuid="9e991689-657b-4775-8085-a389cb1e526c">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[3]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Unterprojekt" mode="Transparent" x="155" y="10" width="60" height="10" isRemoveLineWhenBlank="true" uuid="b1820de9-6b90-4795-baea-9ffdef398dda"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Belegnummer}.compareTo($P{P_PROJEKT}) != 0 ?
+"Unterprojekt" : null]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="20">
+			<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Datum")]]></printWhenExpression>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="F_DAUER" mode="Transparent" x="500" y="0" width="35" height="10" uuid="7e1436bc-1554-47cc-9bad-150e94ddaac9"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Dauer}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement key="F_BEGINN" mode="Transparent" x="405" y="0" width="65" height="10" uuid="3901ee76-f7a7-4fad-855e-c74d7345c330"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Beginn}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA["Springe auf Tag für Person"]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ZEITERFASSUNG_ZEITDATEN()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{ZEITDATEN_I_ID}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="HH:mm" isBlankWhenNull="true">
+				<reportElement key="Ende am Tag danach" mode="Transparent" x="475" y="0" width="25" height="10" uuid="f708c710-e719-4000-b321-4ad280f703a5"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Ende}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement key="F_BEGINN" mode="Transparent" x="0" y="0" width="100" height="10" uuid="7b7038b8-4a69-49ad-b219-10c954271ff9"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Person}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Kommentar" mode="Transparent" x="195" y="10" width="210" height="10" isRemoveLineWhenBlank="true" uuid="dcbc23dc-80aa-4af4-abee-8e996968eee3"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Kommentar}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Bemerkung" mode="Transparent" x="195" y="0" width="210" height="10" isRemoveLineWhenBlank="true" uuid="713c88a7-f89c-4afd-883e-6b0037591e4b"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Bemerkung}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="Belegnummer" mode="Transparent" x="135" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="377237ef-45f3-4e44-a6f1-289f7982b261"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Belegnummer}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="Belegart" mode="Transparent" x="100" y="0" width="35" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="21ed3942-dfec-41f3-a16b-6cc2286ad908"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Belegart}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="545" y="0" width="15" height="10" uuid="23893b47-aac0-4b60-95a6-8e754163cf15">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[4]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Unterprojekt" mode="Transparent" x="135" y="10" width="60" height="10" isRemoveLineWhenBlank="true" uuid="591493c4-9dd0-4d4f-bdae-d37fcd10d02f"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Belegnummer}.compareTo($P{P_PROJEKT}) != 0 ?
+"Unterprojekt" : null]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -521,7 +998,7 @@
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band height="12" splitType="Stretch">
+		<band height="35" splitType="Stretch">
 			<line>
 				<reportElement x="0" y="0" width="535" height="1" uuid="56c121d4-abfd-4729-ba2f-031e91f801cc"/>
 			</line>
@@ -534,7 +1011,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Gesamt]]></text>
 			</staticText>
@@ -545,6 +1022,46 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$V{Gesamtdauer}]]></textFieldExpression>
 			</textField>
+			<subreport>
+				<reportElement key="subreport Stunden" x="0" y="24" width="175" height="10" uuid="5e2c9490-5cef-49d9-ac22-3668e2e23888"/>
+				<subreportParameter name="Text">
+					<subreportParameterExpression><![CDATA["Mitarbeiter"]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.ListOfArrayDataSource(com.lp.util.HelperReport.sortListNoNull($V{LISTE_MA}),
+    new String[] {"Bezeichnung", "Dauer"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "proj_projektzeitdaten_summary.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement key="subreport Stunden" x="180" y="24" width="175" height="10" uuid="e9f17ad5-f1d7-4d56-aecc-2953cd6ccbcf"/>
+				<subreportParameter name="Text">
+					<subreportParameterExpression><![CDATA["Belege"]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.ListOfArrayDataSource(com.lp.util.HelperReport.sortListNoNull($V{LISTE_BLG}),
+    new String[] {"Bezeichnung", "Dauer"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "proj_projektzeitdaten_summary.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement key="subreport Stunden" x="360" y="24" width="175" height="10" uuid="0ac0bec6-9052-40a8-8c1a-1647efc75272"/>
+				<subreportParameter name="Text">
+					<subreportParameterExpression><![CDATA["Tätigkeit"]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.ListOfArrayDataSource(com.lp.util.HelperReport.sortListNoNull($V{LISTE_TAT}),
+    new String[] {"Bezeichnung", "Dauer"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "proj_projektzeitdaten_summary.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement key="Gesamt" mode="Transparent" x="0" y="14" width="150" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f89707f9-8bfd-4be7-a95e-43daeba91c54"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Zusammenfassung]]></text>
+			</staticText>
 		</band>
 	</summary>
 </jasperReport>

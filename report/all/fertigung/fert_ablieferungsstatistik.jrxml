@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 6.18.1-9d75d1969e774d4f179fb3be8401e98a0e6d1611  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fert_ablieferungsstatistik" pageWidth="595" pageHeight="842" columnWidth="550" leftMargin="30" rightMargin="15" topMargin="20" bottomMargin="20" uuid="dc4d9ea2-3d6f-4898-9dd1-71ecbcbc7b59">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="738"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -20,8 +21,15 @@
 	<parameter name="P_VON" class="java.sql.Timestamp" isForPrompting="false"/>
 	<parameter name="P_BIS" class="java.sql.Timestamp" isForPrompting="false"/>
 	<parameter name="P_SORTIERUNG" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="P_VERDICHTET" class="java.lang.Boolean" isForPrompting="false"/>
-	<parameter name="P_NURKOPFLOSE_ANHAND_STUECKLISTE" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_OPTION_ARTIKEL" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_NURMATERIALWERTE" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_KPI_VARIABLEN" class="com.lp.server.kpi.service.KpiReportStorage" isForPrompting="false">
+		<parameterDescription><![CDATA[Report-Variablen-Speicher]]></parameterDescription>
+	</parameter>
+	<parameter name="P_OPTION_ARTIKEL_ID" class="java.lang.Integer" isForPrompting="false">
+		<parameterDescription><![CDATA[0 ... Alle, 1 ... selektierter Artikel, 2 ...  Kopfstuecklisten, 3 ... Kopflose]]></parameterDescription>
+	</parameter>
 	<field name="F_LOSNUMMER" class="java.lang.String">
 		<fieldDescription><![CDATA[Losnummer]]></fieldDescription>
 	</field>
@@ -53,50 +61,123 @@
 		<fieldDescription><![CDATA[Zusatzbezeichnung]]></fieldDescription>
 	</field>
 	<field name="F_AUFTRAGSNUMMER" class="java.lang.String"/>
+	<field name="F_ABGANG_BELEGART" class="java.lang.String"/>
+	<field name="F_ABGANG_BELEGNUMMER" class="java.lang.String"/>
+	<variable name="Monat" class="java.lang.String">
+		<variableExpression><![CDATA[($F{F_DATUM}.getYear()+1900)+"-"+($F{F_DATUM}.getMonth()+1)]]></variableExpression>
+	</variable>
+	<variable name="Sort" class="java.lang.String">
+		<variableExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Auftrag") ? $F{F_AUFTRAGSNUMMER} :
+($P{P_SORTIERUNG}.startsWith("Artikel") ? $F{F_IDENT} : $V{Monat})]]></variableExpression>
+	</variable>
 	<variable name="V_WERT" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_WERT}]]></variableExpression>
 	</variable>
 	<variable name="V_MENGE" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_MENGE}]]></variableExpression>
 	</variable>
+	<variable name="V_MAT_WERT" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_MATERIALWERT}==null ? BigDecimal.ZERO :
+$F{F_MATERIALWERT}]]></variableExpression>
+	</variable>
 	<variable name="V_AZ_WERT" class="java.math.BigDecimal" calculation="Sum">
-		<variableExpression><![CDATA[$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></variableExpression>
+		<variableExpression><![CDATA[$F{F_ARBEITSZEITWERT}==null ? BigDecimal.ZERO :
+$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></variableExpression>
 	</variable>
 	<variable name="V_ARTIKEL_WERT" class="java.math.BigDecimal" resetType="Group" resetGroup="Artikel" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_WERT}]]></variableExpression>
 	</variable>
+	<variable name="V_ARTIKEL_AZ_WERT" class="java.math.BigDecimal" resetType="Group" resetGroup="Artikel" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></variableExpression>
+	</variable>
 	<variable name="V_ARTIKEL_MENGE" class="java.math.BigDecimal" resetType="Group" resetGroup="Artikel" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_MENGE}]]></variableExpression>
 	</variable>
+	<variable name="V_ARTIKEL_MAT" class="java.math.BigDecimal" resetType="Group" resetGroup="Artikel" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_MATERIALWERT}==null ? BigDecimal.ZERO :
+$F{F_MATERIALWERT}]]></variableExpression>
+	</variable>
 	<variable name="V_ARTIKEL_AZ" class="java.math.BigDecimal" resetType="Group" resetGroup="Artikel" calculation="Sum">
-		<variableExpression><![CDATA[$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></variableExpression>
+		<variableExpression><![CDATA[$F{F_ARBEITSZEITWERT}==null ? BigDecimal.ZERO :
+$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></variableExpression>
 	</variable>
 	<variable name="V_AUFTRAG_WERT" class="java.math.BigDecimal" resetType="Group" resetGroup="Auftrag" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_WERT}]]></variableExpression>
 	</variable>
-	<variable name="V_AUFTRAG_AZ" class="java.math.BigDecimal" resetType="Group" resetGroup="Auftrag" calculation="Sum">
-		<variableExpression><![CDATA[$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></variableExpression>
+	<variable name="V_AUFTRAG_MAT" class="java.math.BigDecimal" resetType="Group" resetGroup="Auftrag" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_MATERIALWERT}==null ? BigDecimal.ZERO :
+$F{F_MATERIALWERT}]]></variableExpression>
 	</variable>
-	<group name="Auftrag" minHeightToStartNewPage="50">
-		<groupExpression><![CDATA[$F{F_AUFTRAGSNUMMER}]]></groupExpression>
+	<variable name="V_AUFTRAG_AZ" class="java.math.BigDecimal" resetType="Group" resetGroup="Auftrag" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_ARBEITSZEITWERT}==null ? BigDecimal.ZERO :
+$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></variableExpression>
+	</variable>
+	<variable name="V_WERT_Monat" class="java.math.BigDecimal" resetType="Group" resetGroup="Monat" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_WERT}]]></variableExpression>
+	</variable>
+	<variable name="Anzahl_Monate" class="java.lang.Integer" incrementType="Group" incrementGroup="Monat" calculation="Count">
+		<variableExpression><![CDATA[$V{Anzahl_Monate}.intValue()+1]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Anzahl_Artikelpositionen" class="java.lang.Integer" resetType="Group" resetGroup="Artikel">
+		<variableExpression><![CDATA[$V{Anzahl_Artikelpositionen}.intValue()+1]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<group name="Monat">
+		<groupExpression><![CDATA[$V{Sort}]]></groupExpression>
+		<groupFooter>
+			<band height="22">
+				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Ablieferdatum")]]></printWhenExpression>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+					<reportElement mode="Transparent" x="500" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="cd69bae9-9426-4e84-ae54-f3eeef8749f5"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{V_WERT_Monat}]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement mode="Transparent" x="350" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b5f69bc2-d1d7-4b35-aef3-204166839223"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Monat}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="350" y="0" width="200" height="1" uuid="ebcc96d1-7123-4d54-bd52-973d593a0c9f"/>
+					<graphicElement>
+						<pen lineWidth="0.5"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Auftrag" minHeightToStartNewPage="50" keepTogether="true">
+		<groupExpression><![CDATA[$V{Sort}]]></groupExpression>
 		<groupHeader>
 			<band height="15">
 				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Auftrag")]]></printWhenExpression>
-				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
-					<reportElement mode="Transparent" x="0" y="5" width="160" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ec21f3be-ccea-481a-9a18-4702fdef6364"/>
+				<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false">
+					<reportElement mode="Transparent" x="0" y="5" width="160" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b9db566e-6ec9-4705-8d9e-c52d03dca972">
+						<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Auftrag")]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
 						<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Auftrag Nr.: "+$F{F_AUFTRAGSNUMMER}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{F_AUFTRAGSNUMMER}==null?"Ohne Auftragszuordnung":
+"Auftrag Nr.: "+$F{F_AUFTRAGSNUMMER}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="15">
 				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Auftrag")]]></printWhenExpression>
-				<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-					<reportElement key="AZ Anteil" mode="Transparent" x="500" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="29af090c-af6d-409a-a207-632e493e14bc"/>
+				<textField textAdjust="StretchHeight" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+					<reportElement key="AZ Anteil" mode="Transparent" x="450" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="29af090c-af6d-409a-a207-632e493e14bc">
+						<printWhenExpression><![CDATA[!$P{P_NURMATERIALWERTE}]]></printWhenExpression>
+					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -109,8 +190,8 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$V{V_AUFTRAG_AZ}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-					<reportElement key="F_WERT-2" mode="Transparent" x="450" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d7edd536-14ab-4420-a1c1-e0ba7bcd3617"/>
+				<textField textAdjust="StretchHeight" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+					<reportElement key="F_WERT-2" mode="Transparent" x="500" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d7edd536-14ab-4420-a1c1-e0ba7bcd3617"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -129,7 +210,8 @@
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Summe Auftrag Nr.: "+$F{F_AUFTRAGSNUMMER}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{F_AUFTRAGSNUMMER}==null ? "Summe ohne Auftragszuordnung " :
+"Summe Auftrag Nr.: "+$F{F_AUFTRAGSNUMMER}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="0" y="0" width="550" height="1" uuid="b3119205-fcfb-4ab4-bb6d-dbbcb4f9c624"/>
@@ -137,7 +219,7 @@
 						<pen lineWidth="0.5"/>
 					</graphicElement>
 				</line>
-				<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<textField textAdjust="StretchHeight" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
 					<reportElement key="F_WERT-2" mode="Transparent" x="400" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="da2688a8-eb80-4db8-be1d-c4782b738b2e"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -149,8 +231,7 @@
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{V_AUFTRAG_WERT}.
-subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{V_AUFTRAG_MAT}]]></textFieldExpression>
 				</textField>
 				<textField pattern="" isBlankWhenNull="false">
 					<reportElement mode="Transparent" x="350" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f76eb51e-2b05-498a-bd4c-1318182bf98d"/>
@@ -163,16 +244,91 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</band>
 		</groupFooter>
 	</group>
-	<group name="Artikel">
-		<groupExpression><![CDATA[$F{F_IDENT}]]></groupExpression>
+	<group name="ArtikelGrafik" keepTogether="true">
+		<groupExpression><![CDATA[$V{Sort}]]></groupExpression>
 		<groupHeader>
-			<band splitType="Stretch"/>
+			<band height="1">
+				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
+				<break>
+					<reportElement x="0" y="0" width="550" height="1" uuid="09aa4084-4522-4418-ae5b-23a065488705">
+						<printWhenExpression><![CDATA[$V{Anzahl_Artikelpositionen}.intValue() > 3]]></printWhenExpression>
+					</reportElement>
+				</break>
+			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="10" splitType="Stretch">
-				<printWhenExpression><![CDATA[new Boolean($P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
-				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
-					<reportElement key="F_IDENT-1" mode="Transparent" x="0" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="0f324d52-ea33-4580-82b6-4ab79e7df5e7"/>
+			<band height="295">
+				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel") &&
+$V{Anzahl_Artikelpositionen}.intValue() > 3]]></printWhenExpression>
+				<timeSeriesChart>
+					<chart isShowLegend="true">
+						<reportElement x="0" y="-5" width="550" height="299" isRemoveLineWhenBlank="true" uuid="f59c331a-64cd-43f2-8b8b-19f0abe111e3"/>
+						<chartTitle position="Top">
+							<font fontName="Arial"/>
+							<titleExpression><![CDATA["Gestehungspreisentwicklung"]]></titleExpression>
+						</chartTitle>
+						<chartSubtitle/>
+						<chartLegend position="Right"/>
+					</chart>
+					<timeSeriesDataset>
+						<dataset resetType="Group" resetGroup="Artikel"/>
+						<timeSeries>
+							<seriesExpression><![CDATA["Gest.Preis"]]></seriesExpression>
+							<timePeriodExpression><![CDATA[$F{F_DATUM}]]></timePeriodExpression>
+							<valueExpression><![CDATA[$F{F_ABLIEFERPREIS}]]></valueExpression>
+						</timeSeries>
+						<timeSeries>
+							<seriesExpression><![CDATA["AZ-Anteil"]]></seriesExpression>
+							<timePeriodExpression><![CDATA[$F{F_DATUM}]]></timePeriodExpression>
+							<valueExpression><![CDATA[$F{F_ARBEITSZEITWERT}]]></valueExpression>
+						</timeSeries>
+						<timeSeries>
+							<seriesExpression><![CDATA["Mat-Anteil"]]></seriesExpression>
+							<timePeriodExpression><![CDATA[$F{F_DATUM}]]></timePeriodExpression>
+							<valueExpression><![CDATA[$F{F_MATERIALWERT}]]></valueExpression>
+						</timeSeries>
+					</timeSeriesDataset>
+					<timeSeriesPlot>
+						<plot labelRotation="45.0">
+							<seriesColor seriesOrder="0" color="#0000FF"/>
+							<seriesColor seriesOrder="1" color="#CC00CC"/>
+							<seriesColor seriesOrder="2" color="#33CC00"/>
+						</plot>
+						<timeAxisFormat>
+							<axisFormat>
+								<labelFont>
+									<font fontName="Arial" size="6"/>
+								</labelFont>
+							</axisFormat>
+						</timeAxisFormat>
+						<valueAxisLabelExpression><![CDATA[$P{P_MANDANT_OBJ}.getMandantDto().getWaehrungCNr()]]></valueAxisLabelExpression>
+						<valueAxisFormat>
+							<axisFormat>
+								<labelFont>
+									<font fontName="Arial" size="6"/>
+								</labelFont>
+								<tickLabelFont>
+									<font fontName="Arial" size="6"/>
+								</tickLabelFont>
+							</axisFormat>
+						</valueAxisFormat>
+					</timeSeriesPlot>
+				</timeSeriesChart>
+				<break>
+					<reportElement x="0" y="294" width="550" height="1" uuid="c8e08a03-0232-418b-94a7-867d15236825">
+						<printWhenExpression><![CDATA[$P{P_OPTION_ARTIKEL}==null]]></printWhenExpression>
+					</reportElement>
+				</break>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Artikel">
+		<groupExpression><![CDATA[$V{Sort}]]></groupExpression>
+		<groupFooter>
+			<band height="16">
+				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
+				<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false" hyperlinkType="GOTO">
+					<reportElement key="F_IDENT-1" mode="Transparent" x="0" y="1" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="0f324d52-ea33-4580-82b6-4ab79e7df5e7"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -184,9 +340,18 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{F_IDENT}]]></textFieldExpression>
+					<hyperlinkTooltipExpression><![CDATA[$F{F_IDENT}.startsWith("~") ?
+"leider nicht möglich" :
+"Direkter Sprung zu Ident:"+$F{F_IDENT}]]></hyperlinkTooltipExpression>
+					<hyperlinkParameter name="WhereToGo">
+						<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ARTIKEL_AUSWAHL()]]></hyperlinkParameterExpression>
+					</hyperlinkParameter>
+					<hyperlinkParameter name="Key">
+						<hyperlinkParameterExpression><![CDATA[$F{F_IDENT}]]></hyperlinkParameterExpression>
+					</hyperlinkParameter>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-					<reportElement key="F_BEZEICHNUNG-1" mode="Transparent" x="80" y="0" width="220" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2cde70b2-1f19-48d1-a6b0-71da3afae184"/>
+				<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
+					<reportElement key="F_BEZEICHNUNG-1" mode="Transparent" x="80" y="1" width="220" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2cde70b2-1f19-48d1-a6b0-71da3afae184"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -201,7 +366,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 ( ($F{F_ZUSATZBEZEICHNUNG}==null || $F{F_ZUSATZBEZEICHNUNG}.length()==0) ?"":"\n"+$F{F_ZUSATZBEZEICHNUNG})]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="false">
-					<reportElement key="F_MENGE-3" mode="Transparent" x="300" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="45a69feb-fd40-44fe-8bf7-de813fd7db12"/>
+					<reportElement key="F_MENGE-3" mode="Transparent" x="300" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="45a69feb-fd40-44fe-8bf7-de813fd7db12"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -215,7 +380,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$V{V_ARTIKEL_MENGE}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.0000;-#,##0.0000" isBlankWhenNull="false">
-					<reportElement key="F_ABLIEFERPREIS-1" mode="Transparent" x="350" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9d22fad9-84c0-4dff-967b-d28f330f04eb"/>
+					<reportElement key="F_ABLIEFERPREIS-1" mode="Transparent" x="350" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9d22fad9-84c0-4dff-967b-d28f330f04eb"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -229,7 +394,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$V{V_ARTIKEL_WERT}.divide($V{V_ARTIKEL_MENGE},RoundingMode.HALF_EVEN)]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-					<reportElement key="F_WERT-2" mode="Transparent" x="450" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2de9185a-4050-470e-ba4d-9a6f77d94f54"/>
+					<reportElement key="F_WERT-2" mode="Transparent" x="500" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2de9185a-4050-470e-ba4d-9a6f77d94f54"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -242,8 +407,8 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{V_ARTIKEL_WERT}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-					<reportElement key="AZ Anteil" mode="Transparent" x="500" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="91256237-b18d-4be0-ab96-02c9beec28cf"/>
+				<textField pattern="#,##0.0000;-#,##0.0000" isBlankWhenNull="false">
+					<reportElement key="MaterialDurchschnittspreis" mode="Transparent" x="400" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9ba21ef5-455b-4f47-8647-f8f177f2ef74"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -254,8 +419,31 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($V{V_ARTIKEL_WERT}.subtract(
+ $V{V_ARTIKEL_AZ_WERT})).divide($V{V_ARTIKEL_MENGE},RoundingMode.HALF_EVEN)]]></textFieldExpression>
 				</textField>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+					<reportElement key="AZ Anteil" mode="Transparent" x="450" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="91256237-b18d-4be0-ab96-02c9beec28cf">
+						<printWhenExpression><![CDATA[!$P{P_NURMATERIALWERTE}]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{V_ARTIKEL_AZ_WERT}.divide($V{V_ARTIKEL_MENGE},RoundingMode.HALF_EVEN)]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="0" width="550" height="1" uuid="bfbdd7c9-190f-4c86-9699-2e001646eabe"/>
+					<graphicElement>
+						<pen lineWidth="0.5"/>
+					</graphicElement>
+				</line>
 			</band>
 		</groupFooter>
 	</group>
@@ -400,7 +588,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="Ident-1" positionType="Float" mode="Transparent" x="0" y="72" width="80" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b4a9b143-7374-43c4-916c-4b0772c62d17">
-					<printWhenExpression><![CDATA[new Boolean($P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -412,11 +600,11 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Ident]]></text>
+				<text><![CDATA[► Ident]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="Bezeichnung-1" positionType="Float" mode="Transparent" x="80" y="72" width="210" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="45b310b7-dd8c-42a0-95a8-38a3e13a6aa2">
-					<printWhenExpression><![CDATA[new Boolean($P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -432,7 +620,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</staticText>
 			<staticText>
 				<reportElement key="Menge-1" positionType="Float" mode="Transparent" x="300" y="72" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="fb0d328f-d90b-4356-9b5a-3feed7d601ff">
-					<printWhenExpression><![CDATA[new Boolean($P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -448,7 +636,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</staticText>
 			<staticText>
 				<reportElement key="Ablieferpreis-1" positionType="Float" mode="Transparent" x="350" y="72" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="ab501b3c-3be8-4e9f-a935-647f7c825b4a">
-					<printWhenExpression><![CDATA[new Boolean($P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -463,8 +651,8 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<text><![CDATA[Ablieferpreis]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Wert-1" positionType="Float" mode="Transparent" x="450" y="72" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6e8be318-9494-4456-8d62-03595293cb5c">
-					<printWhenExpression><![CDATA[new Boolean($P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+				<reportElement key="Wert-1" positionType="Float" mode="Transparent" x="500" y="72" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6e8be318-9494-4456-8d62-03595293cb5c">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -479,8 +667,8 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<text><![CDATA[Wert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="AZ-Anteil-1" positionType="Float" mode="Transparent" x="500" y="72" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="44955f68-5abe-49ae-b8a9-8aaf35d74623">
-					<printWhenExpression><![CDATA[new Boolean($P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+				<reportElement key="AZ-Anteil-1" positionType="Float" mode="Transparent" x="450" y="72" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="44955f68-5abe-49ae-b8a9-8aaf35d74623">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -492,11 +680,11 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[AZ-Anteil]]></text>
+				<text><![CDATA[AZ-Pr-Anteil]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="Los Nr." positionType="Float" mode="Transparent" x="0" y="82" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="4ea37890-2020-4ba8-afe6-40ac60af9700">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -512,7 +700,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</staticText>
 			<staticText>
 				<reportElement key="Ident" positionType="Float" mode="Transparent" x="60" y="82" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="91d2bcb9-60ef-4798-8f97-21e4b0887da3">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -524,11 +712,11 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Ident]]></text>
+				<text><![CDATA[► Ident]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="Bezeichnung" positionType="Float" mode="Transparent" x="120" y="82" width="140" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="31998191-0bf5-4160-83fb-03b172702d0d">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -544,7 +732,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</staticText>
 			<staticText>
 				<reportElement key="Datum" positionType="Float" mode="Transparent" x="260" y="82" width="45" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b2b4bbb5-b95a-473b-9b38-7b4c2a2e29c6">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -560,7 +748,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</staticText>
 			<staticText>
 				<reportElement key="Menge" positionType="Float" mode="Transparent" x="300" y="82" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="cfbb061e-b5b5-4ad3-ab5b-db9ec8ba80c6">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -576,7 +764,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</staticText>
 			<staticText>
 				<reportElement key="Ablieferpreis" positionType="Float" mode="Transparent" x="350" y="82" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b432e761-f664-443b-a3a4-4f8ce340eb70">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -592,7 +780,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</staticText>
 			<staticText>
 				<reportElement key="Materialwert" positionType="Float" mode="Transparent" x="400" y="82" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="3416ceea-224d-4da6-980a-9e55273c32ad">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -607,8 +795,8 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<text><![CDATA[Materialpreis]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Wert" positionType="Float" mode="Transparent" x="450" y="82" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b3819f90-f4e9-404a-a180-ed342f5ab866">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+				<reportElement key="Wert" positionType="Float" mode="Transparent" x="500" y="82" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b3819f90-f4e9-404a-a180-ed342f5ab866">
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -623,8 +811,9 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<text><![CDATA[Wert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="AZ-Anteil" positionType="Float" mode="Transparent" x="500" y="82" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="9add0632-b2aa-4cdc-aee9-00bf82962b1d">
-					<printWhenExpression><![CDATA[new Boolean(! $P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+				<reportElement key="AZ-Anteil" positionType="Float" mode="Transparent" x="450" y="82" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="9add0632-b2aa-4cdc-aee9-00bf82962b1d">
+					<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith("Artikel") &&
+!$P{P_NURMATERIALWERTE}]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -636,17 +825,25 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[AZ-Anteil]]></text>
+				<text><![CDATA[AZ-Pr-Anteil]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="234" y="48" width="276" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a9108ab9-120c-4e17-b1e7-35819192e317">
-					<printWhenExpression><![CDATA[$P{P_NURKOPFLOSE_ANHAND_STUECKLISTE}]]></printWhenExpression>
+				<reportElement mode="Transparent" x="234" y="48" width="120" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a9108ab9-120c-4e17-b1e7-35819192e317"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_OPTION_ARTIKEL}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="369" y="48" width="181" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="10fb4b42-5d0b-4c7f-b70d-846fc8409471">
+					<printWhenExpression><![CDATA[$P{P_NURMATERIALWERTE}]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Top" rotation="None" markup="none">
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Nur Lose die Kopfstücklisten sind"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Nur Materialwerte"]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement key="line-1" positionType="Float" mode="Opaque" x="0" y="93" width="550" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="4da71740-cbd2-4e97-aaf2-2236a74e17c9"/>
@@ -654,14 +851,28 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
+			<staticText>
+				<reportElement key="Materialwert" positionType="Float" mode="Transparent" x="400" y="72" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="637f8ad8-5400-4fb5-880b-ddb021edc5f6">
+					<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith("Artikel")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Materialpreis]]></text>
+			</staticText>
 		</band>
 	</pageHeader>
-	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
 	<detail>
 		<band height="21" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean(!$P{P_SORTIERUNG}.startsWith("Artikel"))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[true /*
+!$P{P_SORTIERUNG}.startsWith("Artikel") */]]></printWhenExpression>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="F_LOSNUMMER" mode="Transparent" x="0" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f48d0e48-46ec-4894-b174-8cc1cfba9cae"/>
 				<box>
@@ -676,7 +887,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_LOSNUMMER}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false" hyperlinkType="GOTO">
 				<reportElement key="F_IDENT" mode="Transparent" x="60" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="976ce0cc-d88b-4766-bcc5-134e2fa5862b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -689,8 +900,17 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_IDENT}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA[$F{F_IDENT}.startsWith("~") ?
+"leider nicht möglich" :
+"Direkter Sprung zu Ident:"+$F{F_IDENT}]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ARTIKEL_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{F_IDENT}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="F_BEZEICHNUNG" mode="Transparent" x="120" y="0" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="32b36d85-ca56-43a1-a306-607c95194b71"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -746,7 +966,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_ABLIEFERPREIS}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.0000;-#,##0.0000" isBlankWhenNull="false">
+			<textField pattern="#,##0.0000;-#,##0.0000" isBlankWhenNull="true">
 				<reportElement key="F_MATERIALWERT" mode="Transparent" x="400" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c35fc648-468a-432e-9a25-a87f318b9697"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -761,7 +981,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$F{F_MATERIALWERT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="F_WERT" mode="Transparent" x="450" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c07a177f-958f-45b4-a123-dca1f76626c9"/>
+				<reportElement key="F_WERT" mode="Transparent" x="500" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c07a177f-958f-45b4-a123-dca1f76626c9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -774,8 +994,10 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_WERT}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="AZ Anteil" mode="Transparent" x="500" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="85d8fa40-89bb-456b-aa7f-0b432c39ba14"/>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="AZ Anteil" mode="Transparent" x="450" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="85d8fa40-89bb-456b-aa7f-0b432c39ba14">
+					<printWhenExpression><![CDATA[!$P{P_NURMATERIALWERTE}]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -786,9 +1008,9 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{F_ARBEITSZEITWERT}.multiply($F{F_MENGE})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ARBEITSZEITWERT} /* .divide($F{F_MENGE},RoundingMode.HALF_EVEN) */]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="F_ZUSATZBEZEICHNUNG" positionType="Float" mode="Transparent" x="120" y="10" width="230" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="84cd9f2e-8e3e-404e-a874-3061f84bab07"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -814,9 +1036,6 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
 	<pageFooter>
 		<band height="12" splitType="Stretch">
 			<line>
@@ -854,7 +1073,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$V{V_MENGE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="V_WERT" mode="Transparent" x="440" y="2" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="125c22d4-cd5a-4d7b-827c-cd87a68a184c"/>
+				<reportElement key="V_WERT" mode="Transparent" x="490" y="2" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="125c22d4-cd5a-4d7b-827c-cd87a68a184c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -868,7 +1087,9 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$V{V_WERT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="$V{V_AZ_WERT}" mode="Transparent" x="500" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="79d25352-d2f7-4d53-a9ab-d6adf8f7339a"/>
+				<reportElement key="$V{V_AZ_WERT}" mode="Transparent" x="450" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="79d25352-d2f7-4d53-a9ab-d6adf8f7339a">
+					<printWhenExpression><![CDATA[!$P{P_NURMATERIALWERTE}]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -884,10 +1105,35 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 		</band>
 	</pageFooter>
 	<lastPageFooter>
-		<band height="1" splitType="Stretch"/>
+		<band height="20" splitType="Stretch">
+			<staticText>
+				<reportElement key="Info" mode="Transparent" x="0" y="12" width="110" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="6b6692e5-4f6b-464b-a92d-40a48b01e5d7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[AZ-Anteil ist in (Gesamt-)Wert enthalten.]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="120" y="12" width="430" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="201537a6-7a3c-465d-bb98-1204c6f634a9">
+					<printWhenExpression><![CDATA[$P{P_NURMATERIALWERTE}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Es wurden die Materialwerte anteilig aus den Losen herausgerechnet."]]></textFieldExpression>
+			</textField>
+		</band>
 	</lastPageFooter>
 	<summary>
-		<band height="32" splitType="Stretch">
+		<band height="150" splitType="Stretch">
 			<line>
 				<reportElement key="line-3" mode="Opaque" x="0" y="0" width="550" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="7be0e831-03ce-4322-b5a5-fe5d3859504a"/>
 				<graphicElement fill="Solid">
@@ -895,7 +1141,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				</graphicElement>
 			</line>
 			<staticText>
-				<reportElement key="Gesamtsumme" mode="Transparent" x="0" y="2" width="119" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a5e56449-6db1-4ba2-b8e6-7e0d93d51b16"/>
+				<reportElement key="Gesamtsumme" mode="Transparent" x="0" y="2" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a5e56449-6db1-4ba2-b8e6-7e0d93d51b16"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -923,7 +1169,7 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$V{V_MENGE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="V_WERT" mode="Transparent" x="440" y="2" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="54cc517e-1842-4a43-9599-cbd510e2c108"/>
+				<reportElement key="V_WERT" mode="Transparent" x="490" y="2" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="54cc517e-1842-4a43-9599-cbd510e2c108"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -937,7 +1183,9 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$V{V_WERT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="V_AZ_WERT" mode="Transparent" x="500" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e1ce6a5a-a3b6-4491-bf41-30dbdc48e616"/>
+				<reportElement key="V_AZ_WERT" mode="Transparent" x="450" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e1ce6a5a-a3b6-4491-bf41-30dbdc48e616">
+					<printWhenExpression><![CDATA[!$P{P_NURMATERIALWERTE}]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -950,20 +1198,117 @@ subtract($V{V_AUFTRAG_AZ})]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{V_AZ_WERT}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="Info" mode="Transparent" x="0" y="22" width="550" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6b6692e5-4f6b-464b-a92d-40a48b01e5d7"/>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="350" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e303c2d5-1876-4f05-a36f-cc4195278c70"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Mat.Anteil:"]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="F_WERT-2" mode="Transparent" x="400" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b28187b9-22af-4ef8-ade6-ae51c34698b3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[AZ-Anteil ist in (Gesamt-)Wert enthalten.]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$V{V_AUFTRAG_MAT}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="KPI_Filterinfo" x="60" y="2" width="30" height="10" uuid="e4d0c457-32dd-4462-840e-eaca4223910b"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.put("LosAblieferung_Filter", $P{P_VON}+" - "+$P{P_BIS})]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="KPI_WertAblieferung" x="90" y="2" width="30" height="10" uuid="7e560423-5c3f-42a5-bff1-87b76a865870"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.put($P{P_OPTION_ARTIKEL_ID} == 0 ? "Losablieferung_Wert" : ("Losablieferung_Wert" + $P{P_OPTION_ARTIKEL_ID}),
+                        $V{V_WERT}
+                       )]]></textFieldExpression>
+			</textField>
+			<timeSeriesChart>
+				<chart isShowLegend="false">
+					<reportElement x="0" y="12" width="550" height="138" uuid="30fc18b0-2b01-4164-9cf1-bf7e9559cb1b">
+						<printWhenExpression><![CDATA[$V{Anzahl_Monate}.intValue() > 1 &&
+$P{P_SORTIERUNG}.startsWith("Ablieferdatum")]]></printWhenExpression>
+					</reportElement>
+					<chartTitle>
+						<font fontName="Arial"/>
+						<titleExpression><![CDATA["Entwicklung der Ablieferwerte pro Monat"]]></titleExpression>
+					</chartTitle>
+					<chartSubtitle/>
+					<chartLegend position="Right"/>
+				</chart>
+				<timeSeriesDataset timePeriod="Month">
+					<dataset resetType="Report"/>
+					<timeSeries>
+						<seriesExpression><![CDATA["Wert"]]></seriesExpression>
+						<timePeriodExpression><![CDATA[$F{F_DATUM}]]></timePeriodExpression>
+						<valueExpression><![CDATA[$V{V_WERT_Monat}]]></valueExpression>
+					</timeSeries>
+				</timeSeriesDataset>
+				<timeSeriesPlot>
+					<plot labelRotation="45.0">
+						<seriesColor seriesOrder="0" color="#0000FF"/>
+					</plot>
+					<timeAxisFormat>
+						<axisFormat>
+							<labelFont>
+								<font fontName="Arial" size="6"/>
+							</labelFont>
+						</axisFormat>
+					</timeAxisFormat>
+					<valueAxisLabelExpression><![CDATA[$P{P_MANDANT_OBJ}.getMandantDto().getWaehrungCNr()]]></valueAxisLabelExpression>
+					<valueAxisFormat>
+						<axisFormat>
+							<labelFont>
+								<font fontName="Arial" size="6"/>
+							</labelFont>
+							<tickLabelFont>
+								<font fontName="Arial" size="6"/>
+							</tickLabelFont>
+						</axisFormat>
+					</valueAxisFormat>
+				</timeSeriesPlot>
+			</timeSeriesChart>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="KPI_AZWertAblieferung" x="120" y="2" width="30" height="10" uuid="87427cf7-3812-4ed9-a357-9d423cf76fe0"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.put( $P{P_OPTION_ARTIKEL_ID} == 0 ?
+	 "AblieferstatistikAZWert" : ("AblieferstatistikAZWert" + $P{P_OPTION_ARTIKEL_ID}) ,
+                        $V{V_AZ_WERT}
+                       )]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="KPI_Artikelpositionen" x="150" y="2" width="30" height="10" uuid="fac0edb1-fd2d-44b3-826d-af936880024b"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.put("FertAblieferungArtikelpositionen",
+                        $V{Anzahl_Artikelpositionen}
+                       )]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="KPI_Artikelgesamtmenge" x="180" y="2" width="30" height="10" uuid="6cc6f3ff-e29d-46f1-a1d0-f9ada9d400e1"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KPI_VARIABLEN}.put("FertAblieferungGesamtMenge",
+                        $V{V_MENGE}
+                       )]]></textFieldExpression>
+			</textField>
 		</band>
 	</summary>
 </jasperReport>

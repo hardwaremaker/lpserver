@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rech_rechnung_qr_zahlschein" pageWidth="586" pageHeight="300" whenNoDataType="AllSectionsNoDetail" columnWidth="586" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="59548f0a-498c-4c86-a088-853b3a83e5aa">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_WAEHRUNG" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_RECHNUNGSENDBETRAG" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="P_STORNIERT" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[1 ... storniert]]></parameterDescription>
+	</parameter>
+	<parameter name="P_IBAN" class="java.lang.String"/>
+	<parameter name="P_BANK_NAME" class="java.lang.String"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_BELEGKENNUNG" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["P_BELEGKENNUNG"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_IHRE_BESTELLNUMMER" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_ZIELDATUMNETTO" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="P_KUNDE_KUNDENNUMMER" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="P_KUNDE_NAME1" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KUNDE_NAME2" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KUNDE_NAME3" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KUNDE_STRASSE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KUNDE_LKZ" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KUNDE_PLZ" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KUNDE_ORT" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_PROJEKT" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_BIC" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_LKZ_KUNDE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_AUFTRAGSNUMMER" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_MANDANTADRESSE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_MANDANT_ANREDE_UND_NAME" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<variable name="IBAN_Mandant" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select C_IBAN from FB_BANKVERBINDUNG where I_ID = ("+
+"      select BANKVERBINDUNG_I_ID_MANDANT from LP_MANDANT where C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"')"
+)]]></variableExpression>
+	</variable>
+	<variable name="Betrag" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[(new DecimalFormat("###0.00").format( $P{P_RECHNUNGSENDBETRAG})).replace(",",".")]]></variableExpression>
+	</variable>
+	<variable name="CRLF" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA["\n"]]></variableExpression>
+	</variable>
+	<variable name="Inhalt" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA["SPC"+$V{CRLF}+
+"0200"+$V{CRLF}+
+"1"+$V{CRLF}+
+org.apache.commons.lang.StringUtils.deleteWhitespace($V{IBAN_Mandant})+$V{CRLF}+
+"K"+$V{CRLF}+
+$P{P_MANDANT_OBJ}.getName1()+$V{CRLF}+
+($P{P_MANDANT_OBJ}.getStrasse()==null?"":$P{P_MANDANT_OBJ}.getStrasse())+$V{CRLF}+
+($P{P_MANDANT_OBJ}.getPLZ()==null?"":""+$P{P_MANDANT_OBJ}.getPLZ())+($P{P_MANDANT_OBJ}.getOrt()==null?"":" "+$P{P_MANDANT_OBJ}.getOrt())+$V{CRLF}+
+$V{CRLF}+
+$V{CRLF}+
+$P{P_MANDANT_OBJ}.getLkz()+$V{CRLF}+
+$V{CRLF}+
+$V{CRLF}+
+$V{CRLF}+
+$V{CRLF}+
+$V{CRLF}+
+$V{CRLF}+
+$V{CRLF}+
+$V{Betrag}+$V{CRLF}+
+$P{P_WAEHRUNG}+$V{CRLF}+
+"K"+$V{CRLF}+
+$P{P_KUNDE_NAME1}+$V{CRLF}+
+($P{P_KUNDE_STRASSE}==null?"":""+$P{P_KUNDE_STRASSE})+$V{CRLF}+
+($P{P_KUNDE_PLZ}==null?"":$P{P_KUNDE_PLZ})+($P{P_KUNDE_ORT}==null?"":" "+$P{P_KUNDE_ORT})+$V{CRLF}+
+$V{CRLF}+
+$V{CRLF}+
+($P{P_KUNDE_LKZ}==null?"":$P{P_KUNDE_LKZ})+$V{CRLF}+
+"NON"+$V{CRLF}+
+$V{CRLF}+
+$V{ZusatzInfo}+$V{CRLF}+
+"EPD"]]></variableExpression>
+	</variable>
+	<variable name="ZusatzInfo" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA["RE: "+$P{P_BELEGKENNUNG} + (com.lp.util.Helper.isStringEmpty($P{P_IHRE_BESTELLNUMMER}) ? "" : (", " + $P{P_IHRE_BESTELLNUMMER}))]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="293" splitType="Stretch">
+			<rectangle>
+				<reportElement mode="Transparent" x="0" y="0" width="586" height="293" uuid="2779a6bc-8627-4fc2-a026-994f0548642b"/>
+			</rectangle>
+			<line>
+				<reportElement x="173" y="0" width="1" height="293" uuid="6c415c74-3b32-4e08-875f-25485e06b76a"/>
+			</line>
+			<staticText>
+				<reportElement mode="Transparent" x="10" y="10" width="100" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="b7417f1a-8bfc-4844-b3a0-709454555435"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Empfangsschein]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="185" y="10" width="100" height="14" uuid="e3f40e95-ab07-4194-8fe5-7cbdc39c59c5"/>
+				<textElement>
+					<font fontName="Arial" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Zahlteil]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="298" y="268" width="278" height="12" uuid="5742b3ec-7974-42b9-a214-c57de214e346">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Inhalt}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="200" y="40" width="130" height="130" uuid="728507f1-6721-40d6-8116-a8a8d3053341">
+					<printWhenExpression><![CDATA[!$P{P_STORNIERT}]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[com.google.zxing.client.j2se.MatrixToImageWriter.toBufferedImage(
+     new com.google.zxing.qrcode.QRCodeWriter().encode(
+         $V{Inhalt},
+         com.google.zxing.BarcodeFormat.QR_CODE, 300, 300))]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="185" y="268" width="100" height="12" uuid="815c457a-e15a-41df-b6b2-1673fddafdf3">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Anmerkungen
+In der Mitte ein Schweizer Logo 7x7 mm
+QR Code 46x46 mm ohne Ruhezone
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="350" y="10" width="100" height="10" uuid="38b765f1-8dbe-4e8a-b9c4-856b1bb4904d"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Konto / Zahlbar an]]></text>
+			</staticText>
+			<image scaleImage="RetainShape" hAlign="Right" vAlign="Top" isUsingCache="false">
+				<reportElement key="Swiss_Cross" mode="Opaque" x="255" y="95" width="20" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="539c57f2-ad49-4086-9398-a5d2fd630616"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+				<imageExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"ck_kreuz_7mm.png").toURL()]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="350" y="20" width="226" height="12" uuid="5b895b12-3cce-4911-a9c3-4643ec136d2d"/>
+				<textElement markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{IBAN_Mandant}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="350" y="160" width="226" height="58" uuid="0bad9b33-499d-494d-8357-f5a77282e5cf"/>
+				<textElement markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KUNDE_NAME1}+
+($P{P_KUNDE_NAME2}==null?"":"\n"+$P{P_KUNDE_NAME2})+
+($P{P_KUNDE_NAME3}==null?"":"\n"+$P{P_KUNDE_NAME3})+
+($P{P_KUNDE_STRASSE}==null?"":"\n"+$P{P_KUNDE_STRASSE})+
+"\n"+($P{P_KUNDE_LKZ}==null?"":$P{P_KUNDE_LKZ})+
+($P{P_KUNDE_PLZ}==null?"":" "+$P{P_KUNDE_PLZ})+
+($P{P_KUNDE_ORT}==null?"":" "+$P{P_KUNDE_ORT})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="350" y="97" width="100" height="10" uuid="1a67a5e1-1258-4cd9-8093-5f71c8e4a7b1"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Zusätzliche Informationen]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="350" y="110" width="226" height="25" uuid="f83c5e34-b146-4103-b0b5-3b427dc2a02b"/>
+				<textElement markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ZusatzInfo}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="350" y="150" width="100" height="10" uuid="1136db37-c3cf-4f46-b5d8-7770753b27bc"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Zahlbar durch]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="350" y="32" width="226" height="58" uuid="ac889114-9404-481d-842f-9c7f46e33583"/>
+				<textElement markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_MANDANT_OBJ}.getName1()+
+($P{P_MANDANT_OBJ}.getName2()==null || $P{P_MANDANT_OBJ}.getName2().length()==0?"":"\n"+$P{P_MANDANT_OBJ}.getName2())+
+($P{P_MANDANT_OBJ}.getName3()==null || $P{P_MANDANT_OBJ}.getName3().length()==0?"":"\n"+$P{P_MANDANT_OBJ}.getName3())+
+($P{P_MANDANT_OBJ}.getStrasse()==null?"":"\n"+$P{P_MANDANT_OBJ}.getStrasse())+
+"\n"+($P{P_MANDANT_OBJ}.getLkz()==null?"":$P{P_MANDANT_OBJ}.getLkz())+
+($P{P_MANDANT_OBJ}.getPLZ()==null?"":" "+$P{P_MANDANT_OBJ}.getPLZ())+
+($P{P_MANDANT_OBJ}.getOrt()==null?"":" "+$P{P_MANDANT_OBJ}.getOrt())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="185" y="180" width="40" height="10" uuid="f9eb8253-12f7-40ac-9036-6bddeb2d88a9"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Währung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="235" y="180" width="40" height="10" uuid="cd393fa0-0d83-4599-b053-ab1182d6dec2"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Betrag]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="185" y="190" width="40" height="12" uuid="b7be1b1b-f47d-4e2a-b547-01c63f10ae07"/>
+				<textElement markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Zwischensumme_Preis" mode="Opaque" x="235" y="190" width="70" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="2d8e9001-174d-4b37-a864-cc62362acc83"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_RECHNUNGSENDBETRAG}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="185" y="234" width="100" height="20" uuid="7d72fe63-bb00-4463-ab9b-c041f5dd30fc">
+					<printWhenExpression><![CDATA[$P{P_STORNIERT}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Storniert]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="10" y="50" width="155" height="10" uuid="9a034181-77d9-4a89-ba09-031e090a59ba"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{IBAN_Mandant}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="10" y="116" width="160" height="40" uuid="7a8aa824-ba9d-4e61-bfbd-e8b769649d53"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KUNDE_NAME1}+
+($P{P_KUNDE_NAME2}==null?"":"\n"+$P{P_KUNDE_NAME2})+
+($P{P_KUNDE_NAME3}==null?"":"\n"+$P{P_KUNDE_NAME3})+
+($P{P_KUNDE_STRASSE}==null?"":"\n"+$P{P_KUNDE_STRASSE})+
+"\n"+($P{P_KUNDE_LKZ}==null?"":$P{P_KUNDE_LKZ})+
+($P{P_KUNDE_PLZ}==null?"":" "+$P{P_KUNDE_PLZ})+
+($P{P_KUNDE_ORT}==null?"":" "+$P{P_KUNDE_ORT})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="62" width="160" height="40" uuid="50a5c76a-9afe-4be9-a6b6-8b8c9d3f04d3"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_MANDANT_OBJ}.getName1()+
+($P{P_MANDANT_OBJ}.getName2()==null || $P{P_MANDANT_OBJ}.getName2().length()==0?"":"\n"+$P{P_MANDANT_OBJ}.getName2())+
+($P{P_MANDANT_OBJ}.getName3()==null || $P{P_MANDANT_OBJ}.getName3().length()==0?"":"\n"+$P{P_MANDANT_OBJ}.getName3())+
+($P{P_MANDANT_OBJ}.getStrasse()==null?"":"\n"+$P{P_MANDANT_OBJ}.getStrasse())+
+"\n"+($P{P_MANDANT_OBJ}.getLkz()==null?"":$P{P_MANDANT_OBJ}.getLkz())+
+($P{P_MANDANT_OBJ}.getPLZ()==null?"":" "+$P{P_MANDANT_OBJ}.getPLZ())+
+($P{P_MANDANT_OBJ}.getOrt()==null?"":" "+$P{P_MANDANT_OBJ}.getOrt())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="10" y="40" width="100" height="8" uuid="1cb68359-1b3a-4704-8f10-7219bff6a11c"/>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Konto / Zahlbar an]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="108" width="100" height="8" uuid="139159ab-ad9f-4028-8a3a-9252b664ce10"/>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Zahlbar durch]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="180" width="40" height="8" uuid="fd29ae82-fdac-413c-b136-5b7af9450218"/>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Währung]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="10" y="188" width="40" height="10" uuid="16c57aaf-5b23-4eff-83fb-863cc511ae10"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Zwischensumme_Preis" mode="Opaque" x="60" y="188" width="70" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="3f36b288-c42f-4324-84ac-e8fc56a64057"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_RECHNUNGSENDBETRAG}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="60" y="180" width="40" height="8" uuid="6e49b77c-a8e0-4eda-8691-38b694ef763c"/>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Betrag]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="125" y="202" width="45" height="8" uuid="f19c5fc7-dd85-49a1-858c-fe4ebd022788"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Annahmestelle]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

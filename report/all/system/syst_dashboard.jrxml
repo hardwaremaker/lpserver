@@ -1,0 +1,768 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="syst_dashboard" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" isIgnorePagination="true" uuid="aa6e16ac-2be2-4b73-962f-79ac8e58a661">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.8181818181818181"/>
+	<property name="ireport.x" value="357"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
+	</parameter>
+	<parameter name="MANDANT_C_NR" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor" isForPrompting="false">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MITLOGO" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[Logodruck:
+0 ... Ohne Logo
+1 ... Mit Logo]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Boolean(true)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_LOGO_IMAGE" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Logo]]></parameterDescription>
+	</parameter>
+	<parameter name="P_LOGO_SUBREPORT" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Logo im Subreport]]></parameterDescription>
+	</parameter>
+	<parameter name="P_FUSSZEILEN_SUBREPORT" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Fusszeilen im Subreport]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="P_SUBREPORTCONNECTION" class="java.sql.Connection" isForPrompting="false"/>
+	<variable name="ConnectionString" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select C_WERT from LP_PARAMETERANWENDER where C_NR = 'REPORT_CONNECTION_URL';"
+)]]></variableExpression>
+	</variable>
+	<variable name="Postgres" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[$V{ConnectionString}.toLowerCase().contains("postgres")]]></variableExpression>
+	</variable>
+	<variable name="Zebra" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(1)]]></initialValueExpression>
+	</variable>
+	<variable name="V_HEUTE" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></variableExpression>
+		<initialValueExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></initialValueExpression>
+	</variable>
+	<variable name="Waehrung" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$P{P_MANDANT_OBJ}.getMandantDto().getWaehrungCNr()]]></variableExpression>
+	</variable>
+	<variable name="PERSONAL_I_ID" class="java.lang.Integer" resetType="None">
+		<variableExpression><![CDATA[$P{P_MANDANT_OBJ}.getTheClientDto().getIDPersonal()]]></variableExpression>
+	</variable>
+	<variable name="MonatVon" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[com.lp.util.Helper.addiereTageZuDatum(
+com.lp.util.HelperReport.getLetztenTagDesMonats($V{V_HEUTE}, -1), 1)]]></variableExpression>
+	</variable>
+	<variable name="MonatBis" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[com.lp.util.HelperReport.getLetztenTagDesMonats($V{V_HEUTE}, 0)]]></variableExpression>
+	</variable>
+	<variable name="MonatVonString" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[($V{Postgres} ?
+$V{MonatVon}.toLocaleString().substring(6,10)+"-"+
+$V{MonatVon}.toLocaleString().substring(3,5)+"-"+
+$V{MonatVon}.toLocaleString().substring(0,2)
+:
+$V{MonatVon}.toLocaleString().substring(0,2)+"."+
+$V{MonatVon}.toLocaleString().substring(3,5)+"."+
+$V{MonatVon}.toLocaleString().substring(6,10)
+)+
+" 00:00:00"]]></variableExpression>
+	</variable>
+	<variable name="MonatBisString" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[($V{Postgres} ?
+$V{MonatBis}.toLocaleString().substring(6,10)+"-"+
+$V{MonatBis}.toLocaleString().substring(3,5)+"-"+
+$V{MonatBis}.toLocaleString().substring(0,2)
+:
+$V{MonatBis}.toLocaleString().substring(0,2)+"."+
+$V{MonatBis}.toLocaleString().substring(3,5)+"."+
+$V{MonatBis}.toLocaleString().substring(6,10)
+)+
+" 23:59:59"]]></variableExpression>
+	</variable>
+	<variable name="Umsatz_im_Monat" class="java.math.BigDecimal" resetType="None">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(N_WERT) from RECH_RECHNUNG where T_BELEGDATUM >= '"+$V{MonatVonString}+"' and T_BELEGDATUM < '"+$V{MonatBisString}+"' and MANDANT_C_NR = '"+$P{MANDANT_C_NR}+"' and STATUS_C_NR != 'Storniert';"
+)]]></variableExpression>
+	</variable>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="31" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="8" width="300" height="22" uuid="b11db095-4f84-49b2-b978-3163330b5542"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Dashboard "+$P{MANDANT_C_NR}+" "+$P{P_MANDANT_OBJ}.getKurzbezeichnung()]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="430" y="8" width="160" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="02f11e8b-162d-4fe1-9b63-823e53d17344"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.GERMAN)).format(Calendar.getInstance(Locale.GERMAN).getTime())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="610" y="0" width="84" height="10" uuid="10ddaf54-1e27-4c76-af6c-a0f0bd07997d"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[PERSONAL_I_ID]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="700" y="0" width="40" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="610f3f66-90e8-4493-8296-c46e10304ba4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PERSONAL_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Vorname" x="610" y="10" width="84" height="10" uuid="c2584f88-7015-4d23-aa8e-bc367a792842"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_MANDANT_OBJ}.getAktuellerBenutzerVorname()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Nachname" x="700" y="10" width="84" height="10" uuid="353ecd2e-a909-431e-960b-58d627d8dcbf"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_MANDANT_OBJ}.getAktuellerBenutzerNachname()]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="30" width="786" height="1" uuid="f6f2de19-5ece-480b-9973-6cb599aaa0d8"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField pattern="">
+				<reportElement key="Von_Monat" x="610" y="20" width="84" height="10" uuid="141e2fea-3d49-4d9c-b720-55ee849f1ad2"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MonatVonString}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement key="Von_Monat" x="700" y="20" width="84" height="10" uuid="b3105ff5-bfab-43d5-a368-a2a0eb92aa37"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MonatBisString}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="300" y="8" width="130" height="22" backcolor="#CCCCCC" uuid="2392badc-4032-43b4-a2d1-5a27bf04b317"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="16"/>
+				</textElement>
+				<text><![CDATA[preliminary]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band splitType="Stretch">
+			<printWhenExpression><![CDATA[]]></printWhenExpression>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="10" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="REPORT_INFORMATION-1" mode="Opaque" x="0" y="2" width="549" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="59321534-d0a9-4dc6-b9a3-b502538b94a0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="70">
+			<subreport>
+				<reportElement key="Subreport_meine_offenen_Angebote" positionType="Float" x="0" y="0" width="786" height="10" uuid="fc07da24-6ab8-4d29-b1b2-79e1678f8a96"/>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[$V{Waehrung}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SQLEXEC">
+					<subreportParameterExpression><![CDATA[$P{P_SQLEXEC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ZEBRA">
+					<subreportParameterExpression><![CDATA[$V{Zebra}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MANDANT_OBJ">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PERSONAL_I_ID">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}.getTheClientDto().getIDPersonal()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MANDANT_C_NR">
+					<subreportParameterExpression><![CDATA[$P{MANDANT_C_NR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HEUTE">
+					<subreportParameterExpression><![CDATA[$V{V_HEUTE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_SQLEXEC}.subreport("select * from ANGB_ANGEBOT where MANDANT_C_NR='"+$P{MANDANT_C_NR}+"' and PERSONAL_I_ID_VERTRETER="+$V{PERSONAL_I_ID}+" "+
+"and not (ANGEBOTSTATUS_C_NR='Storniert' or ANGEBOTSTATUS_C_NR='Erledigt') "+
+"order by T_NACHFASSTERMIN desc;",
+new String[] {"i_id",
+"c_nr",
+"mandant_c_nr",
+"angebotart_c_nr",
+"angebotstatus_c_nr",
+"belegart_c_nr",
+"t_belegdatum",
+"t_anfragedatum",
+"t_angebotsgueltigkeitbis",
+"kunde_i_id_angebotsadresse",
+"ansprechpartner_i_id_kunde",
+"personal_i_id_vertreter",
+"c_bez",
+"waehrung_c_nr_angebotswaehrung",
+"f_wechselkursmandantwaehrungzuangebotswaehrung",
+"i_lieferzeitinstunden",
+"angeboteinheit_c_nr",
+"kostenstelle_i_id",
+"angeboterledigungsgrund_c_nr",
+"t_nachfasstermin",
+"t_realisierungstermin",
+"f_auftragswahrscheinlichkeit",
+"x_ablageort",
+"f_versteckteraufschlag",
+"f_allgemeinerrabattsatz",
+"f_projektierungsrabattsatz",
+"lieferart_i_id",
+"zahlungsziel_i_id",
+"spediteur_i_id",
+"i_garantie",
+"n_gesamtangebotswertinangebotswaehrung",
+"angebottext_i_id_kopftext",
+"x_kopftextuebersteuert",
+"angebottext_i_id_fusstext",
+"x_fusstextuebersteuert",
+"t_gedruckt",
+"personal_i_id_storniert",
+"t_storniert",
+"personal_i_id_manuellerledigt",
+"t_manuellerledigt",
+"personal_i_id_anlegen",
+"t_anlegen",
+"personal_i_id_aendern",
+"t_aendern",
+"x_externerkommentar",
+"x_internerkommentar",
+"t_versandzeitpunkt",
+"c_versandtype",
+"c_kundenanfrage",
+"b_mitzusammenfassung",
+"c_lieferartort",
+"projekt_i_id",
+"n_korrekturbetrag",
+"t_aenderungsangebot",
+"i_aenderungsangebot_version",
+"kunde_i_id_rechnungsadresse",
+"kunde_i_id_lieferadresse",
+"ansprechpartner_i_id_rechnungsadresse",
+"ansprechpartner_i_id_lieferadresse",
+"personal_i_id_vertreter2"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"syst_dashboard_offene_ag.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement key="Subreport_meine_offenen_Auftraege" positionType="Float" x="0" y="10" width="786" height="10" uuid="fc07da24-6ab8-4d29-b1b2-79e1678f8a96"/>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[$V{Waehrung}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SQLEXEC">
+					<subreportParameterExpression><![CDATA[$P{P_SQLEXEC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ZEBRA">
+					<subreportParameterExpression><![CDATA[$V{Zebra}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MANDANT_OBJ">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PERSONAL_I_ID">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}.getTheClientDto().getIDPersonal()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MANDANT_C_NR">
+					<subreportParameterExpression><![CDATA[$P{MANDANT_C_NR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HEUTE">
+					<subreportParameterExpression><![CDATA[$V{V_HEUTE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_SQLEXEC}.subreport("select * from AUFT_AUFTRAG where MANDANT_C_NR='"+$P{MANDANT_C_NR}+"' and PERSONAL_I_ID_VERTRETER="+$V{PERSONAL_I_ID}+" "+
+"and not (AUFTRAGSTATUS_C_NR='Storniert' or AUFTRAGSTATUS_C_NR='Erledigt') "+
+"order by T_LIEFERTERMIN desc;",
+new String[] {"i_id",
+"c_nr",
+"mandant_c_nr",
+"auftragart_c_nr",
+"auftragstatus_c_nr",
+"belegart_c_nr",
+"t_belegdatum",
+"kunde_i_id_auftragsadresse",
+"ansprechpartner_i_id_kunde",
+"personal_i_id_vertreter",
+"kunde_i_id_lieferadresse",
+"kunde_i_id_rechnungsadresse",
+"c_bez",
+"c_bestellnummer",
+"t_bestelldatum",
+"waehrung_c_nr_auftragswaehrung",
+"f_wechselkursmandantwaehrungzuauftragswaehrung",
+"f_sonderrabattsatz",
+"t_liefertermin",
+"b_lieferterminunverbindlich",
+"t_finaltermin",
+"kostenstelle_i_id",
+"b_teillieferungmoeglich",
+"b_poenale",
+"i_leihtage",
+"f_versteckteraufschlag",
+"f_allgemeinerrabattsatz",
+"f_projektierungsrabattsatz",
+"lieferart_i_id",
+"zahlungsziel_i_id",
+"spediteur_i_id",
+"i_garantie",
+"n_gesamtauftragswertinauftragswaehrung",
+"n_materialwertinmandantenwaehrung",
+"n_rohdeckunginmandantenwaehrung",
+"auftragtext_i_id_kopftext",
+"x_kopftextuebersteuert",
+"auftragtext_i_id_fusstext",
+"x_fusstextuebersteuert",
+"t_gedruckt",
+"personal_i_id_storniert",
+"t_storniert",
+"personal_i_id_manuellerledigt",
+"t_manuellerledigt",
+"personal_i_id_anlegen",
+"t_anlegen",
+"personal_i_id_aendern",
+"t_aendern",
+"auftrag_i_id_rahmenauftrag",
+"angebot_i_id",
+"x_externerkommentar",
+"x_internerkommentar",
+"t_erledigt",
+"personal_i_id_erledigt",
+"t_lauftermin",
+"auftragwiederholungsintervall_c_nr",
+"f_erfuellungsgrad",
+"b_rohs",
+"n_rohdeckungaltinmandantenwaehrung",
+"t_versandzeitpunkt",
+"c_versandtype",
+"auftragbegruendung_i_id",
+"personal_i_id_begruendung",
+"t_begruendung",
+"b_versteckt",
+"ansprechpartner_i_id_lieferadresse",
+"b_mitzusammenfassung",
+"lager_i_id_abbuchungslager",
+"ansprechpartner_i_id_rechnungsadresse",
+"c_lieferartort",
+"t_verrechenbar",
+"personal_i_id_verrechenbar",
+"projekt_i_id",
+"n_korrekturbetrag",
+"t_response",
+"personal_i_id_response",
+"t_freigabe",
+"personal_i_id_freigabe",
+"n_praemie",
+"t_wunschtermin",
+"t_aenderungsauftrag",
+"t_lauftermin_bis",
+"bestellung_i_id_anderermandant",
+"t_auftragsfreigabe",
+"personal_i_id_auftragsfreigabe",
+"n_indexanpassung",
+"verrechenbar_i_id",
+"i_aenderungsauftrag_version",
+"laenderart_c_nr",
+"verrechnungsmodell_i_id" })]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"syst_dashboard_offene_ab.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement key="Subreport_meine_offenen_Bestellungen" positionType="Float" x="0" y="20" width="786" height="10" uuid="fc07da24-6ab8-4d29-b1b2-79e1678f8a96"/>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[$V{Waehrung}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SQLEXEC">
+					<subreportParameterExpression><![CDATA[$P{P_SQLEXEC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ZEBRA">
+					<subreportParameterExpression><![CDATA[$V{Zebra}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MANDANT_OBJ">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PERSONAL_I_ID">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}.getTheClientDto().getIDPersonal()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MANDANT_C_NR">
+					<subreportParameterExpression><![CDATA[$P{MANDANT_C_NR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HEUTE">
+					<subreportParameterExpression><![CDATA[$V{V_HEUTE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_SQLEXEC}.subreport("select * from BES_BESTELLUNG where MANDANT_C_NR='"+$P{MANDANT_C_NR}+"' and PERSONAL_I_ID_ANFORDERER="+$V{PERSONAL_I_ID}+" "+
+"and not (BESTELLUNGSTATUS_C_NR='Storniert' or BESTELLUNGSTATUS_C_NR='Erledigt') "+
+"order by T_LIEFERTERMIN desc;",
+new String[] {"i_id",
+"c_nr",
+"mandant_c_nr",
+"bestellungart_c_nr",
+"bestellungstatus_c_nr",
+"belegart_c_nr",
+"t_belegdatum",
+"lieferant_i_id_bestelladresse",
+"ansprechpartner_i_id",
+"personal_i_id_anforderer",
+"lieferant_i_id_rechnungsadresse",
+"c_bezprojektbezeichnung",
+"waehrung_c_nr_bestellungswaehrung",
+"f_wechselkursmandantwaehrungbestellungswaehrung",
+"t_liefertermin",
+"kostenstelle_i_id",
+"b_teillieferungmoeglich",
+"i_leihtage",
+"f_allgemeinerrabattsatz",
+"lieferart_i_id",
+"zahlungsziel_i_id",
+"spediteur_i_id",
+"n_bestellwert",
+"bestellungtext_i_id_kopftext",
+"c_kopftextuebersteuert",
+"bestellungtext_i_id_fusstext",
+"c_fusstextuebersteuert",
+"anfrage_i_id",
+"t_gedruckt",
+"personal_i_id_storniert",
+"t_storniert",
+"personal_i_id_anlegen",
+"t_anlegen",
+"personal_i_id_aendern",
+"t_aendern",
+"partner_i_id_lieferadresse",
+"personal_i_id_manuellgeliefert",
+"t_manuellgeliefert",
+"bestellung_i_id_rahmenbestellung",
+"t_mahnsperrebis",
+"x_externerkommentar",
+"x_internerkommentar",
+"auftrag_i_id",
+"mahnstufe_i_id",
+"t_aenderungsbestellung",
+"t_versandzeitpunkt",
+"ansprechpartner_i_id_lieferadresse",
+"c_versandtype",
+"partner_i_id_abholadresse",
+"ansprechpartner_i_id_abholadresse",
+"b_poenale",
+"c_lieferantenangebot",
+"c_lieferartort",
+"projekt_i_id",
+"n_korrekturbetrag",
+"t_komissionierung_geplant",
+"t_komissionierung_durchgefueht",
+"t_uebergabe_technik",
+"t_vollstaendig_geliefert",
+"i_aenderungsbestellung_version",
+"n_transportkosten" })]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"syst_dashboard_offene_bs.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement key="Subreport_meine_offenen_Projekte" positionType="Float" x="0" y="30" width="786" height="10" uuid="fc07da24-6ab8-4d29-b1b2-79e1678f8a96"/>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[$V{Waehrung}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SQLEXEC">
+					<subreportParameterExpression><![CDATA[$P{P_SQLEXEC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ZEBRA">
+					<subreportParameterExpression><![CDATA[$V{Zebra}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MANDANT_OBJ">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PERSONAL_I_ID">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}.getTheClientDto().getIDPersonal()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MANDANT_C_NR">
+					<subreportParameterExpression><![CDATA[$P{MANDANT_C_NR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HEUTE">
+					<subreportParameterExpression><![CDATA[$V{V_HEUTE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_SQLEXEC}.subreport("select "+
+"PROJ_PROJEKT.I_ID, KATEGORIE_C_NR, C_TITEL, PERSONAL_I_ID_ERZEUGER, PERSONAL_I_ID_ZUGEWIESENER, I_PRIO, X_FREETEXT, T_ZIELWUNSCHDATUM,"+
+"PARTNER_I_ID, ANSPRECHPARTNER_I_ID, I_VERRECHENBAR, PERSONAL_I_ID_ANLEGEN, T_ANLEGEN, PERSONAL_I_ID_AENDERN, T_AENDERN,"+
+"PROJEKTSTATUS_C_NR, PROJ_PROJEKT.MANDANT_C_NR, T_ZEIT, PROJEKTTYP_C_NR, T_ERLEDIGT, PERSONAL_I_ID_ERLEDIGER, F_DAUER,"+
+"PROJ_PROJEKT.C_NR, B_FREIGEGEBEN, PROJ_PROJEKT.I_SORT, N_UMSATZGEPLANT, I_WAHRSCHEINLICHKEIT, PROJEKTERLEDIGUNGSGRUND_I_ID, BEREICH_I_ID,"+
+"PROJEKT_I_ID_NACHFOLGER, T_INTERNERLEDIGT, PERSONAL_I_ID_INTERNERLEDIGT, C_BUILDNUMBER, C_DEPLOYNUMBER,"+
+"PARTNER_I_ID_BETREIBER, VKFORTSCHRITT_I_ID, T_REALISIERUNG, ANSPRECHPARTNER_I_ID_BETREIBER, ARTIKEL_I_ID, PROJ_PROJEKTSTATUS.C_NR as C_NR_STATUS, PROJ_BEREICH.C_BEZ as C_BEZ_BEREICH "+
+"from PROJ_PROJEKT "+
+"inner join PROJ_PROJEKTSTATUS on PROJ_PROJEKTSTATUS.C_NR+PROJ_PROJEKTSTATUS.MANDANT_C_NR=PROJ_PROJEKT.PROJEKTSTATUS_C_NR+PROJ_PROJEKT.MANDANT_C_NR "+
+"inner join PROJ_BEREICH on PROJ_PROJEKT.BEREICH_I_ID=PROJ_BEREICH.I_ID "+
+"where PROJ_PROJEKT.MANDANT_C_NR='"+$P{MANDANT_C_NR}+"' and "+
+"(PROJ_PROJEKT.PERSONAL_I_ID_ZUGEWIESENER="+$V{PERSONAL_I_ID}+" or PROJ_PROJEKT.I_ID in (select PROJEKT_I_ID from PROJ_PROJEKTTECHNIKER where PROJ_PROJEKTTECHNIKER.PERSONAL_I_ID="+$V{PERSONAL_I_ID}+")) "+
+" and PROJ_PROJEKTSTATUS.B_ERLEDIGT=0 and not PROJ_PROJEKTSTATUS.C_NR='Storniert' "+
+"order by PROJ_BEREICH.I_SORT, PROJ_PROJEKT.T_ZIELWUNSCHDATUM desc;",
+new String[] {"i_id",
+"kategorie_c_nr",
+"c_titel",
+"personal_i_id_erzeuger",
+"personal_i_id_zugewiesener",
+"i_prio",
+"x_freetext",
+"t_zielwunschdatum",
+"partner_i_id",
+"ansprechpartner_i_id",
+"i_verrechenbar",
+"personal_i_id_anlegen",
+"t_anlegen",
+"personal_i_id_aendern",
+"t_aendern",
+"projektstatus_c_nr",
+"mandant_c_nr",
+"t_zeit",
+"projekttyp_c_nr",
+"t_erledigt",
+"personal_i_id_erlediger",
+"f_dauer",
+"c_nr",
+"b_freigegeben",
+"i_sort",
+"n_umsatzgeplant",
+"i_wahrscheinlichkeit",
+"projekterledigungsgrund_i_id",
+"bereich_i_id",
+"projekt_i_id_nachfolger",
+"t_internerledigt",
+"personal_i_id_internerledigt",
+"c_buildnumber",
+"c_deploynumber",
+"partner_i_id_betreiber",
+"vkfortschritt_i_id",
+"t_realisierung",
+"ansprechpartner_i_id_betreiber",
+"artikel_i_id",
+"c_nr_status",
+"c_bez_bereich" })]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"syst_dashboard_offene_pj.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement key="Subreport_offene_Lieferscheine" positionType="Float" x="0" y="40" width="786" height="10" uuid="fc07da24-6ab8-4d29-b1b2-79e1678f8a96"/>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[$V{Waehrung}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SQLEXEC">
+					<subreportParameterExpression><![CDATA[$P{P_SQLEXEC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ZEBRA">
+					<subreportParameterExpression><![CDATA[$V{Zebra}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MANDANT_OBJ">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PERSONAL_I_ID">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}.getTheClientDto().getIDPersonal()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MANDANT_C_NR">
+					<subreportParameterExpression><![CDATA[$P{MANDANT_C_NR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HEUTE">
+					<subreportParameterExpression><![CDATA[$V{V_HEUTE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_SQLEXEC}.subreport("select * from LS_LIEFERSCHEIN "+
+    "where (LIEFERSCHEINSTATUS_C_NR='Angelegt' or LIEFERSCHEINSTATUS_C_NR='Offen' or LIEFERSCHEINSTATUS_C_NR='Geliefert') "+
+    "and MANDANT_C_NR='"+$P{MANDANT_C_NR}+"' order by B_VERRECHENBAR, LIEFERSCHEINART_C_NR, C_NR;",
+new String[] {"i_id",
+"rechnung_i_id",
+"c_nr",
+"mandant_c_nr",
+"lieferscheinart_c_nr",
+"lieferscheinstatus_c_nr",
+"belegart_c_nr",
+"t_belegdatum",
+"b_verrechenbar",
+"kunde_i_id_lieferadresse",
+"ansprechpartner_i_id_kunde",
+"personal_i_id_vertreter",
+"kunde_i_id_rechnungsadresse",
+"c_bez",
+"c_bestellnummer",
+"waehrung_c_nr_lieferscheinwaehrung",
+"f_wechselkursmandantwaehrungzulieferscheinwaehrung",
+"f_versteckteraufschlag",
+"f_allgemeinerrabatt",
+"n_gesamtwertinlieferscheinwaehrung",
+"n_gestehungswertinmandantenwaehrung",
+"kostenstelle_i_id",
+"lager_i_id",
+"t_liefertermin",
+"t_rueckgabetermin",
+"lieferart_i_id",
+"zahlungsziel_i_id",
+"spediteur_i_id",
+"i_anzahlpakete",
+"f_gewichtlieferung",
+"c_versandnummer",
+"lieferscheintext_i_id_kopftext",
+"x_kopftextuebersteuert",
+"lieferscheintext_i_id_fusstext",
+"x_fusstextuebersteuert",
+"t_gedruckt",
+"personal_i_id_manuellerledigt",
+"t_manuellerledigt",
+"personal_i_id_storniert",
+"t_storniert",
+"personal_i_id_anlegen",
+"t_anlegen",
+"personal_i_id_aendern",
+"t_aendern",
+"auftrag_i_id",
+"ziellager_i_id",
+"c_kommission",
+"t_versandzeitpunkt",
+"c_versandtype",
+"begruendung_i_id",
+"ansprechpartner_i_id_rechnungsadresse",
+"c_lieferartort",
+"projekt_i_id",
+"eingangsrechnung_i_id_zollexport",
+"c_zollexportpapier",
+"t_zollexportpapier",
+"personal_i_id_zollexportpapier",
+"t_lieferaviso",
+"personal_i_id_lieferaviso",
+"c_versandnummer2",
+"i_kommissioniertyp",
+"laenderart_c_nr"
+})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"syst_dashboard_offene_ls.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement key="Subreport_Umsatz" positionType="Float" x="0" y="60" width="786" height="10" uuid="fc07da24-6ab8-4d29-b1b2-79e1678f8a96"/>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[$V{Waehrung}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SQLEXEC">
+					<subreportParameterExpression><![CDATA[$P{P_SQLEXEC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Umsatz_im_Monat">
+					<subreportParameterExpression><![CDATA[$V{Umsatz_im_Monat}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ZEBRA">
+					<subreportParameterExpression><![CDATA[$V{Zebra}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PERSONAL_I_ID">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}.getTheClientDto().getIDPersonal()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MANDANT_OBJ">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="SollUmsatz_im_Monat">
+					<subreportParameterExpression><![CDATA[new BigDecimal(100000.00)]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MANDANT_C_NR">
+					<subreportParameterExpression><![CDATA[$P{MANDANT_C_NR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HEUTE">
+					<subreportParameterExpression><![CDATA[$V{V_HEUTE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{P_SUBREPORTCONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"syst_dashboard_re_umsatz.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement key="Subreport_meine_wiedervorlage" positionType="Float" x="0" y="50" width="786" height="10" uuid="fc07da24-6ab8-4d29-b1b2-79e1678f8a96"/>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[$V{Waehrung}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SQLEXEC">
+					<subreportParameterExpression><![CDATA[$P{P_SQLEXEC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ZEBRA">
+					<subreportParameterExpression><![CDATA[$V{Zebra}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MANDANT_OBJ">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PERSONAL_I_ID">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}.getTheClientDto().getIDPersonal()]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MANDANT_C_NR">
+					<subreportParameterExpression><![CDATA[$P{MANDANT_C_NR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HEUTE">
+					<subreportParameterExpression><![CDATA[$V{V_HEUTE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_SQLEXEC}.subreport(
+"select T_WIEDERVORLAGE, PART_PARTNER.C_NAME1NACHNAMEFIRMAZEILE1, "+
+"ANSP.ANREDE_C_NR, ANSP.C_NAME2VORNAMEFIRMAZEILE2, ANSP.C_NAME1NACHNAMEFIRMAZEILE1, T_VON, "+
+"CAST(X_KOMMENTAREXT as VARCHAR(3000)) from PERS_TELEFONZEITEN "+
+"left outer join PART_PARTNER on PART_PARTNER.I_ID=PERS_TELEFONZEITEN.PARTNER_I_ID "+
+"left outer join PART_PARTNER as ANSP on ANSP.I_ID=PERS_TELEFONZEITEN.ANSPRECHPARTNER_I_ID "+
+"where PERSONAL_I_ID = "+$V{PERSONAL_I_ID}+" "+
+"and not T_WIEDERVORLAGE is null and T_WIEDERVORLAGE_ERLEDIGT is null "+
+"order by T_WIEDERVORLAGE;",
+new String[] {"t_wiedervorlage",
+"firma",
+"ansp_anrede",
+"ansp_vorname",
+"ansp_nachname",
+"t_von",
+"kommentar_ext" })]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"syst_dashboard_wiedervorlage.jasper").toURL()]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

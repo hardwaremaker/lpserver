@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proj_projekt_journal_trichter_prio" pageWidth="782" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0ac2a9db-f95f-4192-b3dc-0ae5e2410bc1">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="175"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Termin">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_WANN}==null]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#FFA132" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_WANN}.before( $V{V_HEUTE} ) &&
+($F{F_ERLEDIGUNGSGRAD} == null || $F{F_ERLEDIGUNGSGRAD}.doubleValue() < 95)]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#FF0000" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="P_LAGERMINDESTSTAND" class="java.lang.Double" isForPrompting="false"/>
+	<parameter name="P_LAGERSOLLSTAND" class="java.lang.Double" isForPrompting="false"/>
+	<field name="Sort" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="Termin" class="java.util.Date">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="Menge" class="java.math.BigDecimal"/>
+	<field name="ForecastBwg" class="java.math.BigDecimal"/>
+	<group name="Tag">
+		<groupExpression><![CDATA[$F{Sort}]]></groupExpression>
+	</group>
+	<title>
+		<band height="10">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<staticText>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="0" width="60" height="10" uuid="9b5d895d-dc72-49e1-9426-7172cbe1b579"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Sort]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="FixRelativeToBottom" x="60" y="0" width="105" height="10" uuid="a009e10b-deb7-4570-a982-50424bdd6cc9"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Termin]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="FixRelativeToBottom" x="165" y="0" width="60" height="10" uuid="2738e2fa-a637-436b-84f9-cc8e989a8a68"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Menge]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="60" height="10" uuid="7eb04eec-5013-4e2c-b71a-015e566eccde"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Sort}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="60" y="0" width="105" height="10" uuid="9c0c81b8-2303-4d39-9a60-dcf1ec153a96"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Termin}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000">
+				<reportElement x="165" y="0" width="45" height="10" uuid="9f18199e-611d-44cc-a385-567f10c6da28"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Menge}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="100">
+			<timeSeriesChart>
+				<chart isShowLegend="true" renderType="image">
+					<reportElement x="0" y="0" width="690" height="100" uuid="f2ea4b5c-14a7-4b6e-b89a-a9aeac9839d3"/>
+					<chartTitle/>
+					<chartSubtitle/>
+					<chartLegend position="Right">
+						<font fontName="Arial" size="8"/>
+					</chartLegend>
+				</chart>
+				<timeSeriesDataset timePeriod="Minute">
+					<timeSeries>
+						<seriesExpression><![CDATA["fiktiver Lagerstand"]]></seriesExpression>
+						<timePeriodExpression><![CDATA[$F{Termin}]]></timePeriodExpression>
+						<valueExpression><![CDATA[$F{Menge}]]></valueExpression>
+					</timeSeries>
+					<timeSeries>
+						<seriesExpression><![CDATA["Nulllinie"]]></seriesExpression>
+						<timePeriodExpression><![CDATA[$F{Termin}]]></timePeriodExpression>
+						<valueExpression><![CDATA[BigDecimal.ZERO]]></valueExpression>
+					</timeSeries>
+					<timeSeries>
+						<seriesExpression><![CDATA["Mindest Lagerstand"]]></seriesExpression>
+						<timePeriodExpression><![CDATA[$F{Termin}]]></timePeriodExpression>
+						<valueExpression><![CDATA[$P{P_LAGERMINDESTSTAND}]]></valueExpression>
+					</timeSeries>
+					<timeSeries>
+						<seriesExpression><![CDATA["Soll Lagerstand"]]></seriesExpression>
+						<timePeriodExpression><![CDATA[$F{Termin}]]></timePeriodExpression>
+						<valueExpression><![CDATA[$P{P_LAGERSOLLSTAND}]]></valueExpression>
+					</timeSeries>
+					<timeSeries>
+						<seriesExpression><![CDATA["Forecast"]]></seriesExpression>
+						<timePeriodExpression><![CDATA[$F{Termin}]]></timePeriodExpression>
+						<valueExpression><![CDATA[$F{ForecastBwg}.add($F{Menge})]]></valueExpression>
+						<labelExpression><![CDATA["Forecast"]]></labelExpression>
+					</timeSeries>
+				</timeSeriesDataset>
+				<timeSeriesPlot isShowLines="true" isShowShapes="false">
+					<plot>
+						<seriesColor seriesOrder="0" color="#0000FF"/>
+						<seriesColor seriesOrder="1" color="#FF0000"/>
+						<seriesColor seriesOrder="2" color="#FF9933"/>
+						<seriesColor seriesOrder="3" color="#009900"/>
+						<seriesColor seriesOrder="4" color="#66FF66"/>
+					</plot>
+					<timeAxisFormat>
+						<axisFormat verticalTickLabels="false"/>
+					</timeAxisFormat>
+					<valueAxisFormat>
+						<axisFormat verticalTickLabels="false"/>
+					</valueAxisFormat>
+				</timeSeriesPlot>
+			</timeSeriesChart>
+		</band>
+	</summary>
+</jasperReport>

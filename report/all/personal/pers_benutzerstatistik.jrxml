@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 5.5.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pers_benutzerstatistik" columnCount="9" pageWidth="595" pageHeight="842" columnWidth="59" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryNewPage="true" isSummaryWithPageHeaderAndFooter="true" uuid="35ddbae0-10bd-4371-9f56-448d1d715496">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.7715610000000048"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="404"/>
+	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -24,9 +25,18 @@
 	<parameter name="P_BIS" class="java.sql.Timestamp" isForPrompting="false">
 		<parameterDescription><![CDATA[Bis]]></parameterDescription>
 	</parameter>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MAX_USERS" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="P_SERVER_ID" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="P_ABLAUF" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="P_SUBSCRIPTION" class="java.util.Date" isForPrompting="false"/>
 	<field name="Rolle" class="java.lang.String"/>
 	<field name="Anzahl" class="java.lang.Integer"/>
 	<field name="Datum" class="java.sql.Timestamp"/>
+	<field name="MaxUsers" class="java.lang.Integer"/>
 	<variable name="Wochentag" class="java.lang.String">
 		<variableExpression><![CDATA[com.lp.util.HelperReport.getWochentag($P{REPORT_LOCALE}, $F{Datum}).substring(0,2)]]></variableExpression>
 	</variable>
@@ -73,6 +83,69 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 	<variable name="GesamtMap_Wochentag" class="java.util.Map" calculation="First">
 		<variableExpression><![CDATA[$V{GesamtMap_Wochentag} == null ? new TreeMap() : $V{GesamtMap_Wochentag}]]></variableExpression>
 		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="ConnectionString" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select C_WERT from LP_PARAMETERANWENDER where C_NR = 'REPORT_CONNECTION_URL';"
+)]]></variableExpression>
+	</variable>
+	<variable name="Postgres" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[$V{ConnectionString}.toLowerCase().contains("postgres")]]></variableExpression>
+	</variable>
+	<variable name="Bestliste" class="java.lang.Long">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"SELECT cast(count(*) as bigint) FROM WW_ARTIKELBESTELLT;"
+)]]></variableExpression>
+	</variable>
+	<variable name="Reservierungsliste" class="java.lang.Long">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"SELECT cast(count(*) as bigint) FROM WW_ARTIKELRESERVIERUNG;"
+)]]></variableExpression>
+	</variable>
+	<variable name="Fehlmengenliste" class="java.lang.Long">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"SELECT cast(count(*) as bigint) FROM WW_ARTIKELFEHLMENGE;"
+)]]></variableExpression>
+	</variable>
+	<variable name="MaxAB_Pos" class="java.lang.Object" resetType="None">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.executes(
+$V{Postgres} ?
+"SELECT auftrag_i_id, cast(COUNT(auftrag_i_id) as bigint) FROM auft_auftragposition "+
+"GROUP BY auftrag_i_id "+
+"ORDER BY COUNT(auftrag_i_id) DESC LIMIT 1;"
+:
+"SELECT TOP 1 AUFTRAG_I_ID, cast(COUNT(AUFTRAG_I_ID) as bigint) FROM AUFT_AUFTRAGPOSITION "+
+"GROUP BY AUFTRAG_I_ID "+
+"ORDER BY COUNT(AUFTRAG_I_ID) DESC;"
+)]]></variableExpression>
+	</variable>
+	<variable name="MaxAB_Pos_1" class="java.lang.Long" resetType="None">
+		<variableExpression><![CDATA[((Object[])
+$P{P_SQLEXEC}.executes(
+$V{Postgres} ?
+"SELECT auftrag_i_id, cast(COUNT(auftrag_i_id) as bigint) FROM auft_auftragposition "+
+"GROUP BY auftrag_i_id "+
+"ORDER BY COUNT(auftrag_i_id) DESC LIMIT 1;"
+:
+"SELECT TOP 1 AUFTRAG_I_ID, cast(COUNT(AUFTRAG_I_ID) as bigint) FROM AUFT_AUFTRAGPOSITION "+
+"GROUP BY AUFTRAG_I_ID "+
+"ORDER BY COUNT(AUFTRAG_I_ID) DESC;"
+)
+)[1]]]></variableExpression>
+	</variable>
+	<variable name="MaxLS_Pos" class="java.lang.Long" resetType="None">
+		<variableExpression><![CDATA[((Object[])
+$P{P_SQLEXEC}.executes(
+$V{Postgres} ?
+"SELECT LIEFERSCHEIN_I_ID, cast(COUNT(LIEFERSCHEIN_I_ID) as bigint) FROM LS_LIEFERSCHEINPOSITION "+
+"GROUP BY LIEFERSCHEIN_I_ID "+
+"ORDER BY COUNT(LIEFERSCHEIN_I_ID) DESC LIMIT 1;"
+:
+"SELECT TOP 1 LIEFERSCHEIN_I_ID, cast(COUNT(LIEFERSCHEIN_I_ID) as bigint) FROM LS_LIEFERSCHEINPOSITION "+
+"GROUP BY LIEFERSCHEIN_I_ID "+
+"ORDER BY COUNT(LIEFERSCHEIN_I_ID) DESC;"
+)
+)[1]]]></variableExpression>
 	</variable>
 	<group name="Monat" isStartNewPage="true">
 		<groupExpression><![CDATA[$V{Jahr_Monat}]]></groupExpression>
@@ -158,21 +231,27 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 /* ist die Gesamtsumme der User an Wochentagen */]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="0" y="1" width="20" height="10" uuid="a9367970-135d-4513-b160-c654c6521809"/>
+					<reportElement x="0" y="1" width="20" height="10" uuid="a9367970-135d-4513-b160-c654c6521809">
+						<printWhenExpression><![CDATA[$V{MaxAnzahl} != null]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{MaxAnzahl}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="/" x="20" y="1" width="10" height="10" uuid="a6865f49-53be-4969-8e19-fdcb1a2893b5"/>
+					<reportElement key="/" x="20" y="1" width="10" height="10" uuid="a6865f49-53be-4969-8e19-fdcb1a2893b5">
+						<printWhenExpression><![CDATA[$V{MaxAnzahl} != null]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Center">
 						<font fontName="Arial" size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA["/"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="30" y="1" width="20" height="10" uuid="120c651a-1e2b-4f56-a0fa-ba939a0a8d80"/>
+					<reportElement x="30" y="1" width="20" height="10" uuid="120c651a-1e2b-4f56-a0fa-ba939a0a8d80">
+						<printWhenExpression><![CDATA[$V{MaxAnzahl} != null]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
 					</textElement>
@@ -196,9 +275,6 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 			</band>
 		</groupFooter>
 	</group>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
 	<title>
 		<band splitType="Stretch"/>
 	</title>
@@ -213,7 +289,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
@@ -226,7 +302,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}) + " von "]]></textFieldExpression>
 			</textField>
@@ -239,7 +315,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
 			</textField>
@@ -252,7 +328,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Benutzerstatistik]]></text>
 			</staticText>
@@ -265,7 +341,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Von:]]></text>
 			</staticText>
@@ -278,7 +354,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_VON}]]></textFieldExpression>
 			</textField>
@@ -291,7 +367,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[bis:]]></text>
 			</staticText>
@@ -304,10 +380,84 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_BIS}]]></textFieldExpression>
 			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="Mandant" mode="Opaque" x="380" y="22" width="155" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="c1ae0388-660f-4b46-8950-feb26f0ed0c7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_MANDANT_OBJ}.getKurzbezeichnung()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="für" mode="Opaque" x="340" y="22" width="40" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="8d1aff77-6897-41c5-b47d-9f4dc4081556"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[für Lizenz:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="400" y="34" width="80" height="10" uuid="1d38e7c1-6b05-4590-a191-051babb26959"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[HELIUM V Server ID]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="###0">
+				<reportElement positionType="Float" x="480" y="34" width="30" height="10" uuid="5cf0e593-5555-4d9c-b120-6c0b18e8f4b9"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SERVER_ID}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="45" y="34" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="cc438d42-82e3-4776-b8f4-b31256d583c8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_ABLAUF}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="233" y="34" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4c25f2bf-40b3-45f0-a1b5-fb686626c123"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SUBSCRIPTION}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="34" width="45" height="10" uuid="0c1bbd55-8d1c-4874-9d67-cbef121f1dd2">
+					<printWhenExpression><![CDATA[$P{P_ABLAUF}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Ablaufdatum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="150" y="34" width="83" height="10" uuid="6e1cbac4-abc3-41fb-b09d-e7920503e184">
+					<printWhenExpression><![CDATA[$P{P_SUBSCRIPTION}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Ende der Subskription]]></text>
+			</staticText>
 		</band>
 	</pageHeader>
 	<detail>
@@ -317,7 +467,9 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{Anzahl}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Anzahl}.intValue() == 0 ?
+"  -  " :
+$F{Anzahl}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="0" y="1" width="45" height="10" uuid="de03a5bc-4a0b-49cb-8a05-17b22b8f0547">
@@ -363,6 +515,14 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 						<valueExpression><![CDATA[$F{Anzahl}]]></valueExpression>
 						<labelExpression><![CDATA[$F{Rolle}]]></labelExpression>
 					</timeSeries>
+					<timeSeries>
+						<seriesExpression><![CDATA["liz "+$F{Rolle}]]></seriesExpression>
+						<timePeriodExpression><![CDATA[$F{Datum}]]></timePeriodExpression>
+						<valueExpression><![CDATA[$F{Rolle}.contains("keine Rolle") ?
+($P{P_MAX_USERS}==null ? -1 : $P{P_MAX_USERS}) :
+($F{Rolle}.contains("HVAdmin") || $F{Rolle}.contains("QuickZE") ) ?
+0 : $F{MaxUsers}]]></valueExpression>
+					</timeSeries>
 				</timeSeriesDataset>
 				<timeSeriesPlot isShowShapes="false">
 					<plot/>
@@ -378,7 +538,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 		</band>
 	</pageFooter>
 	<summary>
-		<band height="275" splitType="Stretch">
+		<band height="395" splitType="Stretch">
 			<printWhenExpression><![CDATA[$V{Anzahl Monate}.intValue() > 1]]></printWhenExpression>
 			<staticText>
 				<reportElement x="0" y="10" width="256" height="20" uuid="e4d8a576-706b-4e50-b1c0-ff24436a05e3"/>
@@ -395,7 +555,7 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 					<chartLegend/>
 				</chart>
 				<timeSeriesDataset>
-					<dataset>
+					<dataset resetType="Report">
 						<incrementWhenExpression><![CDATA[$F{Anzahl} != null]]></incrementWhenExpression>
 					</dataset>
 					<timeSeries>
@@ -403,6 +563,14 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 						<timePeriodExpression><![CDATA[$F{Datum}]]></timePeriodExpression>
 						<valueExpression><![CDATA[$F{Anzahl}]]></valueExpression>
 						<labelExpression><![CDATA[$F{Rolle}]]></labelExpression>
+					</timeSeries>
+					<timeSeries>
+						<seriesExpression><![CDATA["liz "+$F{Rolle}]]></seriesExpression>
+						<timePeriodExpression><![CDATA[$F{Datum}]]></timePeriodExpression>
+						<valueExpression><![CDATA[$F{Rolle}.contains("keine Rolle") ?
+($P{P_MAX_USERS}==null ? -1 : $P{P_MAX_USERS}) :
+($F{Rolle}.contains("HVAdmin") || $F{Rolle}.contains("QuickZE") ) ?
+0 : $F{MaxUsers}]]></valueExpression>
 					</timeSeries>
 				</timeSeriesDataset>
 				<timeSeriesPlot isShowLines="true" isShowShapes="false">
@@ -423,13 +591,6 @@ $V{Wochentag}.startsWith("So") ? 1: null]]></variableExpression>
 Der Subreport erhaelt die Fields value und key*/]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "pers_benutzerstatistik_maxima.jasper"]]></subreportExpression>
 			</subreport>
-			<subreport>
-				<reportElement key="NurWochentage" x="150" y="250" width="140" height="22" uuid="1ee980e7-155c-40b9-837a-4f889b539a80"/>
-				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{MaxMap_Wochentag}.entrySet())
-/*macht aus dem EntrySet der Map eine DataSource.
-Der Subreport erhaelt die Fields value und key*/]]></dataSourceExpression>
-				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "pers_benutzerstatistik_maxima.jasper"]]></subreportExpression>
-			</subreport>
 			<textField>
 				<reportElement key="Wochentag" x="150" y="240" width="140" height="10" uuid="ed743647-9fd3-4b5f-b3ac-3c5fed21e7c3"/>
 				<textElement>
@@ -437,6 +598,13 @@ Der Subreport erhaelt die Fields value und key*/]]></dataSourceExpression>
 				</textElement>
 				<textFieldExpression><![CDATA["Nur Wochentage"]]></textFieldExpression>
 			</textField>
+			<subreport>
+				<reportElement key="NurWochentage" x="150" y="250" width="140" height="22" uuid="1ee980e7-155c-40b9-837a-4f889b539a80"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{MaxMap_Wochentag}.entrySet())
+/*macht aus dem EntrySet der Map eine DataSource.
+Der Subreport erhaelt die Fields value und key*/]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "pers_benutzerstatistik_maxima.jasper"]]></subreportExpression>
+			</subreport>
 			<textField>
 				<reportElement key="Wochentag" x="300" y="240" width="200" height="10" uuid="3bbf54e6-a44f-48b4-8ee5-74df909c2716"/>
 				<textElement>
@@ -454,6 +622,476 @@ Der Subreport erhaelt die Fields value und key*/]]></dataSourceExpression>
 Der Subreport erhaelt die Fields value und key*/]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "pers_benutzerstatistik_maxima.jasper"]]></subreportExpression>
 			</subreport>
+			<line>
+				<reportElement positionType="Float" x="0" y="279" width="535" height="1" uuid="17d647b4-b514-4908-8f83-e870fcdb18cd"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="280" width="150" height="10" uuid="f481ccd4-9e8b-4a05-b214-09845ced64b3"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Artikel]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="150" y="280" width="50" height="10" uuid="4b6a101a-a7da-4fca-8d36-6224ecb1be56"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM WW_ARTIKEL WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"' and ARTIKELART_C_NR like 'A%';")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="300" y="280" width="130" height="10" uuid="54e13cf3-8de3-499f-b984-ccb02a35687c"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[davon versteckte Artikel]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="290" width="150" height="10" uuid="8cc319bb-8d32-4010-85f1-2c3359c6f5d7"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Kunden inkl. versteckt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="300" y="290" width="130" height="10" uuid="f59172fe-1102-4a3c-b0c7-fdd4d1f0cc66"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Lieferanten inkl. versteckt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="315" width="150" height="10" uuid="cc95bfd7-aa15-4d50-8053-96919dbd19b3"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Aufträge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="300" y="315" width="130" height="10" uuid="e4fd3c66-f26f-4e50-8213-20d78d66142b"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Auftragspositionen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="325" width="150" height="10" uuid="0734ca00-d8aa-4835-ada5-81ceddd0e621"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Lieferscheine]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="300" y="325" width="130" height="10" uuid="cdf59b13-854c-4722-bbde-32661d73770a"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Lieferscheinpositionen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="335" width="150" height="10" uuid="425ee3a3-8ded-4507-870f-bab0827c885f"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Rechnungen und Gutschriften]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="300" y="335" width="130" height="10" uuid="e7ee891f-e970-4985-bbe1-50866dd582f1"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Rechnungspositionen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="345" width="150" height="10" uuid="13b9d167-3730-458a-bd5f-e3fca39c3aad"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Bestellungen / Wareneingänge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="300" y="345" width="130" height="10" uuid="f4666cb8-df17-43dd-b3d0-a62dec85200c"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Bestellungspositionen / WEP]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="355" width="150" height="10" uuid="cb623e16-52aa-4e69-82d0-59ef2ec83c15"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Lose]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="300" y="355" width="130" height="10" uuid="b98fde2b-e457-4bce-958a-1491d5ff4105"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Lossollmaterialpositionen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="300" width="150" height="10" uuid="2279f482-d859-4926-84ce-b678121a40f3"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Personen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="300" y="300" width="130" height="10" uuid="3522664c-2b1f-4ec5-91c7-260a16386667"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Zeitbuchungen]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="430" y="280" width="50" height="10" uuid="8031d96e-d036-4953-9447-9671f192d85e"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM WW_ARTIKEL WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"' and ARTIKELART_C_NR like 'A%' and B_VERSTECKT=1;")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="150" y="290" width="50" height="10" uuid="bee1718d-bf49-4353-8267-2b4d7cd4f5f0"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM PART_KUNDE WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="430" y="290" width="50" height="10" uuid="3134c220-48e5-4394-8da6-0456a3a114b7"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM PART_LIEFERANT WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="150" y="300" width="50" height="10" uuid="74bf98ef-a4ed-499b-96c6-4e20f1529691"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM PERS_PERSONAL WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="430" y="300" width="50" height="10" uuid="2d8764cb-aab4-46ea-a8a5-8ac122a48e79"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM PERS_ZEITDATEN "+
+    "inner join PERS_PERSONAL on PERSONAL_I_ID=PERS_PERSONAL.I_ID "+
+    "WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="150" y="315" width="50" height="10" uuid="390ae214-eca3-44f2-a7d1-4d2656b9e845"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM AUFT_AUFTRAG WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="150" y="325" width="50" height="10" uuid="d42048cf-a8ab-4722-a27a-fc6db0cc01c3"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM LS_LIEFERSCHEIN WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="150" y="335" width="50" height="10" uuid="e966607a-602c-43d3-bff0-484d378be2a7"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM RECH_RECHNUNG WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="150" y="345" width="50" height="10" uuid="6b7d15e4-2b20-41da-a9ef-cd48dc28bb31"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM BES_BESTELLUNG WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="150" y="355" width="50" height="10" uuid="5ecbcab6-6234-46d4-b571-d001f976129d"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM FERT_LOS WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="205" y="345" width="50" height="10" uuid="2ffdfa13-378b-4d0a-9cb7-dc37b16e6130"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM BES_WARENEINGANG "+
+    "inner join BES_BESTELLUNG on BESTELLUNG_I_ID=BES_BESTELLUNG.I_ID "+
+    "WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="430" y="315" width="50" height="10" uuid="d7ed15ce-fc18-443b-9dab-722ffa06ab32"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM AUFT_AUFTRAGPOSITION "+
+    "inner join AUFT_AUFTRAG on AUFTRAG_I_ID=AUFT_AUFTRAG.I_ID "+
+    "WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="430" y="325" width="50" height="10" uuid="090e0879-699f-4702-b524-a56a4a5cdbad"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM LS_LIEFERSCHEINPOSITION "+
+    "inner join LS_LIEFERSCHEIN on LIEFERSCHEIN_I_ID=LS_LIEFERSCHEIN.I_ID "+
+    "WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="430" y="335" width="50" height="10" uuid="a6f33030-f7d8-4ab9-81ab-11564cfca6de"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM RECH_RECHNUNGPOSITION "+
+    "inner join RECH_RECHNUNG on RECHNUNG_I_ID=RECH_RECHNUNG.I_ID "+
+    "WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="430" y="345" width="50" height="10" uuid="5955cdd1-0087-4b53-bfa6-70668a3b1a8b"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM BES_BESTELLPOSITION "+
+    "inner join BES_BESTELLUNG on BESTELLUNG_I_ID=BES_BESTELLUNG.I_ID "+
+    "WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="430" y="355" width="50" height="10" uuid="988ce1f8-ea1a-4745-be18-7de2591a3dfc"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM FERT_LOSSOLLMATERIAL "+
+    "inner join FERT_LOS on LOS_I_ID=FERT_LOS.I_ID "+
+    "WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="485" y="345" width="50" height="10" uuid="8939211b-d868-4e3a-b2be-77006c2ba13f"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "select count(*) from BES_WARENEINGANGSPOSITION "+
+    "inner join BES_WARENEINGANG on WARENEINGANG_I_ID=BES_WARENEINGANG.I_ID "+
+    "inner join BES_BESTELLUNG on BESTELLUNG_I_ID=BES_BESTELLUNG.I_ID "+
+    "WHERE MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="200" y="345" width="5" height="10" uuid="a2d9cae7-c4ba-462d-a9b2-5b11f26c8011"/>
+				<textElement textAlignment="Center" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[/]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="480" y="345" width="5" height="10" uuid="4c67c153-8eb1-4b16-973f-c35017195214"/>
+				<textElement textAlignment="Center" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[/]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="70" y="365" width="35" height="10" uuid="c561e126-6db2-451e-af7b-f630a3d79fc7"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Bestliste}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="365" width="70" height="10" uuid="5552f12e-e89c-4cce-80ef-b56e06466a48"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Bestelltliste]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="180" y="365" width="35" height="10" uuid="b0dc56f9-bedc-48de-ae75-7905b3a2807a"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Reservierungsliste}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="290" y="365" width="35" height="10" uuid="d3fa9be5-9165-4f3e-befb-20d31714c8e0"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Fehlmengenliste}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="110" y="365" width="70" height="10" uuid="16f91503-08fc-457b-9209-ca17d1f8bcdf"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Reservierungen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="220" y="365" width="70" height="10" uuid="ea90304e-9b42-4f07-87ef-5ccdf25542dc"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Fehlmengen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="330" y="365" width="100" height="10" uuid="99ab79a9-b5f7-4e7d-b6d9-184fa5d43131"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Forecastpositionen]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="430" y="365" width="50" height="10" uuid="0da04ad6-ba02-41ce-afcb-2e5c0e30592d"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) FROM FC_FORECASTPOSITION;"
+)]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="0" y="375" width="80" height="10" uuid="61cb338f-2eaa-41c9-8ff1-39c44b499ab1"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Lizenzierte Hardware]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="140" y="375" width="30" height="10" uuid="2b2a0b08-1b5a-477c-9797-e9cb4dfc372c"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) from LP_ARBEITSPLATZ where C_TYP = 'WIN-Terminal';"
+)]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="315" y="375" width="30" height="10" uuid="2ad27d5d-76ab-4238-82d4-6aa14ea64146"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) from LP_ARBEITSPLATZ where C_TYP = 'MEMOR';"
+)]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="90" y="375" width="50" height="10" uuid="bd8ec529-959f-4576-bbf9-2a192809bb2a"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[ZE-Terminal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="185" y="375" width="35" height="10" uuid="5aa70c91-7772-4e4f-8e41-796cb401fa80"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[ZE-Stifte]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="285" y="375" width="30" height="10" uuid="636471db-b187-4666-8829-657081f94132"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Memor]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0">
+				<reportElement positionType="Float" x="220" y="375" width="30" height="10" uuid="dd45a7c3-a944-46b7-9d12-d0ed9cd8460a"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT count(*) from LP_ARBEITSPLATZ where C_TYP = 'KDC100';"
+)]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" mode="Transparent" x="0" y="385" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="da6cc00e-7e26-469d-84d0-2902506a5901">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ConnectionString}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" mode="Transparent" x="171" y="385" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b1927629-0b0e-44f6-bdc2-87f623fa707b">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ConnectionString}.toLowerCase().contains("postgres")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="495" y="295" width="40" height="20" uuid="4dacfe23-fdbd-45b4-9ab7-4f5357447a5a">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textFieldExpression><![CDATA[((Object[])$V{MaxAB_Pos})[1]]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="false">
+				<reportElement positionType="Float" mode="Transparent" x="495" y="315" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2c5d54ef-807f-4091-ab70-746225ad306c"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MaxAB_Pos_1}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="480" y="315" width="15" height="10" uuid="9508e1f0-98e3-4233-a8a3-dc8df2d6758a"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[max]]></text>
+			</staticText>
+			<textField pattern="#,##0" isBlankWhenNull="false">
+				<reportElement positionType="Float" mode="Transparent" x="495" y="325" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="37c6ebaa-8920-4608-a2f3-6804d85bcf66"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MaxLS_Pos}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="480" y="325" width="15" height="10" uuid="502b2714-3a70-49be-9058-dfa8a50afbc5"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[max]]></text>
+			</staticText>
 		</band>
 	</summary>
 </jasperReport>

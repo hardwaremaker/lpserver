@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rech_warenausgangsjournal2" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="42" bottomMargin="14">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rech_warenausgangsjournal2" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="42" bottomMargin="14" uuid="0b8da54b-3b7d-48df-adde-30c34a1516f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="598"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -16,6 +16,8 @@
 	<parameter name="P_BIS" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="P_GRUPPIERTNACHSTATISTIK" class="java.lang.Boolean" isForPrompting="false"/>
 	<parameter name="P_WAEHRUNG_MANDANT" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_MITTEXTEINGABEN" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
 	<field name="F_RECHNUNGSNUMMER" class="java.lang.String"/>
 	<field name="F_DATUM" class="java.util.Date"/>
 	<field name="F_PREIS" class="java.math.BigDecimal"/>
@@ -61,6 +63,45 @@
 	<field name="F_ZURECHNUNG" class="java.lang.String"/>
 	<field name="F_ARTIKELPROVISION" class="java.lang.Double"/>
 	<field name="F_AUFTRAGSNUMMER" class="java.lang.String"/>
+	<field name="F_AUFTRAGBEGRUENDUNG" class="java.lang.String"/>
+	<field name="F_GESTPREIS" class="java.math.BigDecimal"/>
+	<field name="F_KOSTENTRAEGER" class="java.lang.String"/>
+	<field name="F_SETARTIKEL_TYP" class="java.lang.String"/>
+	<field name="F_BESTELLNUMMER" class="java.lang.String"/>
+	<field name="F_PROJEKT" class="java.lang.String"/>
+	<field name="F_BASISPREIS" class="java.math.BigDecimal"/>
+	<field name="F_I_ID_BUCHUNG" class="java.lang.Integer"/>
+	<field name="F_EINKAUFSPREIS_AUFTRAGSPOSITION" class="java.math.BigDecimal"/>
+	<field name="F_ARTIKELREFERENZNUMMER" class="java.lang.String"/>
+	<field name="F_LIEFERSCHEINART" class="java.lang.String"/>
+	<field name="F_LIEFERSCHEINSTATUS" class="java.lang.String"/>
+	<field name="F_LIEFERSCHEIN_VERRECHENBAR" class="java.lang.Short"/>
+	<field name="F_ARTIKELGEWICHTKG" class="java.lang.Double"/>
+	<field name="F_GEPLANTER_LIEFERTERMIN" class="java.util.Date"/>
+	<field name="F_GRUNDNICHTEINGEHALTEN" class="java.lang.String"/>
+	<field name="F_ILN_LIEFERADRESSE" class="java.lang.String"/>
+	<field name="F_ILN_RECHNUNGSADRESSE" class="java.lang.String"/>
+	<field name="F_KUNDE_HINWEISEXTERN" class="java.lang.String"/>
+	<field name="F_KUNDE_HINWEISINTERN" class="java.lang.String"/>
+	<field name="F_KUNDE_LIEFERDAUER" class="java.lang.Integer"/>
+	<field name="F_KUNDE_PROVISIONSEMPFAENGER_KURZZEICHEN" class="java.lang.String"/>
+	<field name="F_KUNDENBEZEICHNUNG_RECHNUNGSADRESSE_LS" class="java.lang.String"/>
+	<field name="F_KUNDENKURZBEZEICHNUNG_RECHNUNGSADRESSE_LS" class="java.lang.String"/>
+	<field name="F_KUNDENNUMMER_LIEFERADRESSE_LS" class="java.lang.Integer"/>
+	<field name="F_KUNDENNUMMER_RECHNUNGSADRESSE_LS" class="java.lang.Integer"/>
+	<field name="F_LAGER_LIEFERSCHEIN" class="java.lang.String"/>
+	<field name="F_LAGER_RECHNUNG" class="java.lang.String"/>
+	<field name="F_LIEFERADRESSE_ANREDE" class="java.lang.String"/>
+	<field name="F_LIEFERADRESSE_LAND" class="java.lang.String"/>
+	<field name="F_LIEFERADRESSE_NAME1" class="java.lang.String"/>
+	<field name="F_LIEFERADRESSE_NAME2" class="java.lang.String"/>
+	<field name="F_LIEFERADRESSE_NAME3ABTEILUNG" class="java.lang.String"/>
+	<field name="F_LIEFERADRESSE_ORT" class="java.lang.String"/>
+	<field name="F_LIEFERADRESSE_PARTNERIID" class="java.lang.Integer"/>
+	<field name="F_LIEFERADRESSE_PLZ" class="java.lang.String"/>
+	<field name="F_LIEFERADRESSE_STRASSE" class="java.lang.String"/>
+	<field name="F_TEXTEINGABE" class="java.lang.String"/>
+	<field name="F_ZIELLAGER_LIEFERSCHEIN" class="java.lang.String"/>
 	<variable name="Zebra" class="java.math.BigDecimal" resetType="Page">
 		<variableExpression><![CDATA[$V{Zebra}.negate()]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(1)]]></initialValueExpression>
@@ -93,7 +134,9 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 		<variableExpression><![CDATA[($F{F_PREIS} == null ||
 $F{F_MENGE} == null ||
 $F{F_RECHNUNGSNUMMER} == null ||
-$F{F_ARTIKELNUMMER}.startsWith("~"))
+$F{F_ARTIKELNUMMER}.startsWith("~") ||
+($F{F_SETARTIKEL_TYP}!=null && !$F{F_SETARTIKEL_TYP}.startsWith("K"))
+)
 ?
   new BigDecimal(0.000)
 :
@@ -108,12 +151,16 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 	<group name="Vertreter" isStartNewPage="true">
 		<groupExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Vertreter" ) ?
    $F{F_PROVISIONSEMPFAENGER} :
-   ""]]></groupExpression>
+   ($P{P_SORTIERUNG}.startsWith("Provision") ?
+        $F{F_KUNDE_PROVISIONSEMPFAENGER_KURZZEICHEN} :
+        ""
+   )]]></groupExpression>
 		<groupHeader>
 			<band height="25" splitType="Stretch">
-				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Vertreter" )]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Vertreter" ) ||
+$P{P_SORTIERUNG}.startsWith("Provision")]]></printWhenExpression>
 				<textField isBlankWhenNull="false">
-					<reportElement key="F_PROVISIONSEMPFAENGER" mode="Transparent" x="0" y="10" width="290" height="12"/>
+					<reportElement key="F_PROVISIONSEMPFAENGER" mode="Transparent" x="0" y="10" width="290" height="12" uuid="cdb981ca-5ddb-425c-8d83-628d5e7f0dec"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -123,21 +170,26 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<textElement>
 						<font fontName="Arial" size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{F_PROVISIONSEMPFAENGER}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Vertreter" ) ?
+    $F{F_PROVISIONSEMPFAENGER} :
+    $P{P_SORTIERUNG}.startsWith("Provision") ?
+        $F{F_KUNDE_PROVISIONSEMPFAENGER_KURZZEICHEN} :
+        "??"]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement key="line-2" x="0" y="24" width="785" height="1"/>
+					<reportElement key="line-2" x="0" y="24" width="785" height="1" uuid="94517eeb-5467-47c5-9506-fb58e67264fc"/>
 				</line>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="14" splitType="Stretch">
-				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Vertreter" )]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Vertreter" ) ||
+$P{P_SORTIERUNG}.startsWith("Provision")]]></printWhenExpression>
 				<line>
-					<reportElement key="line-3" x="0" y="1" width="785" height="1"/>
+					<reportElement key="line-3" x="0" y="1" width="785" height="1" uuid="1ab0d191-7519-4a3c-95f3-9378b32f0728"/>
 				</line>
 				<staticText>
-					<reportElement key="Provisionsbetrag" x="0" y="2" width="120" height="10"/>
+					<reportElement key="Provisionsbetrag" x="0" y="2" width="120" height="10" uuid="a7e38b3e-3a19-4bca-9ff0-a44452a564de"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -150,7 +202,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<text><![CDATA[Provisionsbetrag]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="PROVISIONSBETRAG_VERTRETER_GESAMT" x="670" y="2" width="55" height="10"/>
+					<reportElement key="PROVISIONSBETRAG_VERTRETER_GESAMT" x="670" y="2" width="55" height="10" uuid="649654fc-7e06-4af8-b47a-692de36b0664"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -160,10 +212,10 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{PROVISIONSBETRAG_VERTRETER_GESAMT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{PROVISIONSBETRAG_VERTRETER_GESAMT}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="P_WAEHRUNG_MANDANT" x="726" y="2" width="20" height="10"/>
+					<reportElement key="P_WAEHRUNG_MANDANT" x="726" y="2" width="20" height="10" uuid="261ef72b-3521-4839-9d08-ccf8aa9e1225"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -173,10 +225,10 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<textElement>
 						<font fontName="Arial" size="8"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$P{P_WAEHRUNG_MANDANT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{P_WAEHRUNG_MANDANT}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="PROVISIONSBETRAG_VERTRETER_GESAMT" x="583" y="2" width="60" height="10"/>
+					<reportElement key="PROVISIONSBETRAG_VERTRETER_GESAMT" x="583" y="2" width="60" height="10" uuid="03c5e6c6-9615-4ea0-ab4c-8243f0a76a94"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -186,7 +238,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{WERT_VERTRETER_GESAMT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{WERT_VERTRETER_GESAMT}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -200,7 +252,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 	<pageHeader>
 		<band height="84" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="REPORT_INFORMATION" x="0" y="0" width="535" height="12"/>
+				<reportElement key="REPORT_INFORMATION" x="0" y="0" width="535" height="12" uuid="f0b9c90f-c04a-4c3b-8cf0-b0d42f30db61"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,10 +262,10 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Transparent" x="677" y="0" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="677" y="0" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="ea3058fa-de3b-49f9-97ef-54ba69e7d82f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -223,10 +275,10 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="757" y="0" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="757" y="0" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="aba128f5-dc54-4c10-9115-f8f816d434d1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -236,10 +288,10 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Warenausgangs-Journal" x="0" y="20" width="436" height="22"/>
+				<reportElement key="Warenausgangs-Journal" x="0" y="20" width="436" height="22" uuid="1caef44c-61cc-431f-a8d6-c4adbe7fcf81"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -247,12 +299,12 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Warenausgangs-Journal als Provisionsabrechnung]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="SORTIERUNG" x="0" y="42" width="236" height="11"/>
+				<reportElement key="SORTIERUNG" x="0" y="42" width="236" height="11" uuid="9bd454a7-d4b1-4c47-a111-c877fc8261a8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -260,12 +312,12 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Sortierung nach " + $P{P_SORTIERUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Sortierung nach " + $P{P_SORTIERUNG}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="von" x="236" y="42" width="25" height="11"/>
+				<reportElement key="von" x="236" y="42" width="25" height="11" uuid="17f25d5c-76a9-4891-b262-af754933905b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -273,12 +325,12 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<text><![CDATA[von]]></text>
 			</staticText>
 			<textField pattern="dd.mm.yyyy" isBlankWhenNull="false">
-				<reportElement key="P_VON" x="262" y="42" width="70" height="11"/>
+				<reportElement key="P_VON" x="262" y="42" width="70" height="11" uuid="7741f774-6cef-4908-a9ac-ec29ee71db73"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -286,12 +338,12 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_VON}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_VON}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="bis" x="340" y="42" width="25" height="11"/>
+				<reportElement key="bis" x="340" y="42" width="25" height="11" uuid="095ffb4a-3f22-4c1f-9cc3-93c580eeb7cb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -299,12 +351,12 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<text><![CDATA[bis]]></text>
 			</staticText>
 			<textField pattern="dd.mm.yyyy" isBlankWhenNull="false">
-				<reportElement key="P_BIS" x="366" y="42" width="70" height="11"/>
+				<reportElement key="P_BIS" x="366" y="42" width="70" height="11" uuid="c9f8c8d0-4d12-4332-bf96-a753e416b155"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -312,12 +364,12 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_BIS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_BIS}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Rech.Nr" x="0" y="71" width="58" height="10"/>
+				<reportElement key="Rech.Nr" x="0" y="71" width="58" height="10" uuid="b231ebec-7dc0-4a47-8bc6-611acd454133"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -330,7 +382,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Rech.Nr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Rech.Datum" x="63" y="71" width="50" height="10"/>
+				<reportElement key="Rech.Datum" x="63" y="71" width="50" height="10" uuid="457f001c-61e7-4195-92c6-ea568f838577"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -343,7 +395,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Rech.Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Kunde / Artikelnr." x="120" y="71" width="100" height="10"/>
+				<reportElement key="Kunde / Artikelnr." x="120" y="71" width="100" height="10" uuid="776a3eaa-26df-4b92-a7cd-b6b98b92d42f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -356,7 +408,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Kunde / Artikelnr.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Artikel Bezeichnung" x="220" y="71" width="240" height="10"/>
+				<reportElement key="Artikel Bezeichnung" x="220" y="71" width="240" height="10" uuid="e890b626-818e-4e35-a140-9fec942f850e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -369,7 +421,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Artikel Bezeichnung]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Menge" x="461" y="71" width="50" height="10"/>
+				<reportElement key="Menge" x="461" y="71" width="50" height="10" uuid="454bc5b0-afdc-47d5-b890-4a9f95cd47eb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -382,7 +434,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Menge]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Me" x="511" y="71" width="20" height="10"/>
+				<reportElement key="Me" x="511" y="71" width="20" height="10" uuid="23e07c59-f755-4636-a6d8-6fd61fa9ba7f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -395,7 +447,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Me]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Preis" x="533" y="71" width="50" height="10"/>
+				<reportElement key="Preis" x="533" y="71" width="50" height="10" uuid="ba1bc2b0-0f45-44f7-b2e1-bc2218c8a67d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -408,7 +460,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Preis]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Wert" x="583" y="71" width="60" height="10"/>
+				<reportElement key="Wert" x="583" y="71" width="60" height="10" uuid="fc996737-d730-4993-8d01-a51c984f93c1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -421,7 +473,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Wert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Provision" x="645" y="71" width="25" height="10"/>
+				<reportElement key="Provision" x="645" y="71" width="25" height="10" uuid="3f46edcd-251a-4091-931c-8774f920c508"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -434,7 +486,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Prov.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Provisionswert" x="669" y="71" width="55" height="10"/>
+				<reportElement key="Provisionswert" x="669" y="71" width="55" height="10" uuid="184bf932-97c3-4feb-a012-d1638df789f5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -447,7 +499,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Provisionswert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Whg" x="726" y="71" width="20" height="10"/>
+				<reportElement key="Whg" x="726" y="71" width="20" height="10" uuid="43a0a93b-45e1-42a2-a895-7978607071a5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -460,7 +512,7 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Whg]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Kurs" x="747" y="71" width="36" height="10"/>
+				<reportElement key="Kurs" x="747" y="71" width="36" height="10" uuid="2e8a405c-e836-4984-b595-b2db1bf5d591"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -473,20 +525,17 @@ $F{F_ARTIKELNUMMER}.startsWith("~"))
 				<text><![CDATA[Kurs]]></text>
 			</staticText>
 			<line>
-				<reportElement key="line-1" x="0" y="82" width="785" height="1"/>
+				<reportElement key="line-1" x="0" y="82" width="785" height="1" uuid="76c0b83b-25a4-498a-b682-dfd7c261b47a"/>
 			</line>
 		</band>
 	</pageHeader>
-	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
 	<detail>
 		<band height="30" splitType="Stretch">
 			<printWhenExpression><![CDATA[$F{F_RECHNUNGSNUMMER} != null
 /* nur die echten Rechnungen anführen, sonst kommt das unter
 Umständen doppelt */]]></printWhenExpression>
 			<rectangle>
-				<reportElement key="rectangle-1" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="785" height="30" forecolor="#E6E6E6" backcolor="#E6E6E6">
+				<reportElement key="rectangle-1" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="785" height="30" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="f4ac0603-679e-4bb9-8dee-81a10f14690d">
 					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -494,7 +543,7 @@ Umständen doppelt */]]></printWhenExpression>
 				</graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="true">
-				<reportElement key="RECHNUNGSNUMMER" x="0" y="0" width="70" height="10"/>
+				<reportElement key="RECHNUNGSNUMMER" x="0" y="0" width="70" height="10" uuid="75ffd5fc-2610-4382-ae90-b34bc55fb0dc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -504,10 +553,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false" pdfFontName="Helvetica"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_RECHNUNGSART}.substring(0,1)+" "+$F{F_RECHNUNGSNUMMER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_RECHNUNGSART}.substring(0,1)+" "+$F{F_RECHNUNGSNUMMER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="Rechnungsdatum" mode="Transparent" x="73" y="0" width="50" height="10"/>
+				<reportElement key="Rechnungsdatum" mode="Transparent" x="73" y="0" width="50" height="10" uuid="2fc8ba31-5036-4fcb-ba1c-01b3b8a24c5f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -517,10 +566,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$F{F_DATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_DATUM}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="F_KUNDENBEZEICHNUNG" isPrintRepeatedValues="false" mode="Transparent" x="120" y="0" width="220" height="10" isRemoveLineWhenBlank="true"/>
+				<reportElement key="F_KUNDENBEZEICHNUNG" isPrintRepeatedValues="false" mode="Transparent" x="120" y="0" width="220" height="10" isRemoveLineWhenBlank="true" uuid="d25bc234-23a3-42be-90cb-727f6f0c6e86"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -530,10 +579,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_KUNDENBEZEICHNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_KUNDENBEZEICHNUNG}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="Artikelnummer" mode="Transparent" x="120" y="10" width="100" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="Artikelnummer" mode="Transparent" x="120" y="10" width="100" height="10" isRemoveLineWhenBlank="true" uuid="14e2e088-c506-4c3f-a7a3-3b8061fc8087">
 					<printWhenExpression><![CDATA[$F{F_MENGE}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -545,10 +594,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ARTIKELNUMMER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ARTIKELNUMMER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="Bezeichnung" mode="Transparent" x="220" y="10" width="240" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="Bezeichnung" mode="Transparent" x="220" y="10" width="240" height="10" isRemoveLineWhenBlank="true" uuid="edb0275f-d89b-47ba-a981-62bd2f95232f">
 					<printWhenExpression><![CDATA[$F{F_MENGE}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -560,10 +609,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ARTIKELBEZEICHNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ARTIKELBEZEICHNUNG}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0;-###0" isBlankWhenNull="true">
-				<reportElement key="Menge" mode="Transparent" x="461" y="10" width="50" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="Menge" mode="Transparent" x="461" y="10" width="50" height="10" isRemoveLineWhenBlank="true" uuid="324ce253-3ac6-4eaa-bd44-a0e7a9f5528a">
 					<printWhenExpression><![CDATA[$F{F_MENGE}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -575,10 +624,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_MENGE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_MENGE}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="Einheit" mode="Transparent" x="511" y="10" width="20" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="Einheit" mode="Transparent" x="511" y="10" width="20" height="10" isRemoveLineWhenBlank="true" uuid="2d4ec1a0-2ad6-44a5-8c29-4d6ce10499ac">
 					<printWhenExpression><![CDATA[$F{F_MENGE}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -590,10 +639,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{F_EINHEIT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""+$F{F_EINHEIT}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="F_PREIS" mode="Transparent" x="533" y="10" width="50" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="F_PREIS" mode="Transparent" x="533" y="10" width="50" height="10" isRemoveLineWhenBlank="true" uuid="b074a122-6891-426b-a373-268dd23477a1">
 					<printWhenExpression><![CDATA[$F{F_MENGE}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -605,11 +654,12 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_PREIS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PREIS}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="Betrag" mode="Transparent" x="583" y="10" width="60" height="10" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$F{F_MENGE}!=null]]></printWhenExpression>
+				<reportElement key="Betrag" mode="Transparent" x="583" y="10" width="60" height="10" isRemoveLineWhenBlank="true" uuid="27d3700d-e188-4822-b218-b1dd8e399c62">
+					<printWhenExpression><![CDATA[$F{F_MENGE}!=null && $F{F_EINHEIT} != null &&
+($F{F_SETARTIKEL_TYP}==null || $F{F_SETARTIKEL_TYP}.startsWith("K"))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -620,10 +670,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_PREIS}.multiply($F{F_MENGE})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PREIS}.multiply($F{F_MENGE})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0 %" isBlankWhenNull="true">
-				<reportElement key="Provision" mode="Transparent" x="645" y="10" width="25" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="Provision" mode="Transparent" x="645" y="10" width="25" height="10" isRemoveLineWhenBlank="true" uuid="b999c78b-34c4-410a-ae8d-19385e239142">
 					<printWhenExpression><![CDATA[$F{F_MENGE}!=null && $F{F_ARTIKELPROVISION}.doubleValue() != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -635,10 +685,10 @@ Umständen doppelt */]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Double"><![CDATA[new Double($F{F_ARTIKELPROVISION}.doubleValue()/100)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new Double($F{F_ARTIKELPROVISION}.doubleValue()/100)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="Provisionswert" mode="Transparent" x="669" y="10" width="55" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="Provisionswert" mode="Transparent" x="669" y="10" width="55" height="10" isRemoveLineWhenBlank="true" uuid="5ca46d78-b7af-4425-9e72-11596454aa03">
 					<printWhenExpression><![CDATA[$F{F_MENGE}!=null &&
 $V{PROVISIONSWERT}.doubleValue() != 0]]></printWhenExpression>
 				</reportElement>
@@ -651,10 +701,10 @@ $V{PROVISIONSWERT}.doubleValue() != 0]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{PROVISIONSWERT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PROVISIONSWERT}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="F_WAEHRUNG" x="726" y="10" width="20" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="F_WAEHRUNG" x="726" y="10" width="20" height="10" isRemoveLineWhenBlank="true" uuid="07a5b804-599f-45d1-b65d-40fe172e8148">
 					<printWhenExpression><![CDATA[!($F{F_WAEHRUNG}.equals($P{P_WAEHRUNG_MANDANT})) &&
 $F{F_MENGE}!=null]]></printWhenExpression>
 				</reportElement>
@@ -667,10 +717,10 @@ $F{F_MENGE}!=null]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_WAEHRUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_WAEHRUNG}]]></textFieldExpression>
 			</textField>
 			<textField pattern="##0.000000" isBlankWhenNull="false">
-				<reportElement key="F_KURS" x="747" y="10" width="36" height="10" isRemoveLineWhenBlank="true">
+				<reportElement key="F_KURS" x="747" y="10" width="36" height="10" isRemoveLineWhenBlank="true" uuid="f6fdcef0-b185-47be-8835-7a81bb352644">
 					<printWhenExpression><![CDATA[!($F{F_WAEHRUNG}.equals($P{P_WAEHRUNG_MANDANT})) &&
 $F{F_MENGE}!=null]]></printWhenExpression>
 				</reportElement>
@@ -683,10 +733,10 @@ $F{F_MENGE}!=null]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_KURS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_KURS}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Artikelbezeichnung2" mode="Transparent" x="220" y="20" width="240" height="10" isRemoveLineWhenBlank="true"/>
+				<reportElement key="Artikelbezeichnung2" mode="Transparent" x="220" y="20" width="240" height="10" isRemoveLineWhenBlank="true" uuid="405edf4a-1f32-4b2d-8e33-c64d574550a4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -696,23 +746,28 @@ $F{F_MENGE}!=null]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ARTIKELBEZEICHNUNG2}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ARTIKELBEZEICHNUNG2}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="785" y="10" width="10" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1c431a38-760a-495c-9e22-0c2d07e5f6d2"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_SETARTIKEL_TYP}.substring(0,1)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
 	<pageFooter>
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
 		<band height="14" splitType="Stretch">
 			<line>
-				<reportElement key="line-3" x="0" y="1" width="786" height="1"/>
+				<reportElement key="line-3" x="0" y="1" width="786" height="1" uuid="fec3d0c4-8125-4283-8e92-90be76145427"/>
 			</line>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="PROVISIONSBETRAG_VERTRETER_GESAMT" x="583" y="4" width="60" height="10"/>
+				<reportElement key="PROVISIONSBETRAG_VERTRETER_GESAMT" x="583" y="4" width="60" height="10" uuid="42bad6b9-8e58-4e03-ab96-65002461a0ec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -722,10 +777,10 @@ $F{F_MENGE}!=null]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{WERT_GESAMT_GESAMT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{WERT_GESAMT_GESAMT}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="PROVISIONSBETRAG_VERTRETER_GESAMT" x="671" y="4" width="55" height="10"/>
+				<reportElement key="PROVISIONSBETRAG_VERTRETER_GESAMT" x="671" y="4" width="55" height="10" uuid="739a42c1-f94b-4f99-bc24-fdab3c62c342"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -735,10 +790,10 @@ $F{F_MENGE}!=null]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{PROVISIONSBETRAG_GESAMT_GESAMT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PROVISIONSBETRAG_GESAMT_GESAMT}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="P_WAEHRUNG_MANDANT" x="727" y="4" width="20" height="10"/>
+				<reportElement key="P_WAEHRUNG_MANDANT" x="727" y="4" width="20" height="10" uuid="e78186d5-53d9-469c-9ec7-a987cf109c95"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -748,7 +803,7 @@ $F{F_MENGE}!=null]]></printWhenExpression>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_WAEHRUNG_MANDANT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_WAEHRUNG_MANDANT}]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

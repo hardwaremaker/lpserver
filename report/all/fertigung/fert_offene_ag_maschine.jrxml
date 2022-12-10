@@ -4,22 +4,36 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="P_SOLLSTUNDENBETRACHTUNG" class="java.lang.String"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[SQL Ausführung der ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
 	<field name="F_SORT" class="java.lang.String"/>
 	<field name="F_AG_MASCHINE_IDENTIFIKATIONSNUMMMER" class="java.lang.String"/>
 	<field name="F_AG_MASCHINE_BEZEICHNUNG" class="java.lang.String"/>
 	<field name="F_AG_GESAMTZEIT" class="java.math.BigDecimal"/>
 	<field name="F_FERTIGUNGSZEIT" class="java.math.BigDecimal"/>
+	<variable name="Jahr_Int" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{F_SORT}.startsWith("-") ? new Integer(2015) :
+com.lp.util.HelperReport.toInteger($F{F_SORT}.substring(0,4))]]></variableExpression>
+	</variable>
+	<variable name="KW_Int" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{F_SORT}.startsWith("-") ? new Integer(1) :
+com.lp.util.HelperReport.toInteger($F{F_SORT}.substring(5,7))]]></variableExpression>
+	</variable>
 	<variable name="Wochensumme" class="java.math.BigDecimal" resetType="Group" resetGroup="Maschine" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_AG_GESAMTZEIT}
 /* $F{F_FERTIGUNGSZEIT} */]]></variableExpression>
 	</variable>
-	<variable name="Masch_Verfuegbarkeit" class="java.lang.Double">
-		<variableExpression><![CDATA[com.lp.util.HelperReport.fuehreSQLQueryAus(
-"SELECT f_verfuegbarkeitinprozent   FROM pers_maschine where c_identifikationsnr='"+$F{F_AG_MASCHINE_IDENTIFIKATIONSNUMMMER}+"';"
-)]]></variableExpression>
+	<variable name="Masch_Verf_Std" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{F_SORT}.startsWith("-") ? BigDecimal.ZERO :
+com.lp.util.HelperReport.
+getVerfuegbarkeitEinerMaschineInStunden($F{F_AG_MASCHINE_IDENTIFIKATIONSNUMMMER}, $V{Jahr_Int}, $V{KW_Int},
+			$P{P_MANDANT_OBJ}.getTheClientDto())
+/* $V{Masch_Verfuegbarkeit}.doubleValue()/100*24*7 */]]></variableExpression>
 	</variable>
-	<variable name="Masch_Verf_Std" class="java.lang.Double">
-		<variableExpression><![CDATA[$V{Masch_Verfuegbarkeit}.doubleValue()/100*24*7]]></variableExpression>
+	<variable name="Masch_Verfuegbarkeit" class="java.lang.Double">
+		<variableExpression><![CDATA[$V{Masch_Verf_Std}.doubleValue() / (24 * 7)]]></variableExpression>
 	</variable>
 	<variable name="Faktor" class="java.lang.Double">
 		<variableExpression><![CDATA[($V{Wochensumme}.doubleValue() / $V{Masch_Verf_Std}.doubleValue() * 30)]]></variableExpression>
@@ -80,10 +94,10 @@
 				</textField>
 				<textField pattern="#,##0.00 %">
 					<reportElement x="244" y="0" width="40" height="12" uuid="e6600e1e-5874-4b7d-aa3e-62e8a49b27bc"/>
-					<textElement>
+					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{Masch_Verfuegbarkeit}.doubleValue()/100]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{Masch_Verfuegbarkeit}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.0">
 					<reportElement x="290" y="0" width="50" height="12" uuid="85253dc5-1fb9-43e0-9ef3-917feaba08aa"/>
@@ -100,7 +114,7 @@
 					<text><![CDATA[h]]></text>
 				</staticText>
 				<textField pattern="#,##0.0">
-					<reportElement key="Bedarf&lt;80" mode="Transparent" x="365" y="1" width="200" height="12" forecolor="#00FF00" uuid="36f3d5a7-19f4-41a9-98eb-24db1f584f37">
+					<reportElement key="Bedarf&lt;80" mode="Transparent" x="365" y="0" width="200" height="13" forecolor="#00FF00" uuid="36f3d5a7-19f4-41a9-98eb-24db1f584f37">
 						<printWhenExpression><![CDATA[$V{Wochensumme}.doubleValue() < $V{Masch_Verf_Std}.doubleValue()*0.80]]></printWhenExpression>
 					</reportElement>
 					<textElement verticalAlignment="Middle">
@@ -111,7 +125,7 @@
 /* 219 █ */]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.0">
-					<reportElement key="Bedarf80-100" x="365" y="1" width="200" height="12" forecolor="#FFFF00" uuid="2ecd2a60-a6b9-40a8-9de2-ef6c04bd83c2">
+					<reportElement key="Bedarf80-100" x="365" y="0" width="200" height="13" forecolor="#FFFF00" uuid="2ecd2a60-a6b9-40a8-9de2-ef6c04bd83c2">
 						<printWhenExpression><![CDATA[$V{Wochensumme}.doubleValue() > $V{Masch_Verf_Std}.doubleValue()*0.80 &&
 $V{Wochensumme}.doubleValue() < $V{Masch_Verf_Std}.doubleValue()]]></printWhenExpression>
 					</reportElement>
@@ -126,21 +140,22 @@ $V{Wochensumme}.doubleValue() < $V{Masch_Verf_Std}.doubleValue()]]></printWhenEx
 /* 219 █ */]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.0">
-					<reportElement key="Bedarf&gt;100" x="365" y="1" width="200" height="12" forecolor="#FF0000" uuid="d0ff4b64-43fc-4e10-98ab-1a771d3d86e0">
+					<reportElement key="Bedarf&gt;100" x="365" y="0" width="340" height="13" forecolor="#FF0000" uuid="d0ff4b64-43fc-4e10-98ab-1a771d3d86e0">
 						<printWhenExpression><![CDATA[$V{Wochensumme}.doubleValue() >= $V{Masch_Verf_Std}.doubleValue()]]></printWhenExpression>
 					</reportElement>
 					<textElement verticalAlignment="Middle">
 						<font fontName="Arial" size="8"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{Wochensumme}.doubleValue() > $V{Masch_Verf_Std}.doubleValue() ?
-"██████████████████████████████" :
-(new String("██████████████████████████████")).substring(0,$V{Faktor}.intValue())
+					<textFieldExpression><![CDATA[/* $V{Wochensumme}.doubleValue() > $V{Masch_Verf_Std}.doubleValue() ? */
+$V{Faktor}.intValue() > 60 ?
+            "█████████████████████████████████████████████████████████>>>" :
+(new String("████████████████████████████████████████████████████████████████")).substring(0,$V{Faktor}.intValue())
 /* 219 █ */]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00;-###0.00">
-					<reportElement x="571" y="1" width="50" height="12" uuid="92d1a52e-0365-462e-8d63-254d0a124fa7"/>
-					<textElement>
+					<reportElement x="721" y="1" width="50" height="12" uuid="92d1a52e-0365-462e-8d63-254d0a124fa7"/>
+					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Faktor}]]></textFieldExpression>
@@ -158,12 +173,12 @@ $V{Wochensumme}.doubleValue() < $V{Masch_Verf_Std}.doubleValue()]]></printWhenEx
 					</textElement>
 					<textFieldExpression><![CDATA[$F{F_SORT}]]></textFieldExpression>
 				</textField>
+				<line>
+					<reportElement key="Exakt 100%" x="535" y="0" width="1" height="13" uuid="63962978-5b05-4f4b-a8f8-a8f63aeb04e6"/>
+				</line>
 			</band>
 		</groupFooter>
 	</group>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
 	<title>
 		<band height="15" splitType="Stretch">
 			<staticText>
@@ -199,7 +214,7 @@ $V{Wochensumme}.doubleValue() < $V{Masch_Verf_Std}.doubleValue()]]></printWhenEx
 			</staticText>
 			<staticText>
 				<reportElement x="244" y="1" width="40" height="13" uuid="e95e96ee-50ec-4fb1-9757-fa356f7eda28"/>
-				<textElement>
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<text><![CDATA[Verf. [%]]]></text>
@@ -210,6 +225,13 @@ $V{Wochensumme}.doubleValue() < $V{Masch_Verf_Std}.doubleValue()]]></printWhenEx
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<text><![CDATA[Verf. [Std]]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="520" y="1" width="30" height="13" uuid="0456dc5a-5fc7-458c-8dc2-0b5d9a145967"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[100%]]></text>
 			</staticText>
 		</band>
 	</title>
@@ -272,15 +294,38 @@ $V{Wochensumme}.doubleValue() < $V{Masch_Verf_Std}.doubleValue()]]></printWhenEx
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_SORT}]]></textFieldExpression>
 			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="412" y="0" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="8a54a111-5fb3-4e52-9a19-9c071585b73f"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Jahr_Int}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="482" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="ed1ad28a-3620-4ed1-984f-afab25e0e35f"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{KW_Int}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="668" y="0" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b7f44127-483f-4b79-923b-39cdc60fe5a4"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["<"+$F{F_SORT}.substring(5,7)+">"]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="558" y="0" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="5fcd17b8-125e-4a06-8719-02bc1556d066"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["<"+$F{F_SORT}.substring(0,4)+">"]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
-	<pageFooter>
-		<band splitType="Stretch"/>
-	</pageFooter>
-	<summary>
-		<band splitType="Stretch"/>
-	</summary>
 </jasperReport>

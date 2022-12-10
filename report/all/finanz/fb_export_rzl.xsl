@@ -24,15 +24,25 @@
 		<xsl:apply-templates select="Sondercode"/>
 		<xsl:apply-templates select="Buchungsart"/>
 		<xsl:apply-templates select="AbweichendeZahlungsfrist"/>
-		<xsl:apply-templates select="AbweichendeSkontofrist"/>
+		<xsl:apply-templates select="AbweichendeSkontofrist"/>	
 		<xsl:apply-templates select="AbweichenderSkontoprozentsatz"/>
 		<xsl:apply-templates select="Buchungstext"/>
 		<xsl:apply-templates select="Buchungstext2"/>
 		<xsl:apply-templates select="UID-Nummer"/>
+		<xsl:apply-templates select="HV-ReversechargeartId"/>
+		<xsl:apply-templates select="HV-ReversechargeartCnr"/>
+		<xsl:apply-templates select="HV-FinanzamtKbez"/>
 	</xsl:template>
 	<xsl:template match="Kontonummer | Gegenkonto | OP-Nummer | Beleg-Datum | Valuta-Datum | Waehrung |  Sollbetrag |  Habenbetrag | Steuerbetrag |  Fremdwaehrung | Fremdwaehrung-Sollbetrag |  Fremdwaehrung-Habenbetrag | Kostenstelle | Belegkreis | Belegnummer | Ust-Land | Ust-Prozentsatz | Ust-Code | Sondercode |  Buchungsart |  AbweichendeZahlungsfrist | AbweichendeSkontofrist | AbweichenderSkontoprozentsatz | Buchungstext | Buchungstext2">
 		<xsl:value-of select="."/>;</xsl:template>
 	<xsl:template match="UID-Nummer">
 		<xsl:value-of select="."/>
+	</xsl:template>
+	
+	<!-- Die internen Felder normalerweise nicht ausgeben -->
+	<xsl:template match="HV-ReversechargeartId | HV-ReversechargeartCnr | HV-FinanzamtKbez">
+	<!-- mittels 
+		<xsl:value-of select="."/>;</xsl:template>	
+	 ausgeben -->
 	</xsl:template>
 </xsl:stylesheet>

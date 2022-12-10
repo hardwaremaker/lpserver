@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rech_materialeinsatz" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="789" leftMargin="28" rightMargin="25" topMargin="42" bottomMargin="28" isSummaryWithPageHeaderAndFooter="true" uuid="59d1b43a-ea3b-4abc-915c-22e2fa3a732e">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5394743546921206"/>
+	<property name="ireport.x" value="173"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="P_RECHNUNGSNUMMER" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_KUNDE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_RECHNUNGSDATUM" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="P_NACHKALKULATION" class="java.lang.Boolean"/>
+	<parameter name="P_ARBEITSZEITGEMEINKOSTENFAKTOR" class="java.lang.Double"/>
+	<parameter name="P_MATERIALGEMEINKOSTENFAKTOR" class="java.lang.Double"/>
+	<parameter name="P_FERTIGUNGSGEMEINKOSTENFAKTOR" class="java.lang.Double"/>
+	<parameter name="P_ENTWICKLUNGSGEMEINKOSTENFAKTOR" class="java.lang.Double"/>
+	<parameter name="P_VERWALTUNGSGEMEINKOSTENFAKTOR" class="java.lang.Double"/>
+	<parameter name="P_VERTRIEBSGEMEINKOSTENFAKTOR" class="java.lang.Double"/>
+	<field name="F_POSNR" class="java.lang.Integer"/>
+	<field name="F_ARTIKELNUMMER" class="java.lang.String"/>
+	<field name="F_BEZEICHNUNG" class="java.lang.String"/>
+	<field name="F_ZUSATZBEZEICHNUNG" class="java.lang.String"/>
+	<field name="F_MENGE" class="java.math.BigDecimal"/>
+	<field name="F_BELEGART_QUELLE" class="java.lang.String"/>
+	<field name="F_BELEGNUMMER_QUELLE" class="java.lang.String"/>
+	<field name="F_MENGE_QUELLE" class="java.math.BigDecimal"/>
+	<field name="F_ARTIKELNUMMER_QUELLE" class="java.lang.String"/>
+	<field name="F_ARTIKELBEZEICHNUNG_QUELLE" class="java.lang.String"/>
+	<field name="F_EINHEIT" class="java.lang.String"/>
+	<field name="F_EINHEIT_QUELLE" class="java.lang.String"/>
+	<field name="F_EINSTANDSPREIS" class="java.math.BigDecimal"/>
+	<field name="F_GESTEHUNGSPREIS" class="java.math.BigDecimal"/>
+	<field name="F_VERKAUFSPREIS" class="java.math.BigDecimal"/>
+	<field name="F_LOSMATERIAL" class="java.lang.String"/>
+	<variable name="PosString" class="java.lang.String">
+		<variableExpression><![CDATA[new java.util.Formatter($P{REPORT_LOCALE}).format("%03d", $F{F_POSNR}).out().toString()]]></variableExpression>
+	</variable>
+	<variable name="LISTE_Material" class="java.util.List">
+		<variableExpression><![CDATA[($V{LISTE_Material} == null ? new ArrayList() : $V{LISTE_Material})]]></variableExpression>
+	</variable>
+	<variable name="LISTE_Material_ADD" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{LISTE_Material}.add(new java.lang.Object[] {$V{PosString},
+        ($F{F_ARTIKELNUMMER}==null?"------":$F{F_ARTIKELNUMMER}),
+        $F{F_BEZEICHNUNG},
+        $F{F_MENGE},
+        $F{F_EINHEIT},
+        $F{F_GESTEHUNGSPREIS},
+        $F{F_VERKAUFSPREIS},
+        $F{F_POSNR},
+        $V{Old_Pos}
+} )]]></variableExpression>
+	</variable>
+	<variable name="Old_Pos" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{F_POSNR}]]></variableExpression>
+	</variable>
+	<group name="Position">
+		<groupExpression><![CDATA[$F{F_POSNR}]]></groupExpression>
+		<groupHeader>
+			<band>
+				<printWhenExpression><![CDATA[!$P{P_NACHKALKULATION}]]></printWhenExpression>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="5">
+				<printWhenExpression><![CDATA[!$P{P_NACHKALKULATION}]]></printWhenExpression>
+				<line>
+					<reportElement x="0" y="0" width="789" height="1" uuid="75c66492-f1b2-4188-8c74-6e957da3f9e2"/>
+					<graphicElement>
+						<pen lineWidth="0.5"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="54" splitType="Stretch">
+			<printWhenExpression><![CDATA[!$P{P_NACHKALKULATION}]]></printWhenExpression>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="665" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1fd55564-2b71-4a3c-8d63-d628744fd5ad"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="668" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ac4100da-95a4-412f-9990-9a921a24da62"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="768" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e1a360c0-833d-45d9-8610-a5653b8661ab"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Verrechnungsmodell" mode="Opaque" x="0" y="12" width="546" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="29cc3df0-cb3e-4c55-bcb3-015cb72dad2e"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="18" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["indirekter Materialeinsatz zu RE "+$P{P_RECHNUNGSNUMMER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="43" width="35" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="09fffd41-8434-46b0-bf44-1d77c8c2d159"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[PosNr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="35" y="43" width="185" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b4ac7568-488e-4b85-86f4-525d2ee224a6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[► Artikel gebucht]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-1" mode="Opaque" x="0" y="53" width="789" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="6baaa4b5-ec59-4780-9290-9caa00a12f61"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="Preisbasis gebucht" mode="Opaque" x="270" y="43" width="48" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="dc4f8b8d-0f4a-4499-a163-cfb718e3dbe5"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Preisbasis gebucht" mode="Opaque" x="690" y="43" width="48" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f5629143-a989-48f9-8cc8-0f0661b38b7b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="370" y="43" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="77a73287-aa61-4ff5-bd41-2c0b86911203"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Beleg]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="400" y="43" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="eca97a32-94e3-4440-9b35-7a39af2caf53"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[► Beleg Nr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="460" y="43" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8d17fd26-d6b0-48c7-8679-131b2ff7cc86"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[► Artikel Nr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="540" y="43" width="150" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4952f58e-740a-4cab-8de1-f9d6512ace40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Artikel Bezeichnung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="ME" mode="Opaque" x="320" y="43" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c9c4fbf6-9f95-4f86-aead-8fe300dc1f31"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[ME]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="370" y="33" width="400" height="10" forecolor="#000000" backcolor="#CCCCCC" uuid="1246c8ab-8df8-499c-b347-e57c4d38e481"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Quelle]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="ME" mode="Opaque" x="740" y="43" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7cd1ee72-efd0-4575-b9b9-dadd840b738f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[ME]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="689" y="20" width="100" height="12" uuid="f0170ce2-6308-4f59-b98c-2658122f0613">
+					<printWhenExpression><![CDATA[$P{P_NACHKALKULATION}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[als Nachkalkulation]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="10">
+			<printWhenExpression><![CDATA[!$P{P_NACHKALKULATION}]]></printWhenExpression>
+			<textField pattern="###000" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" mode="Transparent" x="0" y="0" width="35" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a879b994-6e66-4825-b997-c6ee6f5a5b18"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_POSNR}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement isPrintRepeatedValues="false" mode="Transparent" x="35" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="492a61e6-863a-44b8-9bff-5624153ccfc2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ARTIKELNUMMER}]]></textFieldExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ARTIKEL_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{F_ARTIKELNUMMER}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" mode="Transparent" x="115" y="0" width="155" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="59d6558e-d6cf-4240-8887-d2193d4a9dd5"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BEZEICHNUNG}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000">
+				<reportElement isPrintRepeatedValues="false" x="270" y="0" width="48" height="10" uuid="c13cc774-18ef-42ad-973d-7d9eebb36ad4"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_MENGE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement x="690" y="0" width="48" height="10" uuid="97f0c1c0-1406-4757-92a0-10f10d3a1119"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_MENGE_QUELLE}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="370" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f6fd2e79-da21-40e7-9ec5-9a736680cf5d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BELEGART_QUELLE}.startsWith("Los") ? "Los" :
+    $F{F_BELEGART_QUELLE}.startsWith("Bestellung") ? "BS" :
+        $F{F_BELEGART_QUELLE}.startsWith("Inv") ? "Inv" :
+            $F{F_BELEGART_QUELLE}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement key="Belegnummer" mode="Transparent" x="400" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a40ea859-2c5e-45f1-83da-915d5e3a88f3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BELEGNUMMER_QUELLE}]]></textFieldExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[$F{F_BELEGART_QUELLE}.startsWith("Los") ? com.lp.util.GotoHelper.goto_FERTIGUNG_AUSWAHL() :
+    $F{F_BELEGART_QUELLE}.startsWith("Bestellung") ? com.lp.util.GotoHelper.goto_BESTELLUNG_AUSWAHL() :
+        $F{F_BELEGART_QUELLE}.startsWith("Inv") ? null :
+            null]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{F_BELEGNUMMER_QUELLE}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement mode="Transparent" x="460" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4950dcae-d550-4fb4-8a29-3e3854792463"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ARTIKELNUMMER_QUELLE}]]></textFieldExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ARTIKEL_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{F_ARTIKELNUMMER_QUELLE}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="540" y="0" width="150" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="370fc4a3-a81b-4a06-9180-11b342f55cd7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ARTIKELBEZEICHNUNG_QUELLE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="ME" mode="Opaque" x="320" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="45148e82-900d-4720-98ee-a6d7791c426a"/>
+				<textElement verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_EINHEIT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="ME" mode="Opaque" x="740" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="89a6ca73-1609-49d1-9b7f-0e1c74b40443"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_EINHEIT_QUELLE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="10">
+			<printWhenExpression><![CDATA[$P{P_NACHKALKULATION}]]></printWhenExpression>
+			<subreport>
+				<reportElement key="Subreport_Zusammenfassung" positionType="Float" x="0" y="0" width="789" height="10" uuid="bd939199-5e66-488b-9916-1b55fe1405eb"/>
+				<subreportParameter name="P_ARBEITSZEITGEMEINKOSTENFAKTOR">
+					<subreportParameterExpression><![CDATA[$P{P_ARBEITSZEITGEMEINKOSTENFAKTOR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MATERIALGEMEINKOSTENFAKTOR">
+					<subreportParameterExpression><![CDATA[$P{P_MATERIALGEMEINKOSTENFAKTOR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_KUNDE">
+					<subreportParameterExpression><![CDATA[$P{P_KUNDE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_RECHNUNGSNUMMER">
+					<subreportParameterExpression><![CDATA[$P{P_RECHNUNGSNUMMER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_RECHNUNGSDATUM">
+					<subreportParameterExpression><![CDATA[$P{P_RECHNUNGSDATUM}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_INFORMATION">
+					<subreportParameterExpression><![CDATA[$P{REPORT_INFORMATION}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_ROOT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_ROOT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_NACHKALKULATION">
+					<subreportParameterExpression><![CDATA[$P{P_NACHKALKULATION}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ENTWICKLUNGSGEMEINKOSTENFAKTOR">
+					<subreportParameterExpression><![CDATA[$P{P_ENTWICKLUNGSGEMEINKOSTENFAKTOR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_VERTRIEBSGEMEINKOSTENFAKTOR">
+					<subreportParameterExpression><![CDATA[$P{P_VERTRIEBSGEMEINKOSTENFAKTOR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_FERTIGUNGSGEMEINKOSTENFAKTOR">
+					<subreportParameterExpression><![CDATA[$P{P_FERTIGUNGSGEMEINKOSTENFAKTOR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_VERWALTUNGSGEMEINKOSTENFAKTOR">
+					<subreportParameterExpression><![CDATA[$P{P_VERWALTUNGSGEMEINKOSTENFAKTOR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.ListOfArrayDataSource(com.lp.util.HelperReport.sortListNoNull($V{LISTE_Material}),
+    new String[] {"Sort", "F_ARTIKELNUMMER", "F_BEZEICHNUNG", "F_MENGE", "F_EINHEIT",
+        "F_GESTEHUNGSPREIS",
+        "F_VERKAUFSPREIS",
+        "F_POSNR",
+        "Old_Pos" })]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "rech_materialeinsatz_zusammenfassung.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="part_empfaengerliste" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="part_empfaengerliste" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="e19ea597-ba3a-4163-9095-eeb2330f78f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="181"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -53,6 +53,10 @@
 	<field name="F_PARTNER_ORT" class="java.lang.String"/>
 	<field name="F_ANSPRECHPARTNER_ANREDE" class="java.lang.String"/>
 	<field name="F_ANSPRECHPARTNER_NTITEL" class="java.lang.String"/>
+	<field name="F_ANSPRECHPARTNER_ABTEILUNG" class="java.lang.String"/>
+	<field name="F_PARTNER_I_ID" class="java.lang.Integer"/>
+	<field name="F_PARTNER_BRANCHE" class="java.lang.String"/>
+	<field name="F_PARTNER_PARTNERKLASSE" class="java.lang.String"/>
 	<variable name="IS_CURRENT_PAGE_ONE" class="java.lang.Boolean">
 		<variableExpression><![CDATA[new Boolean(false)]]></variableExpression>
 		<initialValueExpression><![CDATA[new Boolean(true)]]></initialValueExpression>
@@ -66,6 +70,27 @@
 	<variable name="Email" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[$F{F_BEKOMMTEMAIL}.booleanValue() ? new Integer(1) : new Integer(0)]]></variableExpression>
 	</variable>
+	<variable name="anrede_titel" class="java.lang.String">
+		<variableExpression><![CDATA[$F{F_ANSPRECHPARTNER_TITEL}==null ? "" : $F{F_ANSPRECHPARTNER_TITEL}+" "]]></variableExpression>
+	</variable>
+	<variable name="anrede_vorname" class="java.lang.String">
+		<variableExpression><![CDATA[$F{F_ANSPRECHPARTNER_VORNAME}==null ? "" : $F{F_ANSPRECHPARTNER_VORNAME}+" "]]></variableExpression>
+	</variable>
+	<variable name="anrede" class="java.lang.String">
+		<variableExpression><![CDATA[$F{F_ANSPRECHPARTNER_ANREDE}.substring( 0, 4 ).equals("Herr") ? "Sehr geehrter Herr " + ($V{anrede_titel}+$V{anrede_vorname}+$F{F_ANSPRECHPARTNER_NACHNAME}) :
+($F{F_ANSPRECHPARTNER_ANREDE}.substring( 0, 4 ).equals("Frau") ? "Sehr geehrte Frau " + ($V{anrede_titel}+$V{anrede_vorname}+$F{F_ANSPRECHPARTNER_NACHNAME}) :
+"Sehr geehrte Damen und Herren")]]></variableExpression>
+	</variable>
+	<variable name="Anzahl" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{F_PARTNER_NAME1}]]></variableExpression>
+	</variable>
+	<variable name="Anzahl_Firmen" class="java.lang.Integer" incrementType="Group" incrementGroup="Firma" calculation="Count">
+		<variableExpression><![CDATA[$V{Anzahl_Firmen}.intValue()+1]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<group name="Firma">
+		<groupExpression><![CDATA[$F{F_PARTNER_NAME1}]]></groupExpression>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -75,7 +100,7 @@
 	<pageHeader>
 		<band height="75" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="610" height="10" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="610" height="10" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="12eb1c72-4dc2-4ae4-97eb-81c4dc853824"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -86,10 +111,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Opaque" x="620" y="0" width="137" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PAGE_NUMBER" mode="Opaque" x="620" y="0" width="137" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b700d074-1103-4d7e-b2e7-d8931f26668a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -100,10 +125,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}) + " von "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}) + " von "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Opaque" x="757" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PAGE_NUMBER" mode="Opaque" x="757" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ba9987ad-755a-4c5b-b7d3-44e82eeeeaa5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -114,10 +139,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Empfängerliste" mode="Opaque" x="0" y="12" width="148" height="14" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Empfängerliste" mode="Opaque" x="0" y="12" width="148" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="e67258f7-d612-4698-aa5d-5e496e682616"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -131,7 +156,7 @@
 				<text><![CDATA[Empfängerliste]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Serienbrief + BEZEICHNUNG" mode="Opaque" x="0" y="26" width="388" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Serienbrief + BEZEICHNUNG" mode="Opaque" x="0" y="26" width="388" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03d2da55-66f1-4e67-9fca-2cfa9b5de923"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -142,10 +167,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Serienbrief: "+$P{P_BEZEICHNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Serienbrief: "+$P{P_BEZEICHNUNG}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Branche + BEZEICHNUNG" mode="Opaque" x="0" y="36" width="188" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Branche + BEZEICHNUNG" mode="Opaque" x="0" y="36" width="188" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e85f5013-c579-4d58-94ce-2e684a8c1136">
 					<printWhenExpression><![CDATA[$P{P_BRANCHE}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -158,10 +183,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Branche: "+$P{P_BRANCHE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Branche: "+$P{P_BRANCHE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Partnerklasse + BEZEICHNUNG" mode="Opaque" x="180" y="36" width="188" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Partnerklasse + BEZEICHNUNG" mode="Opaque" x="180" y="36" width="188" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="4eaee948-c82b-4963-be12-51033f7da9f7">
 					<printWhenExpression><![CDATA[$P{P_PARTNERKLASSE}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -174,10 +199,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Partnerklasse: "+$P{P_PARTNERKLASSE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Partnerklasse: "+$P{P_PARTNERKLASSE}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Firma1" mode="Opaque" x="0" y="52" width="84" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Firma1" mode="Opaque" x="0" y="52" width="84" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="51808dcd-da5d-4b75-a381-89fa597141ce"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -191,7 +216,7 @@
 				<text><![CDATA[Firma1]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Firma2" mode="Opaque" x="84" y="52" width="84" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Firma2" mode="Opaque" x="84" y="52" width="84" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9a90f5f4-fd15-41e7-a6fa-fb0b8c4a575a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -205,7 +230,7 @@
 				<text><![CDATA[Firma2]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Strasse" mode="Opaque" x="167" y="52" width="96" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Strasse" mode="Opaque" x="167" y="52" width="96" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="57d8ec1a-b103-45bf-a48f-ee2d6fd40a31"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -219,7 +244,7 @@
 				<text><![CDATA[Strasse]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Ort" mode="Opaque" x="263" y="52" width="99" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Ort" mode="Opaque" x="263" y="52" width="99" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1df8c65f-36cb-463a-8480-256e44f4627d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -233,7 +258,7 @@
 				<text><![CDATA[Ort]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Telefon" mode="Opaque" x="362" y="52" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Telefon" mode="Opaque" x="362" y="52" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="306b42fd-13cf-4afb-bd00-06953eedc7f3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -247,7 +272,7 @@
 				<text><![CDATA[Telefon]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Fax" mode="Opaque" x="442" y="52" width="92" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Fax" mode="Opaque" x="442" y="52" width="92" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c7721ad5-6eb1-4fd9-baeb-46113c6c9a9b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -261,7 +286,7 @@
 				<text><![CDATA[Fax]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Email" mode="Opaque" x="534" y="52" width="160" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Email" mode="Opaque" x="534" y="52" width="160" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="639afa06-ddd5-4d37-8ff4-4e68018a753e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -275,7 +300,7 @@
 				<text><![CDATA[Email]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Bekommt  " mode="Opaque" x="705" y="52" width="68" height="10" forecolor="#000000" backcolor="#CCCCCC"/>
+				<reportElement key="Bekommt  " mode="Opaque" x="705" y="52" width="68" height="10" forecolor="#000000" backcolor="#CCCCCC" uuid="6ef61407-f401-45f2-a6a4-4c55df6e59ac"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -289,7 +314,7 @@
 				<text><![CDATA[Bekommt]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Ansprechpartner:" mode="Opaque" x="2" y="62" width="63" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Ansprechpartner:" mode="Opaque" x="2" y="62" width="63" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6809bacf-1d75-4a31-b808-529dbaa10b2a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -303,7 +328,7 @@
 				<text><![CDATA[Ansprechpartner:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Titel" mode="Opaque" x="65" y="62" width="34" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Titel" mode="Opaque" x="65" y="62" width="34" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5b9f3347-9175-4d37-aea0-320f215ef487"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -317,7 +342,7 @@
 				<text><![CDATA[Titel]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Vorname" mode="Opaque" x="99" y="62" width="81" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Vorname" mode="Opaque" x="99" y="62" width="81" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9caf68d4-9579-4733-8e4b-a4b44fc03ea6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -331,7 +356,7 @@
 				<text><![CDATA[Vorname]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Nachname" mode="Opaque" x="180" y="62" width="79" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Nachname" mode="Opaque" x="180" y="62" width="79" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e55bd7d8-5b28-407f-b2a7-4c01f23bc0df"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -345,7 +370,7 @@
 				<text><![CDATA[Nachname]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Handy" mode="Opaque" x="259" y="62" width="93" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Handy" mode="Opaque" x="259" y="62" width="93" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="19d08d05-0c91-4e10-8cfe-e6a7022760d8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -359,7 +384,7 @@
 				<text><![CDATA[Handy]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Telefon-DW" mode="Opaque" x="351" y="62" width="91" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Telefon-DW" mode="Opaque" x="351" y="62" width="91" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="124d4204-7f29-4f51-9947-f11982eba31f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -373,7 +398,7 @@
 				<text><![CDATA[Telefon-DW]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Direktfax" mode="Opaque" x="442" y="62" width="92" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Direktfax" mode="Opaque" x="442" y="62" width="92" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="788f7f12-4a4d-43bc-96a5-13e1333a7a04"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -387,7 +412,7 @@
 				<text><![CDATA[Direktfax]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Email" mode="Opaque" x="534" y="62" width="160" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Email" mode="Opaque" x="534" y="62" width="160" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="bc43f8c7-ccbd-4134-b24e-0d91344be31e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -401,7 +426,7 @@
 				<text><![CDATA[Email]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Bekommt   Brief" mode="Opaque" x="705" y="62" width="23" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Bekommt   Brief" mode="Opaque" x="705" y="62" width="23" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="780ba9f5-bc11-445e-90de-8da0cae4eb5e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -415,7 +440,7 @@
 				<text><![CDATA[Brief]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Bekommt Fax" mode="Opaque" x="728" y="62" width="22" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Bekommt Fax" mode="Opaque" x="728" y="62" width="22" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6e574c9f-55b6-4741-9dba-30a2e6cadf06"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -429,7 +454,7 @@
 				<text><![CDATA[Fax]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Bekommt Email" mode="Opaque" x="750" y="62" width="23" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Bekommt Email" mode="Opaque" x="750" y="62" width="23" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7cb1dd7d-dae8-46b8-be11-d3f2a50dbc0f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -443,7 +468,7 @@
 				<text><![CDATA[Email]]></text>
 			</staticText>
 			<line>
-				<reportElement key="line-1" mode="Opaque" x="0" y="73" width="780" height="1" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="line-1" mode="Opaque" x="0" y="73" width="780" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="2fc9e306-6c44-4dc0-a833-79be06d1e749"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
@@ -456,7 +481,7 @@
 	<detail>
 		<band height="21" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="PARTNER_NAME1" mode="Opaque" x="0" y="0" width="84" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PARTNER_NAME1" mode="Opaque" x="0" y="0" width="84" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="3e6fb808-0f7b-4e87-8050-8425c6ec5ade"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -467,10 +492,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_PARTNER_NAME1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PARTNER_NAME1}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="PARTNER_NAME2" mode="Opaque" x="84" y="0" width="84" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PARTNER_NAME2" mode="Opaque" x="84" y="0" width="84" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="8f98b7ec-378a-445b-84a5-67bfef9e8ba0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -481,10 +506,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_PARTNER_NAME2}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PARTNER_NAME2}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="PARTNER_STRASSE" mode="Opaque" x="168" y="0" width="95" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PARTNER_STRASSE" mode="Opaque" x="168" y="0" width="95" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="8997f371-0666-4110-a312-5c54482aed89"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -495,10 +520,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_PARTNER_STRASSE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PARTNER_STRASSE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="PARTNER_LANDPLZORT" mode="Opaque" x="263" y="0" width="99" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PARTNER_LANDPLZORT" mode="Opaque" x="263" y="0" width="99" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a892b681-3d6b-4fed-906a-809b8b8d3879"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -509,10 +534,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_PARTNER_LAND} +" "+$F{F_PARTNER_PLZ}+" "+$F{F_PARTNER_ORT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PARTNER_LAND} +" "+$F{F_PARTNER_PLZ}+" "+$F{F_PARTNER_ORT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="PARTNER_TELEFON" mode="Opaque" x="362" y="0" width="80" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PARTNER_TELEFON" mode="Opaque" x="362" y="0" width="80" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="13245fc4-f82d-421c-8f0a-5a1c5d82805b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -523,10 +548,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_PARTNER_TELEFON}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PARTNER_TELEFON}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="PARTNER_FAX" mode="Opaque" x="442" y="0" width="92" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PARTNER_FAX" mode="Opaque" x="442" y="0" width="92" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="901a16ea-1e0f-43fc-b56c-ea68031287c3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -537,10 +562,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_PARTNER_FAX}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PARTNER_FAX}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="PARTNER_EMAIL" mode="Opaque" x="534" y="0" width="160" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PARTNER_EMAIL" mode="Opaque" x="534" y="0" width="160" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="769d6044-fbb7-4c43-aa9c-039592a8e793"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -551,10 +576,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_PARTNER_EMAIL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_PARTNER_EMAIL}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="X" mode="Opaque" x="705" y="0" width="23" height="10" forecolor="#000000" backcolor="#CCCCCC">
+				<reportElement key="X" mode="Opaque" x="705" y="0" width="23" height="10" forecolor="#000000" backcolor="#CCCCCC" uuid="1e2638d8-5771-44c9-9c81-499d303d04d8">
 					<printWhenExpression><![CDATA[$F{F_BEKOMMTBRIEF}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -570,7 +595,7 @@
 				<text><![CDATA[X]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="X" mode="Opaque" x="728" y="0" width="22" height="10" forecolor="#000000" backcolor="#CCCCCC">
+				<reportElement key="X" mode="Opaque" x="728" y="0" width="22" height="10" forecolor="#000000" backcolor="#CCCCCC" uuid="65e3aa17-9773-49e0-bfb1-41f3ef137e53">
 					<printWhenExpression><![CDATA[$F{F_BEKOMMTFAX}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -586,7 +611,7 @@
 				<text><![CDATA[X]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="X" mode="Opaque" x="750" y="0" width="23" height="10" forecolor="#000000" backcolor="#CCCCCC">
+				<reportElement key="X" mode="Opaque" x="750" y="0" width="23" height="10" forecolor="#000000" backcolor="#CCCCCC" uuid="5fe0b693-0122-488c-9780-1af56faa2ff2">
 					<printWhenExpression><![CDATA[$F{F_BEKOMMTEMAIL}]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -602,7 +627,7 @@
 				<text><![CDATA[X]]></text>
 			</staticText>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="F_ANSPRECHPARTNER_ANREDE" mode="Opaque" x="31" y="10" width="34" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="F_ANSPRECHPARTNER_ANREDE" mode="Opaque" x="31" y="10" width="34" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="d6927505-eb41-4e9c-bc50-af1b17803d94"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -613,10 +638,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ANSPRECHPARTNER_ANREDE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ANSPRECHPARTNER_ANREDE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="ANSPRECHPARTNER_TITEL" mode="Opaque" x="65" y="10" width="34" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="ANSPRECHPARTNER_TITEL" mode="Opaque" x="65" y="10" width="34" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="5b00106d-5eab-4607-b61d-e2b7be89fd28"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -627,10 +652,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ANSPRECHPARTNER_TITEL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ANSPRECHPARTNER_TITEL}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="ANSPRECHPARTNER_VORNAME" mode="Opaque" x="99" y="10" width="81" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="ANSPRECHPARTNER_VORNAME" mode="Opaque" x="99" y="10" width="81" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="69e40dfa-ae6d-4e03-9c14-3511bff2f04c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -641,10 +666,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ANSPRECHPARTNER_VORNAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ANSPRECHPARTNER_VORNAME}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="ANSPRECHPARTNER_NACHNAME" mode="Opaque" x="180" y="10" width="79" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="ANSPRECHPARTNER_NACHNAME" mode="Opaque" x="180" y="10" width="79" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e24ccaec-861b-40d5-ae0c-c5b4d5b15da9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -655,10 +680,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ANSPRECHPARTNER_NACHNAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ANSPRECHPARTNER_NACHNAME}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="ANSPRECHPARTNER_HANDY" mode="Opaque" x="259" y="10" width="92" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="ANSPRECHPARTNER_HANDY" mode="Opaque" x="259" y="10" width="92" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e83a2798-bf18-4010-a669-51bc92fdfbc1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -669,10 +694,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ANSPRECHPARTNER_HANDY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ANSPRECHPARTNER_HANDY}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="ANSPRECHPARTNER_TELEFONDW" mode="Opaque" x="351" y="10" width="91" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="ANSPRECHPARTNER_TELEFONDW" mode="Opaque" x="351" y="10" width="91" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="30d7777c-1fc9-40b5-a7ba-8b3f3fbc0012"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -683,10 +708,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ANSPRECHPARTNER_TELEFONDW}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ANSPRECHPARTNER_TELEFONDW}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="ANSPRECHPARTNER_FAX" mode="Opaque" x="442" y="10" width="92" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="ANSPRECHPARTNER_FAX" mode="Opaque" x="442" y="10" width="92" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="453680e5-89fa-4cf0-afee-20f4eed54feb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -697,10 +722,10 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ANSPRECHPARTNER_FAX}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ANSPRECHPARTNER_FAX}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="ANSPRECHPARTNER_EMAIL" mode="Opaque" x="534" y="10" width="160" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="ANSPRECHPARTNER_EMAIL" mode="Opaque" x="534" y="10" width="160" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="41fde099-bcf9-438a-b402-6c8ef7767a57"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -711,7 +736,7 @@
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ANSPRECHPARTNER_EMAIL}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ANSPRECHPARTNER_EMAIL}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -724,13 +749,13 @@
 	<summary>
 		<band height="15" splitType="Stretch">
 			<line>
-				<reportElement key="line-2" mode="Opaque" x="0" y="1" width="780" height="1" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="line-2" mode="Opaque" x="0" y="1" width="780" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="bb3ce9be-6732-4d17-a3aa-2226860572d5"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<staticText>
-				<reportElement key="Briefe" x="590" y="2" width="30" height="10"/>
+				<reportElement key="Briefe" x="590" y="2" width="30" height="10" uuid="dc5efe4e-9ec4-4366-ae31-b7dc68b1d3b1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -743,7 +768,7 @@
 				<text><![CDATA[Briefe]]></text>
 			</staticText>
 			<textField pattern="#,##0" isBlankWhenNull="false">
-				<reportElement key="Brief Anzahl" x="548" y="2" width="40" height="10"/>
+				<reportElement key="Brief Anzahl" x="548" y="2" width="40" height="10" uuid="e5557310-bd76-403f-896e-12af89816a23"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -753,10 +778,10 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Brief}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{Brief}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Faxe" x="670" y="2" width="30" height="10"/>
+				<reportElement key="Faxe" x="670" y="2" width="30" height="10" uuid="61a169cc-a37c-4d0f-8a17-ce13ddd4e0c5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -769,7 +794,7 @@
 				<text><![CDATA[Faxe]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="Fax Anzahl" x="628" y="2" width="40" height="10"/>
+				<reportElement key="Fax Anzahl" x="628" y="2" width="40" height="10" uuid="ec103e18-85a7-462f-8861-efed2186ffb9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -779,10 +804,10 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Fax}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{Fax}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="EMails" x="750" y="2" width="30" height="10"/>
+				<reportElement key="EMails" x="750" y="2" width="30" height="10" uuid="64adae14-8d21-4e6b-b135-d0947e202698"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -795,7 +820,7 @@
 				<text><![CDATA[EMails]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="Email Anzahl" x="709" y="2" width="40" height="10"/>
+				<reportElement key="Email Anzahl" x="709" y="2" width="40" height="10" uuid="df181895-2ff2-4c06-9b9f-a0aef58274e0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -805,8 +830,50 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Email}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{Email}]]></textFieldExpression>
 			</textField>
+			<textField pattern="#,##0">
+				<reportElement mode="Opaque" x="30" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="832b162b-5040-463d-85e9-a03fbcc79c50"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Anzahl}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="144" y="2" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="40151eb0-8d9d-4b9d-900c-fa971e23fe0a"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Anzahl_Firmen}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Firma1" mode="Opaque" x="0" y="2" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5c0c79e1-e44c-4e39-9718-06efd5a20a4f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Anzahl]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Firma1" mode="Opaque" x="84" y="2" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fb111348-ff7d-407b-af27-b07a33e62f94"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Anzahl Firmen]]></text>
+			</staticText>
 		</band>
 	</summary>
 </jasperReport>

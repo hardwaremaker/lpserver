@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Indirekte_Ersatztypen" printOrder="Horizontal" pageWidth="690" pageHeight="283" columnWidth="690" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4aadc31f-6107-4999-a669-37ef722b0119">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="Artikel" class="java.lang.String"/>
+	<parameter name="Menge" class="java.math.BigDecimal"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<field name="c_nr" class="java.lang.String"/>
+	<field name="c_bez" class="java.lang.String"/>
+	<field name="c_zbez" class="java.lang.String"/>
+	<variable name="Lagerstand" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(N_LAGERSTAND) from WW_ARTIKELLAGER where ARTIKEL_I_ID="+
+"(select I_ID from WW_ARTIKEL where C_NR='"+$F{c_nr}+"');"
+)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<staticText>
+				<reportElement x="0" y="0" width="60" height="10" uuid="3280e421-cecc-43b8-9e48-bf5a881c849b"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Indirekte Ersatzartikel]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="60" y="0" width="100" height="10" uuid="0a4f1271-d1d9-4db8-8905-885de5c9cda9"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Artikel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="462" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7f642d3d-b2f3-4928-b490-069382aa723d"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Menge}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<textField isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement x="0" y="0" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#009900" uuid="7c32807c-7c93-48a4-8081-575cd25925e9"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{c_nr}]]></textFieldExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ARTIKEL_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{c_nr}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="60" y="0" width="150" height="10" isRemoveLineWhenBlank="true" forecolor="#009900" uuid="41408707-ee7a-4b1e-93ae-bfd20587f4fa"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{c_bez}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="210" y="0" width="150" height="10" isRemoveLineWhenBlank="true" forecolor="#009900" uuid="9b1c0883-e95d-44cd-aa34-aa911029e90e"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{c_zbez}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="462" y="0" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#009900" backcolor="#FFFFFF" uuid="e8c1716a-223d-48d4-b6fa-0beb3fad1bf9">
+					<printWhenExpression><![CDATA[$V{Lagerstand}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Lagerstand}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fert_sonderetikett" pageWidth="195" pageHeight="107" whenNoDataType="AllSectionsNoDetail" columnWidth="188" leftMargin="5" rightMargin="2" topMargin="2" bottomMargin="2" uuid="782cee06-621e-41be-a682-4d78ce8ad84b">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="4.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="299"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="P_STRING" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[/* Typ1 */
+/* "[)>06U+001DF01001IU+001DP000000-2309-621-ST1U+001DS000000190709152944U+001D2P00U+001D9K0000000000U+001D6V0000000000U+001D1P000000000000724979U+001D9D31072019U+001D15D30012020U+001DQ1 U+001DKBS 19/0001479U+001D4K000010U+001D1T0009032848U+001DV0005624616U+001D3ZLOVDM101 1U+001D50Z0009032848U+001DF02010XU+001DS000000190709152944" */
+/* Typ2 */
+/* "12230962101101812241701020000000000000000000" */
+/* Typ3 */
+"@2309621@04-10-2040-0001"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor" isForPrompting="false">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<variable name="Debug" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[true]]></variableExpression>
+	</variable>
+	<variable name="RS" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[""+new Character((char)30)+""
+/*Der Trick liegt darin, dass man das in die doublequotes einbettet */]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="GS" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[""+new Character((char)29)+""]]></variableExpression>
+	</variable>
+	<variable name="EOT" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[""+(new Character((char)4))+""]]></variableExpression>
+	</variable>
+	<variable name="Typ" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[/* Dies dient der Definition des Types das Barcodes
+   Aktuell werden drei Typen unterschieden */
+$P{P_STRING}.substring(0,5).compareTo("[)>06")==0 ? "T1" :
+    ($P{P_STRING}.substring(0,1).compareTo("@")==0 ? "T3" :
+        ($P{P_STRING}.length()==44 ? "T2" :
+         "???"
+        )
+    )]]></variableExpression>
+	</variable>
+	<variable name="ReferenzNrInitial" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$P{P_STRING}.indexOf($V{GS}+"P") > 0 ?
+$P{P_STRING}.substring($P{P_STRING}.indexOf($V{GS}+"P")+2) :
+null]]></variableExpression>
+	</variable>
+	<variable name="ReferenzNrI2" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$V{ReferenzNrInitial}!=null ?
+$V{ReferenzNrInitial}.substring(0,$V{ReferenzNrInitial}.indexOf($V{GS})) :
+($V{Typ}.compareTo("T2")==0 ? "000000-"+$P{P_STRING}.substring(2,6)+"-"+$P{P_STRING}.substring(6,9) :
+    ($V{Typ}.compareTo("T3")==0 ? "000000-"+$P{P_STRING}.substring(1,5)+"-"+$P{P_STRING}.substring(5,8) :
+     "???"
+    )
+)]]></variableExpression>
+	</variable>
+	<variable name="ReferenzNr" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{ReferenzNrI2}.length()>=15 ?
+$V{ReferenzNrI2}.substring(0,15) :
+$V{ReferenzNrI2}]]></variableExpression>
+	</variable>
+	<variable name="C_BEZ" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "select c_bez from ww_artikelspr where artikel_i_id="+
+    "(select i_id from ww_artikel where c_referenznr='"+$V{ReferenzNr}+"' "+
+    "and mandant_c_nr='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"') and locale_c_nr='deAT';"
+)]]></variableExpression>
+	</variable>
+	<variable name="IndexArtikel" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "select c_index from ww_artikel where c_referenznr='"+$V{ReferenzNr}+"' "+
+    "and mandant_c_nr='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></variableExpression>
+	</variable>
+	<variable name="ReinigungInitial" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select c_bez from ww_reach where i_id =("+
+"select reach_i_id from ww_artikel where c_referenznr='"+$V{ReferenzNr}+"');"
+)]]></variableExpression>
+	</variable>
+	<variable name="ReinigungI2" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$P{P_STRING}.indexOf($V{GS}+"3Z") > 0 ?
+$P{P_STRING}.substring($P{P_STRING}.indexOf($V{GS}+"3Z")+3) :
+null]]></variableExpression>
+	</variable>
+	<variable name="Reinigung" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$V{ReinigungI2} != null ?
+$V{ReinigungI2}.substring(0,$V{ReinigungI2}.indexOf($V{GS})) :
+$V{ReinigungInitial}]]></variableExpression>
+	</variable>
+	<variable name="Reinigungsdatum" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 ? $P{P_STRING}.substring($P{P_STRING}.indexOf($V{GS}+"9D")+3,$P{P_STRING}.indexOf($V{GS}+"9D")+3+8) : null]]></variableExpression>
+	</variable>
+	<variable name="Ablaufdatum" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$P{P_STRING}.indexOf($V{GS}+"99D") > 0 ?
+$P{P_STRING}.substring($P{P_STRING}.indexOf($V{GS}+"99D")+4,$P{P_STRING}.indexOf($V{GS}+"99D")+4+8) :
+null]]></variableExpression>
+	</variable>
+	<variable name="SerialNrBeginn" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$P{P_STRING}.indexOf($V{GS}+"S") > 0 ?
+$P{P_STRING}.substring($P{P_STRING}.indexOf($V{GS}+"S")+2) :
+null]]></variableExpression>
+	</variable>
+	<variable name="SerialNr" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$V{SerialNrBeginn} != null ?
+$V{SerialNrBeginn}.substring(0,$V{SerialNrBeginn}.indexOf($V{GS})) :
+($V{Typ}.compareTo("T2")==0 ? $P{P_STRING}.substring(13,25) :
+    ($V{Typ}.compareTo("T3")==0 ? $P{P_STRING}.substring(9) :
+     null
+    )
+)]]></variableExpression>
+	</variable>
+	<variable name="MHD" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$P{P_STRING}.indexOf($V{GS}+"15D") > 0 ?
+$P{P_STRING}.substring($P{P_STRING}.indexOf($V{GS}+"15D")+4,$P{P_STRING}.indexOf($V{GS}+"15D")+4+8) :
+null]]></variableExpression>
+	</variable>
+	<variable name="Mng_String" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA["1"]]></variableExpression>
+	</variable>
+	<variable name="IndexAusLable" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{Typ}.compareTo("T1")==0 &&
+$P{P_STRING}.indexOf($V{GS}+"2P") > 0 ?
+$P{P_STRING}.substring($P{P_STRING}.indexOf($V{GS}+"2P")+3, $P{P_STRING}.indexOf($V{GS}+"2P")+3+2) :
+($V{Typ}.compareTo("T2")==0 ? $P{P_STRING}.substring(9,11) :
+    ($V{Typ}.compareTo("T3")==0 ? $P{P_STRING}.substring(9,11) :
+     null
+    )
+)]]></variableExpression>
+	</variable>
+	<variable name="Variable" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA["[)>"+$V{RS}+"06"+$V{GS}+
+"P"+$V{ReferenzNr}+$V{GS}+
+($V{SerialNr}==null?"":"S"+$V{SerialNr}+$V{GS})+
+($V{IndexArtikel}==null?"":"2P"+$V{IndexArtikel}+$V{GS})+
+($V{Reinigungsdatum}==null ?"":"9D"+$V{Reinigungsdatum}+$V{GS})+
+($V{Reinigung}==null ?"":"3Z"+$V{ReinigungInitial}+$V{GS})+
+"Q"+$V{Mng_String}+$V{GS}+
+"V"+"5681172"+$V{GS}+
+$V{RS}+$V{EOT}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="103" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="Artikelnummer" mode="Transparent" x="50" y="0" width="188" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fb9c3597-a8ff-469b-9f5c-ea08cd9d8ec4">
+					<printWhenExpression><![CDATA[$V{Debug}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_STRING}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="0" y="0" width="50" height="50" uuid="8760efab-dfcf-47d4-9738-4b80dae8f2ca"/>
+				<jr:DataMatrix xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom" shape="force-square">
+					<jr:codeExpression><![CDATA[$V{Variable}]]></jr:codeExpression>
+				</jr:DataMatrix>
+			</componentElement>
+			<staticText>
+				<reportElement key="RefNr" positionType="Float" mode="Transparent" x="55" y="10" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2e126076-c3a8-40f2-b07b-06564024de4b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Mat-Nr.:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="ReferenzNr" positionType="Float" mode="Transparent" x="80" y="10" width="88" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6633132c-fdcd-4c0f-ba00-bb659325277a"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ReferenzNr}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement positionType="Float" mode="Transparent" x="80" y="20" width="188" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e617aa28-efd5-45bd-9995-e5b157f7780d"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{C_BEZ}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement positionType="Float" mode="Transparent" x="337" y="10" width="51" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1fc8c74a-1f02-4472-b3a5-74bca637cd60">
+					<printWhenExpression><![CDATA[$V{Debug}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Typ}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement positionType="Float" mode="Transparent" x="30" y="70" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="29142bc4-b721-47b8-9c43-7cab89f78455"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{IndexArtikel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="130" y="70" width="58" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="86f4abe8-5c39-4475-8b25-e105347cc374"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Reinigung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="130" y="60" width="58" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1cd7c8c4-fd51-4eaf-b0db-47fd656ec1b5"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Reinigungsdatum}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="RefNr" positionType="Float" mode="Transparent" x="55" y="20" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="115f247b-5124-442b-b995-488167a290f7"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[MatBez.:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Menge" positionType="Float" mode="Transparent" x="55" y="30" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="99b99ade-087b-4e3c-b336-351ecf9b17e6"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Menge:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Menge" positionType="Float" mode="Transparent" x="80" y="30" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f57e2553-99d5-4e3c-8527-0a9a130d0dc8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[1 Stk]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="SNR" positionType="Float" mode="Transparent" x="0" y="50" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f958d417-3fb7-4e2d-afba-665975f46fa6">
+					<printWhenExpression><![CDATA[$V{SerialNr}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Serial-Nr.:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="MHD" positionType="Float" mode="Transparent" x="0" y="80" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c5fe9dc6-3c81-419a-97cd-a1c55c14a8d3">
+					<printWhenExpression><![CDATA[$V{MHD}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[MHD:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Version" positionType="Float" mode="Transparent" x="0" y="70" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a75f10f9-72d9-486e-beea-83454c1d63e0"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Version:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Reinigungsdatum" positionType="Float" mode="Transparent" x="90" y="60" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6ce0260a-bff8-4fd5-816c-82efbc393eb8">
+					<printWhenExpression><![CDATA[$V{Reinigungsdatum}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Rein.Dat.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Ablaufdatum" positionType="Float" mode="Transparent" x="90" y="80" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="489da104-cb89-4175-a07f-8bcee0fb0f89">
+					<printWhenExpression><![CDATA[$V{Ablaufdatum}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[ALDS]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="130" y="80" width="58" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c74eb028-92c4-4524-b4c1-342fba3be1fc"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Ablaufdatum}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Ablaufdatum" positionType="Float" mode="Transparent" x="90" y="70" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7c60ee2f-620d-4b4a-85e6-85efeaac3030">
+					<printWhenExpression><![CDATA[$V{Reinigung}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Sauberkeit:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="30" y="50" width="158" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d22e0ba9-c503-466a-b696-90732d235216"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SerialNr}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="30" y="80" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d6ce7079-a98e-4fb9-8db2-e5cc829e4d59"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{MHD}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="Artikelnummer" mode="Transparent" x="168" y="10" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="56d9b424-6799-4f0c-ad1c-fbbb19ba99da">
+					<printWhenExpression><![CDATA[$V{Debug}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Typ}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="168" y="30" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="06aeae15-ff78-4cfa-afd6-3a8616a5c99a">
+					<printWhenExpression><![CDATA[$V{Debug}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{IndexAusLable}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="IndexPrüfen" positionType="Float" mode="Opaque" x="55" y="40" width="133" height="10" forecolor="#FFFFFF" backcolor="#000000" uuid="fb115e91-0881-4812-ac7d-dc95af74a208">
+					<printWhenExpression><![CDATA[$V{IndexArtikel}.compareTo($V{IndexAusLable}) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Index prüfen]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="50" splitType="Stretch">
+			<printWhenExpression><![CDATA[$V{Debug}]]></printWhenExpression>
+			<componentElement>
+				<reportElement key="Typ1" x="0" y="0" width="50" height="50" uuid="92fcb51e-277b-48e7-aede-3684dc9e0dde"/>
+				<jr:DataMatrix xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom" shape="force-square">
+					<jr:codeExpression><![CDATA[/* Typ1 */
+"[)>06F01001IP000000-2309-621-ST1S0000001907091529442P009K00000000006V00000000001P0000000000007249799D3107201915D30012020Q1 KBS 19/00014794K0000101T0009032848V00056246163ZLOVDM101 150Z0009032848F02010XS000000190709152944"]]></jr:codeExpression>
+				</jr:DataMatrix>
+			</componentElement>
+			<componentElement>
+				<reportElement key="Typ2" x="70" y="0" width="50" height="50" uuid="371e2383-05c6-41cc-83ec-27c3ba4ef0ea"/>
+				<jr:DataMatrix xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom" shape="force-square">
+					<jr:codeExpression><![CDATA[/* Typ2 */
+"12230962101101812241701020000000000000000000"]]></jr:codeExpression>
+				</jr:DataMatrix>
+			</componentElement>
+			<componentElement>
+				<reportElement key="Typ3" x="138" y="0" width="50" height="50" uuid="6f639d4b-9cbb-4ec1-955b-ff0021d93a99"/>
+				<jr:DataMatrix xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom" shape="force-square">
+					<jr:codeExpression><![CDATA[/* Typ3 */
+"@2309621@04-10-2040-0001"]]></jr:codeExpression>
+				</jr:DataMatrix>
+			</componentElement>
+		</band>
+	</summary>
+	<noData>
+		<band height="103">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="Artikelnummer" mode="Transparent" x="0" y="10" width="188" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f095975a-bc80-4203-bfc5-53b34678ee9c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Falsche Daten"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="Artikelnummer" mode="Transparent" x="0" y="20" width="188" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="46d492bb-2069-4622-954b-1ce97c158ef7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_STRING}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Hinweis" mode="Transparent" x="0" y="0" width="188" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b45f7cd3-c659-45b1-976e-7797e1773a6b"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Um sich selbst einen Barcode zu erzeugen liegt der Trick darin, dass man dies im Summary angedruckt wird, da ja das Endergebnis immer ein Typ1 Barcode ist.
+Daher das Debug einschalten, damit wird Summary gedruckt und man hat die drei Typen]]></text>
+			</staticText>
+		</band>
+	</noData>
+</jasperReport>

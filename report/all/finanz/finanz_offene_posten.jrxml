@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_buchungsjournal" pageWidth="595" pageHeight="842" columnWidth="533" leftMargin="42" rightMargin="20" topMargin="20" bottomMargin="20" uuid="fd7aec49-e43d-4788-9e5a-68e903dad17a">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_offene_posten" pageWidth="595" pageHeight="842" columnWidth="533" leftMargin="42" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="fd7aec49-e43d-4788-9e5a-68e903dad17a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -57,6 +57,10 @@
 	<field name="KontoCNr" class="java.lang.String">
 		<fieldDescription><![CDATA[Kontonummer]]></fieldDescription>
 	</field>
+	<field name="AZK" class="java.lang.Integer">
+		<fieldDescription><![CDATA[Auszifferungskennzeichen, null oder n > 0]]></fieldDescription>
+	</field>
+	<field name="AzkSummeFehlerhaft" class="java.math.BigDecimal"/>
 	<variable name="V_SOLL" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{Soll}]]></variableExpression>
 	</variable>
@@ -76,6 +80,9 @@
 	<variable name="Anzahl_Konten" class="java.lang.Integer" incrementType="Group" incrementGroup="Konto" calculation="Count">
 		<variableExpression><![CDATA[$V{Anzahl_Konten}.intValue() + 1]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="AZK_Fehler" class="java.lang.Integer" resetType="Group" resetGroup="Konto" calculation="Count">
+		<variableExpression><![CDATA[$F{AzkSummeFehlerhaft}]]></variableExpression>
 	</variable>
 	<group name="Konto" minHeightToStartNewPage="40">
 		<groupExpression><![CDATA[$F{KontoCNr}]]></groupExpression>
@@ -107,10 +114,28 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{Text}]]></textFieldExpression>
 				</textField>
+				<textField evaluationTime="Auto" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement mode="Opaque" x="220" y="5" width="20" height="10" forecolor="#FF0000" backcolor="#FFFFFF" uuid="9dbe9117-efce-4853-aab5-eacefb8bd476"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{AZK_Fehler}!=null && $V{AZK_Fehler}.intValue() > 0 ?
+"AZK" : null]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Auto" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement mode="Opaque" x="246" y="5" width="49" height="10" forecolor="#FF0000" backcolor="#FFFFFF" uuid="846cb604-c3d2-4b0b-897b-3b3a3a6ed89a"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{AZK_Fehler}!=null && $V{AZK_Fehler}.intValue() > 0 ?
+"Fehlsaldo" : null]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="15" splitType="Stretch">
+			<band height="22" splitType="Stretch">
 				<printWhenExpression><![CDATA[$P{P_SORTIERUNG}.startsWith( "Beleg" )]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
 					<reportElement key="Saldo Beleg" mode="Opaque" x="440" y="1" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="db29328a-acfb-45d7-85a9-f1c0782fa37b"/>
@@ -128,6 +153,15 @@
 				<line>
 					<reportElement x="440" y="0" width="50" height="1" uuid="c6edd5e3-fd9c-4099-9fd2-2620b95206be"/>
 				</line>
+				<textField evaluationTime="Auto" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement mode="Opaque" x="210" y="3" width="85" height="10" forecolor="#FF0000" backcolor="#FFFFFF" uuid="41fced61-7425-4945-ac56-08a8e30f621c"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{AZK_Fehler}!=null && $V{AZK_Fehler}.intValue() > 0 ?
+"Auszifferungsfehler!" : null]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupFooter>
 	</group>
@@ -194,21 +228,21 @@
 			<textField isBlankWhenNull="true">
 				<reportElement key="P_KONTOTYP" x="126" y="23" width="70" height="11" uuid="1708a214-be54-4899-ac11-1241c7700026"/>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_KONTOTYP}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="208" y="23" width="32" height="11" uuid="5b478984-5690-421a-b149-f5c590002ca8"/>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<text><![CDATA[Stichtag: ]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement key="P_TSTICHTAG" x="250" y="23" width="85" height="11" uuid="00b3760d-f211-41ad-b8b8-1fbe3c70b67d"/>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_TSTICHTAG}]]></textFieldExpression>
 			</textField>
@@ -364,7 +398,7 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="10" splitType="Stretch">
+		<band height="11" splitType="Stretch">
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="F_BUCHUNGSDATUM" mode="Opaque" x="50" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="dd794375-a0b6-4805-a948-68a3d2d35bef"/>
 				<box>
@@ -498,20 +532,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Auszug}]]></textFieldExpression>
 			</textField>
-		</band>
-	</detail>
-	<pageFooter>
-		<band splitType="Stretch"/>
-	</pageFooter>
-	<summary>
-		<band height="20" splitType="Stretch">
-			<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith( "Auszug" ) &&
-$V{Anzahl_Konten}.intValue() > 1]]></printWhenExpression>
-			<line>
-				<reportElement x="0" y="0" width="533" height="1" uuid="5fdd503d-6a03-44e3-8e6a-3697f0007238"/>
-			</line>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="Saldo" mode="Opaque" x="440" y="1" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="5f6b963d-5494-4e5e-a318-c4a0dcd66734"/>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="F_AZK" mode="Opaque" x="220" y="0" width="20" height="10" forecolor="#FF0000" backcolor="#FFFFFF" uuid="afce3c09-9ec4-4e7a-8e23-e7c1eb857869"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -521,10 +543,32 @@ $V{Anzahl_Konten}.intValue() > 1]]></printWhenExpression>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{V_Gesamt_Saldo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{AZK}]]></textFieldExpression>
 			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement x="246" y="0" width="49" height="10" forecolor="#FF0000" uuid="a14c6d2b-0fe3-48b6-9070-8e89a8ad972a">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{AzkSummeFehlerhaft}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="13" splitType="Stretch">
+			<printWhenExpression><![CDATA[!$P{P_SORTIERUNG}.startsWith( "Auszug" ) &&
+$V{Anzahl_Konten}.intValue() > 1]]></printWhenExpression>
+			<line>
+				<reportElement x="0" y="0" width="533" height="1" uuid="5fdd503d-6a03-44e3-8e6a-3697f0007238"/>
+			</line>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
-				<reportElement key="Gesamtsaldo" mode="Opaque" x="0" y="1" width="295" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="18bece12-1081-4120-93e5-22bc7ac1a6d7"/>
+				<reportElement key="Gesamtsaldo" mode="Opaque" x="0" y="2" width="135" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="18bece12-1081-4120-93e5-22bc7ac1a6d7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -536,8 +580,21 @@ $V{Anzahl_Konten}.intValue() > 1]]></printWhenExpression>
 				</textElement>
 				<textFieldExpression><![CDATA["Gesamtsaldo offene Posten"]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Saldo" mode="Opaque" x="440" y="2" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5f6b963d-5494-4e5e-a318-c4a0dcd66734"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_Gesamt_Saldo}]]></textFieldExpression>
+			</textField>
 			<textField>
-				<reportElement x="499" y="1" width="30" height="12" uuid="0cc50bba-00b9-4e8f-ab82-0924ce325581"/>
+				<reportElement x="499" y="2" width="30" height="10" uuid="0cc50bba-00b9-4e8f-ab82-0924ce325581"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>

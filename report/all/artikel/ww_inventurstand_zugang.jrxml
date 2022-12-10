@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ww_inventurstand_zugang" pageWidth="190" pageHeight="200" whenNoDataType="AllSectionsNoDetail" columnWidth="190" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4aadc31f-6107-4999-a669-37ef722b0119">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<field name="c_belegartnr" class="java.lang.String"/>
+	<field name="i_belegartid" class="java.lang.Integer"/>
+	<field name="t_buchungszeit" class="java.sql.Timestamp"/>
+	<field name="n_menge" class="java.math.BigDecimal"/>
+	<field name="n_einstandspreis" class="java.math.BigDecimal"/>
+	<variable name="BelegNr" class="java.lang.String">
+		<variableExpression><![CDATA[$F{i_belegartid}== null || $F{c_belegartnr}==null ?
+"??"+$F{i_belegartid}.toString() :
+($F{c_belegartnr}.startsWith("Lieferschein") ?
+  $P{P_SQLEXEC}.execute("select C_NR from LS_LIEFERSCHEIN where I_ID="+$F{i_belegartid}+";")
+  :
+  $F{c_belegartnr}.startsWith("Inventur") || $F{c_belegartnr}.startsWith("Hand") ?
+  "---" :
+  $F{c_belegartnr}.startsWith("Bestellung") ?
+    $P{P_SQLEXEC}.execute("select C_NR from BES_BESTELLUNG where I_ID="+$F{i_belegartid}+";")
+    :
+    $F{c_belegartnr}.startsWith("Los") ?
+      $P{P_SQLEXEC}.execute("select C_NR from FERT_LOS where I_ID="+$F{i_belegartid}+";")
+      :
+      "?1"+$F{i_belegartid}.toString()
+)]]></variableExpression>
+	</variable>
+	<title>
+		<band height="9" splitType="Stretch">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<staticText>
+				<reportElement x="0" y="0" width="40" height="8" uuid="3280e421-cecc-43b8-9e48-bf5a881c849b"/>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Belegart]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="0" width="50" height="8" uuid="1e5527bd-a5d8-4c13-90ae-6bfa277d4a7a"/>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Nummer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="90" y="0" width="40" height="8" uuid="5c106b7c-b86a-421e-a01e-76b336e69760"/>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Datum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="130" y="0" width="30" height="8" uuid="86df6545-b668-41da-8089-59b54f9264b2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="160" y="0" width="30" height="8" uuid="79ab9707-55d7-472e-9001-590d01223c7f"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Preis]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="8" width="190" height="1" uuid="63bfda2a-cb60-4e61-a760-01c431d07e36"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="Belegart" positionType="Float" x="0" y="0" width="40" height="10" isRemoveLineWhenBlank="true" uuid="3c9666bf-a503-4ed9-a5e6-a673e726c22b"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{c_belegartnr}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="Belegnummer" positionType="Float" x="40" y="0" width="50" height="10" isRemoveLineWhenBlank="true" uuid="148feb9e-f9ad-4a98-8b44-d88bbd35da1a"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{BelegNr}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="Datum" positionType="Float" x="90" y="0" width="40" height="10" isRemoveLineWhenBlank="true" uuid="6d55547a-7b33-4db9-a49e-39d72f0e87d0"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{t_buchungszeit}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
+				<reportElement key="Menge" positionType="Float" x="130" y="0" width="30" height="10" isRemoveLineWhenBlank="true" uuid="b0955495-d77e-4870-992f-f0be41735fc0"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{n_menge}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Preis" positionType="Float" x="160" y="0" width="30" height="10" isRemoveLineWhenBlank="true" uuid="90bc8fd9-7c24-46ae-a0a1-40fb2209280d"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{n_einstandspreis}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

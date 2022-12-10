@@ -17,10 +17,15 @@
 		<xsl:apply-templates select="Mahnfrist3"/>
 		<xsl:apply-templates select="Land"/>
 		<xsl:apply-templates select="PLZ"/>
+		<xsl:apply-templates select="Zusatztext"/>
+		<xsl:apply-templates select="Kundennummer"/>
+		<xsl:apply-templates select="Mahnschema"/>
+		<xsl:apply-templates select="AbwZahlungsfristVerw"/>
+		<xsl:apply-templates select="AbwZahlungsfrist"/>
 	</xsl:template>
-	<xsl:template match="Kontonummer | Kontenart | Fremdwaehrung | UID-Nummer | Anrede | Name |  Strasse |  Ort | Mahnsperre |  Mahnfrist1 | Mahnfrist2 |  Mahnfrist3 | Land">
+	<xsl:template match="Kontonummer | Kontenart | Fremdwaehrung | UID-Nummer | Anrede | Name |  Strasse |  Ort | Mahnsperre |  Mahnfrist1 | Mahnfrist2 |  Mahnfrist3 | Land | PLZ | Zusatztext | Kundennummer | Mahnschema | AbwZahlungsfristVerw">
 		<xsl:value-of select="."/>;</xsl:template>
-	<xsl:template match="PLZ">
+	<xsl:template match="AbwZahlungsfrist">
 		<xsl:value-of select="."/>
 	</xsl:template>
 </xsl:stylesheet>

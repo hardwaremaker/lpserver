@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="offene_lose" pageWidth="192" pageHeight="200" orientation="Landscape" columnWidth="192" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4aadc31f-6107-4999-a669-37ef722b0119">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<field name="c_nr" class="java.lang.String"/>
+	<field name="n_losgroesse" class="java.math.BigDecimal"/>
+	<field name="t_produktionsende" class="java.sql.Timestamp"/>
+	<field name="los_i_id" class="java.lang.Integer"/>
+	<variable name="abgeliefert" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(N_MENGE) from FERT_LOSABLIEFERUNG where LOS_I_ID="+$F{los_i_id}+";")]]></variableExpression>
+	</variable>
+	<variable name="offeneLosmenge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{n_losgroesse}.subtract(
+$V{abgeliefert}==null ? BigDecimal.ZERO : $V{abgeliefert}
+)]]></variableExpression>
+	</variable>
+	<variable name="GesamtOffen" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{offeneLosmenge}]]></variableExpression>
+	</variable>
+	<filterExpression><![CDATA[$V{GesamtOffen} != null &&
+$V{GesamtOffen}.compareTo(BigDecimal.ZERO) != 0]]></filterExpression>
+	<title>
+		<band height="15">
+			<staticText>
+				<reportElement x="0" y="4" width="50" height="10" uuid="8ad06130-ae8c-4656-8cad-bc81cd854c75"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[► Los Nr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="50" y="4" width="50" height="10" uuid="258002bd-6f5e-4512-b6d0-9135d560037a"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[offene Menge]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="105" y="4" width="50" height="10" uuid="5bf1a5e9-bdd7-451a-8186-b084cf8ef4ac"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Ende]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="14" width="192" height="1" uuid="2c1b98da-5536-406d-82a9-fa396ac76b9d"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<detail>
+		<band height="10" splitType="Prevent">
+			<printWhenExpression><![CDATA[$V{offeneLosmenge} != null &&
+$V{offeneLosmenge}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement key="LosNr" positionType="Float" x="0" y="0" width="50" height="10" isRemoveLineWhenBlank="true" uuid="0f9f6125-2479-4020-bfaa-a42e3477abbd"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{c_nr}]]></textFieldExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_FERTIGUNG_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{c_nr}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0.0" isBlankWhenNull="true">
+				<reportElement key="offene Menge" positionType="Float" x="50" y="0" width="50" height="10" isRemoveLineWhenBlank="true" uuid="3c9666bf-a503-4ed9-a5e6-a673e726c22b"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{offeneLosmenge}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="Ende" positionType="Float" mode="Transparent" x="105" y="0" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6d55547a-7b33-4db9-a49e-39d72f0e87d0"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{t_produktionsende}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="LosIID" positionType="Float" x="160" y="0" width="32" height="10" isRemoveLineWhenBlank="true" uuid="a2b81130-b635-4917-9953-4b4299d51c26">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{los_i_id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version last-->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_alle_konten" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="792" leftMargin="30" rightMargin="20" topMargin="20" bottomMargin="20" uuid="38fae2f4-6eb9-4e3d-b41e-f7692715219c">
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_alle_konten" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="42" bottomMargin="20" uuid="38fae2f4-6eb9-4e3d-b41e-f7692715219c">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="397"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -24,6 +24,16 @@
 		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
 	</parameter>
 	<parameter name="P_MITVERSTECKTEN" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_SUBREPORTCONNECTION" class="java.sql.Connection" isForPrompting="false"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_SUBDIRECTORY" class="java.lang.String"/>
+	<parameter name="P_MODUL" class="java.lang.String"/>
+	<parameter name="MANDANT_C_NR" class="java.lang.String">
+		<parameterDescription><![CDATA[Der aktuelle Mandant]]></parameterDescription>
+	</parameter>
 	<field name="F_KONTONUMMER" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
@@ -63,24 +73,107 @@
 	<field name="F_UVAART_CNR" class="java.lang.String">
 		<fieldDescription><![CDATA[Die Uvaart CNR (ohne Übersetzungen)]]></fieldDescription>
 	</field>
-	<field name="F_STEUERART" class="java.lang.String"/>
+	<field name="F_STEUERART" class="java.lang.String">
+		<fieldDescription><![CDATA[Enthaelt "UST", "VST", "" oder null]]></fieldDescription>
+	</field>
 	<field name="F_GRUPPENTYP" class="java.lang.String">
 		<fieldDescription><![CDATA[Kennzeichen "E" für Ergebnisgruppe oder "B" für Bilanzgruppe, null wenn keines von beiden]]></fieldDescription>
 	</field>
 	<field name="F_GRUPPENBEZEICHNUNG" class="java.lang.String">
 		<fieldDescription><![CDATA[Bezeichnung für Ergebnisgruppe oder Bilanzgruppe, null wenn keines von beiden]]></fieldDescription>
 	</field>
+	<field name="F_OHNEUST" class="java.lang.String">
+		<fieldDescription><![CDATA["1" wenn auf dieses Konto keine USt kontiert werden darf, ansonsten "0"]]></fieldDescription>
+	</field>
+	<field name="F_ERGEBNISGRUPPETYP" class="java.lang.Integer">
+		<fieldDescription><![CDATA[Typ der Egebnisgruppe
+	ERGEBNISGRUPPE_TYP_ERGEBNISGRUPPE = 0
+	ERGEBNISGRUPPE_TYP_LEEREZEILE = 1
+	ERGEBNISGRUPPE_TYP_LINIE = 2
+	ERGEBNISGRUPPE_TYP_SEITENUMBRUCH = 3
+	ERGEBNISGRUPPE_TYP_BILANZGRUPPE_POSITIV = 4
+	ERGEBNISGRUPPE_TYP_BILANZGRUPPE_NEGATIV = 5]]></fieldDescription>
+	</field>
+	<field name="F_GRUPPENBEZEICHNUNG_NEG" class="java.lang.String">
+		<fieldDescription><![CDATA[Bezeichnung für Ergebnisgruppe_negativ oder Bilanzgruppe_negativ, null wenn nicht zugewiesen]]></fieldDescription>
+	</field>
+	<field name="F_UVAART_VARIANTE" class="java.lang.String"/>
 	<variable name="Zebra" class="java.math.BigDecimal" resetType="Group" resetGroup="Kontenklasse">
 		<variableExpression><![CDATA[$V{Zebra}.negate()]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(1)]]></initialValueExpression>
 	</variable>
-	<group name="Kontenklasse">
+	<variable name="Anzahl" class="java.lang.Integer">
+		<variableExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+null :
+($P{P_KONTOTYP}.startsWith("Debi") ?
+   ($P{P_SQLEXEC}.execute(
+    "select cast(count(I_ID) as integer) from PART_KUNDE where PART_KUNDE.KONTO_I_ID_DEBITORENKONTO = "+
+    "(select I_ID from FB_KONTO where C_NR='"+$F{F_KONTONUMMER}+"' and MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"');"
+    )
+   ) :
+   ($P{P_SQLEXEC}.execute(
+    "select cast(count(I_ID) as integer) from PART_LIEFERANT where PART_LIEFERANT.KONTO_I_ID_KREDITORENKONTO ="+
+    "(select I_ID from FB_KONTO where C_NR='"+$F{F_KONTONUMMER}+"' and MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"');"
+    )
+   )
+)]]></variableExpression>
+	</variable>
+	<variable name="UID" class="java.lang.String">
+		<variableExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+null :
+($P{P_KONTOTYP}.startsWith("Debi") ?
+   ($P{P_SQLEXEC}.execute(
+    "select C_UID from PART_PARTNER where I_ID="+
+    "(select PARTNER_I_ID from PART_KUNDE where PART_KUNDE.KONTO_I_ID_DEBITORENKONTO ="+
+    "(select I_ID from FB_KONTO where C_NR='"+$F{F_KONTONUMMER}+"' and MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"'));"
+    )
+   ) :
+   ($P{P_SQLEXEC}.execute(
+    "select C_UID from PART_PARTNER where I_ID="+
+    "(select PARTNER_I_ID from PART_LIEFERANT where PART_LIEFERANT.KONTO_I_ID_KREDITORENKONTO ="+
+    "(select I_ID from FB_KONTO where C_NR='"+$F{F_KONTONUMMER}+"' and MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"'));"
+    )
+   )
+)]]></variableExpression>
+	</variable>
+	<variable name="LKZ" class="java.lang.String">
+		<variableExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+null :
+($P{P_KONTOTYP}.startsWith("Debi") ?
+   ($P{P_SQLEXEC}.execute(
+    "select C_LKZ from LP_LAND where I_ID=("+
+    "select LAND_I_ID from LP_LANDPLZORT where I_ID=("+
+    "select LANDPLZORT_I_ID from PART_PARTNER where I_ID="+
+    "(select PARTNER_I_ID from PART_KUNDE where PART_KUNDE.KONTO_I_ID_DEBITORENKONTO ="+
+    "(select I_ID from FB_KONTO where C_NR='"+$F{F_KONTONUMMER}+"' and MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"'))));"
+    )
+   ) :
+   ($P{P_SQLEXEC}.execute(
+    "select C_LKZ from LP_LAND where I_ID=("+
+    "select LAND_I_ID from LP_LANDPLZORT where I_ID=("+
+    "select LANDPLZORT_I_ID from PART_PARTNER where I_ID="+
+    "(select PARTNER_I_ID from PART_LIEFERANT where PART_LIEFERANT.KONTO_I_ID_KREDITORENKONTO ="+
+    "(select I_ID from FB_KONTO where C_NR='"+$F{F_KONTONUMMER}+"' and MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"'))));"
+    )
+   )
+)]]></variableExpression>
+	</variable>
+	<variable name="EU_Land" class="java.lang.String">
+		<variableExpression><![CDATA[$V{LKZ} == null ? "??" :
+$P{P_SQLEXEC}.execute(
+"SELECT C_LKZ FROM LP_LAND WHERE not T_EUMITGLIED_VON is null and T_EUMITGLIED_BIS is null and C_LKZ='"+$V{LKZ}+"';"
+)]]></variableExpression>
+	</variable>
+	<group name="Kontenklasse" minHeightToStartNewPage="40">
 		<groupExpression><![CDATA[$F{F_KONTONUMMER}.substring(0,1)]]></groupExpression>
 		<groupHeader>
 			<band height="20" splitType="Stretch">
 				<printWhenExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach")]]></printWhenExpression>
+				<rectangle>
+					<reportElement x="0" y="4" width="802" height="16" forecolor="#CCCCCC" backcolor="#CCCCCC" uuid="739cfd9a-42ff-42b6-98cb-46cfa21e70ea"/>
+				</rectangle>
 				<textField>
-					<reportElement x="0" y="0" width="535" height="20" uuid="bebb28d7-ce0b-4f59-a691-0ff15543303e"/>
+					<reportElement x="0" y="4" width="535" height="16" uuid="bebb28d7-ce0b-4f59-a691-0ff15543303e"/>
 					<textElement verticalAlignment="Bottom">
 						<font fontName="Arial" size="12" isBold="true"/>
 					</textElement>
@@ -89,9 +182,6 @@
 			</band>
 		</groupHeader>
 	</group>
-	<background>
-		<band height="30" splitType="Stretch"/>
-	</background>
 	<title>
 		<band splitType="Stretch"/>
 	</title>
@@ -106,7 +196,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
@@ -119,7 +209,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
 			</textField>
@@ -132,7 +222,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
@@ -145,7 +235,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Kontenplan "+$P{P_KONTOTYP}]]></textFieldExpression>
 			</textField>
@@ -167,7 +257,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Knt Nr.]]></text>
 			</staticText>
@@ -180,7 +270,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Bezeichnung]]></text>
 			</staticText>
@@ -195,12 +285,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Kontoart]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Steuerkategorie" mode="Opaque" x="325" y="50" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1c13e673-3248-473a-9824-c54326e1e6c7"/>
+				<reportElement key="Steuerkategorie" mode="Opaque" x="325" y="50" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1c13e673-3248-473a-9824-c54326e1e6c7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -208,76 +298,89 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Steuerkategorie]]></text>
 			</staticText>
-			<staticText>
-				<reportElement key="Ergebnisgruppe" mode="Opaque" x="425" y="50" width="160" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5ec8e380-ddae-4f35-acf0-cebb62134ee7"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+			<textField>
+				<reportElement key="Ergebnisgruppe" mode="Opaque" x="405" y="50" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="24afe2f3-d28a-4d05-a026-eebf5e8edffc"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<text><![CDATA[Ergebnis-/Bilanzgruppe]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="UVA Art" mode="Opaque" x="585" y="50" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8789d9ee-7366-481f-a44d-95dc37b4343d"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				<textFieldExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+"Ergebnis-/Bilanzgruppe" :
+($P{P_KONTOTYP}.startsWith("Debi") ?
+    "Zugeordneter Kunde" :
+    "Zugeordneter Lieferant"
+)]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="UVA Art" mode="Opaque" x="545" y="50" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d44f362b-f078-49c1-9ce4-27d4d7d5edc9"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<text><![CDATA[UVA Art]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="Finanzamt" mode="Opaque" x="725" y="50" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3d03d2bb-2741-4fdf-96d8-17264e235a5c"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				<textFieldExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+"UVA Art" : null]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Finanzamt" mode="Opaque" x="745" y="50" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9649741e-f896-4394-881d-31d7eb6919aa"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<text><![CDATA[FA Kurzbez.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="Versteckt" mode="Opaque" x="774" y="50" width="10" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4dbe7b59-b07e-452d-8f9c-4029fe94f877"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				<textFieldExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+"FA Kurzbez." : "LKZ"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Versteckt" mode="Opaque" x="774" y="50" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c9a1df61-099b-44e0-99c8-7209d529a4c8"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<text><![CDATA[V]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+"V" :
+"AE"]]></textFieldExpression>
+			</textField>
 			<line>
-				<reportElement key="line-2" mode="Opaque" x="0" y="60" width="792" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="d26feeb1-2bf6-467c-9200-f6789947c7c0"/>
+				<reportElement key="line-2" mode="Opaque" x="0" y="60" width="802" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="d26feeb1-2bf6-467c-9200-f6789947c7c0"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
+			<textField>
+				<reportElement key="UVA Variante" mode="Opaque" x="645" y="50" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ead3f5c2-44f2-4a1b-b9bf-6992aff94f59"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+"UVA Variante" : "UID"]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="11" splitType="Stretch">
 			<property name="local_mesure_unitheight" value="pixel"/>
+			<printWhenExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach")]]></printWhenExpression>
 			<rectangle>
-				<reportElement x="0" y="0" width="792" height="11" backcolor="#CCCCCC" uuid="b8a99fa0-755b-417e-8631-56e2c5f75d36">
-					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="802" height="11" backcolor="#F3F3F3" uuid="b8a99fa0-755b-417e-8631-56e2c5f75d36">
+					<printWhenExpression><![CDATA[$V{Zebra}.intValue() == 1 &&
+!$F{F_VERSTECKT}.startsWith("1")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="Versteckt" stretchType="RelativeToBandHeight" x="0" y="0" width="802" height="11" backcolor="#9999FF" uuid="76deb2c2-c98c-4f76-a3e5-1092c62158e3">
+					<printWhenExpression><![CDATA[$F{F_VERSTECKT}.startsWith("1")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="802" height="11" backcolor="#FF0000" uuid="44f16da5-3a3a-4f1e-9aed-761cbf81e414">
+					<printWhenExpression><![CDATA[(($F{F_ERGEBNISGRUPPETYP}.intValue() == 4) && ($F{F_GRUPPENBEZEICHNUNG} == null)) ||
+(($F{F_ERGEBNISGRUPPETYP}.intValue() == 5) && (($F{F_GRUPPENBEZEICHNUNG_NEG} == null) || ($F{F_GRUPPENBEZEICHNUNG_NEG}.length() == 0))) ||
+((($F{F_ERGEBNISGRUPPETYP}.intValue() == 4) || ($F{F_ERGEBNISGRUPPETYP}.intValue() == 5)) && (($F{F_GRUPPENBEZEICHNUNG} == null) || ($F{F_GRUPPENBEZEICHNUNG_NEG} == null) || ($F{F_GRUPPENBEZEICHNUNG_NEG}.length() == 0)))]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
 					<pen lineWidth="0.0"/>
@@ -292,7 +395,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_KONTONUMMER}]]></textFieldExpression>
 			</textField>
@@ -305,12 +408,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_BEZEICHNUNG}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Kontoart" mode="Transparent" x="230" y="0" width="95" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3ca851e2-9367-4000-8895-96dabb66e6a0">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Kontoart" mode="Transparent" x="230" y="0" width="90" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3ca851e2-9367-4000-8895-96dabb66e6a0">
 					<printWhenExpression><![CDATA[$P{P_KONTOTYP}.contains("Sachkonto")]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -320,12 +423,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_KONTOART}.toUpperCase().contains("NICHT DEFINIERT") ? "" : $F{F_KONTOART}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Steuerkategorie" mode="Transparent" x="325" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="0eedd9a9-528c-4bc9-9507-7df808898e11"/>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Steuerkategorie" mode="Transparent" x="325" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="0eedd9a9-528c-4bc9-9507-7df808898e11"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -333,12 +436,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_STEUERKATEGORIE}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Ergebnissgruppe" mode="Transparent" x="425" y="0" width="105" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="bbd7faee-958f-49e1-98d4-62dacd40ae87">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Ergebnissgruppe" mode="Transparent" x="405" y="0" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="bbd7faee-958f-49e1-98d4-62dacd40ae87">
 					<property name="local_mesure_unitx" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
@@ -349,12 +452,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_GRUPPENTYP} == null ? "" : ($F{F_GRUPPENTYP} + ": ") + $F{F_GRUPPENBEZEICHNUNG}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="UVA Art" mode="Transparent" x="585" y="0" width="140" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="34a2a06e-8062-45ad-8d5f-b6de8d390130"/>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="UVA Art" mode="Transparent" x="545" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="34a2a06e-8062-45ad-8d5f-b6de8d390130"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -362,12 +465,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{F_UVAART}.contains("Nicht definiert") ? "" : $F{F_UVAART}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_UVAART}.contains("Nicht zutreffend") ? "" : $F{F_UVAART}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Finanzamt" mode="Transparent" x="725" y="1" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c96c5825-de86-4332-ad1f-82f6049bf545"/>
+				<reportElement key="Finanzamt" mode="Transparent" x="745" y="1" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c96c5825-de86-4332-ad1f-82f6049bf545"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -375,22 +478,388 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_FINANZAMT_KURZBEZ}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="774" y="0" width="10" height="10" uuid="27be8730-eea9-480a-913d-d17297f07786"/>
+				<reportElement x="774" y="0" width="30" height="10" uuid="27be8730-eea9-480a-913d-d17297f07786"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true"/>
+					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_VERSTECKT}.startsWith("1") ? "V" : ""]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="UVA Variante" mode="Transparent" x="645" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="dd8c0ab7-1b02-450b-9dec-12c6015d0eae"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_UVAART_VARIANTE}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Debi")]]></printWhenExpression>
+			<rectangle>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="802" height="10" backcolor="#F3F3F3" uuid="de0511d8-ed36-466d-bc38-e74767cdeca1">
+					<printWhenExpression><![CDATA[$V{Zebra}.intValue() == 1 &&
+!$F{F_VERSTECKT}.startsWith("1")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="Versteckt" stretchType="RelativeToBandHeight" x="0" y="0" width="802" height="10" backcolor="#9999FF" uuid="dff73b87-4c88-47b3-9c23-2bfd08770fe5">
+					<printWhenExpression><![CDATA[$F{F_VERSTECKT}.startsWith("1")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="keine Steuerkategorie" stretchType="RelativeToBandHeight" x="325" y="0" width="80" height="10" forecolor="#FF9900" backcolor="#FF9900" uuid="45503dbd-80f3-434d-b553-9ca7e5ab5385">
+					<printWhenExpression><![CDATA[$F{F_STEUERKATEGORIE} == null || $F{F_STEUERKATEGORIE}.trim().length() < 1]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="UID falsch" stretchType="RelativeToBandHeight" x="645" y="0" width="100" height="10" forecolor="#FF9900" backcolor="#FF9900" uuid="8e937b9a-8146-43f2-a080-c9e07b6c2d42">
+					<printWhenExpression><![CDATA[$F{F_STEUERKATEGORIE} == null || $F{F_STEUERKATEGORIE}.trim().length() < 1 ||
+($V{LKZ}.startsWith("AT") && $V{UID}==null) ||
+($V{LKZ}.compareTo($P{P_MANDANT_OBJ}.getLkz()) != 0 && $V{UID}==null && $F{F_STEUERKATEGORIE}.startsWith("AuslandEUmUID")) ||
+($F{F_STEUERKATEGORIE}.startsWith("Inland") && $V{LKZ}.compareTo($P{P_MANDANT_OBJ}.getLkz()) != 0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="UID eventuell falsch" stretchType="RelativeToBandHeight" x="645" y="0" width="100" height="10" forecolor="#FFD600" backcolor="#FFD600" uuid="3ed31b1b-f3ff-43db-a055-7dd5f2223c50">
+					<printWhenExpression><![CDATA[$F{F_STEUERKATEGORIE} != null &&
+$V{LKZ}.compareTo($P{P_MANDANT_OBJ}.getLkz()) != 0 &&
+$V{UID}==null && $F{F_STEUERKATEGORIE}.startsWith("AuslandEUoUID")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="F_KONTONUMMER" mode="Transparent" x="0" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="55be665c-aac6-4948-a7ec-fdf134765c69"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_KONTONUMMER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Bezeichnung" mode="Transparent" x="30" y="0" width="200" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="de1f6f6e-c2e5-4982-b4f3-31cdedf12c37"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BEZEICHNUNG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Steuerkategorie" mode="Transparent" x="325" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9a743de6-4ab0-4914-82ff-092b52f0c418"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_STEUERKATEGORIE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Der zugeordnete Kunde" mode="Transparent" x="405" y="0" width="240" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="92a97954-fe61-4141-9a5f-62329b5e3cd7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Anzahl} == null || $V{Anzahl}.intValue() == 0 ? null :
+($V{Anzahl}.intValue() != 1 ? "mehrfach verwendet" :
+$P{P_SQLEXEC}.execute(
+"select C_NAME1NACHNAMEFIRMAZEILE1 from PART_PARTNER where I_ID="+
+"(select PARTNER_I_ID from PART_KUNDE where PART_KUNDE.KONTO_I_ID_DEBITORENKONTO ="+
+"(select I_ID from FB_KONTO where C_NR='"+$F{F_KONTONUMMER}+"' and MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"'));"
+))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="UID Nr" mode="Transparent" x="645" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2b48010a-5327-405b-ba69-dfa12aa0fdcc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{UID}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="UID für EU fehlt" stretchType="RelativeToBandHeight" x="745" y="0" width="49" height="10" forecolor="#FFD600" backcolor="#FFD600" uuid="fa8b32e1-0287-4676-96af-0f754946c1a4">
+					<printWhenExpression><![CDATA[!($V{EU_Land}==null || $V{EU_Land}.startsWith( "??" )) &&
+$V{UID}==null]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="LKZ" mode="Transparent" x="745" y="0" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2c856032-3607-4f06-9dae-c8c7379c15e6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LKZ}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="774" y="0" width="30" height="10" backcolor="#FF3333" uuid="6abada1c-8ab7-4b83-b395-c2643b5c646b">
+					<printWhenExpression><![CDATA[!$F{F_AUTOMATISCHE_EROEFFNUNGSBUCHUNG}.startsWith("1")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_AUTOMATISCHE_EROEFFNUNGSBUCHUNG}.startsWith("1") ? "" : "kAE"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Kredi")]]></printWhenExpression>
+			<rectangle>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="802" height="10" backcolor="#F3F3F3" uuid="1d066229-4f67-492e-ae40-f488d454b324">
+					<printWhenExpression><![CDATA[$V{Zebra}.intValue() == 1 &&
+!$F{F_VERSTECKT}.startsWith("1")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="Versteckt" stretchType="RelativeToBandHeight" x="0" y="0" width="802" height="10" backcolor="#9999FF" uuid="85988333-dae2-4f9e-a6fa-ad18e6c84a84">
+					<printWhenExpression><![CDATA[$F{F_VERSTECKT}.startsWith("1")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="keine Steuerkategorie" stretchType="RelativeToBandHeight" x="325" y="0" width="80" height="10" forecolor="#FF9900" backcolor="#FF9900" uuid="b8af7f63-2c18-492b-ba2d-b8235cbbebcd">
+					<printWhenExpression><![CDATA[$F{F_STEUERKATEGORIE} == null || $F{F_STEUERKATEGORIE}.trim().length() < 1]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="UID falsch" stretchType="RelativeToBandHeight" x="645" y="0" width="100" height="10" forecolor="#FF9900" backcolor="#FF9900" uuid="a4d42a09-a416-465b-b113-8a7f1de537f6">
+					<printWhenExpression><![CDATA[$F{F_STEUERKATEGORIE} == null || $F{F_STEUERKATEGORIE}.trim().length() < 1 ||
+($V{LKZ}.startsWith("AT") && $V{UID}==null) ||
+($V{LKZ}.compareTo($P{P_MANDANT_OBJ}.getLkz()) != 0 && $V{UID}==null && $F{F_STEUERKATEGORIE}.startsWith("AuslandEUmUID")) ||
+($F{F_STEUERKATEGORIE}.startsWith("Inland") && $V{LKZ}.compareTo($P{P_MANDANT_OBJ}.getLkz()) != 0)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="UID eventuell falsch" stretchType="RelativeToBandHeight" x="645" y="0" width="100" height="10" forecolor="#FFD600" backcolor="#FFD600" uuid="dd729a2f-85b8-4236-8c57-82756298b05a">
+					<printWhenExpression><![CDATA[$F{F_STEUERKATEGORIE} != null &&
+$V{LKZ}.compareTo($P{P_MANDANT_OBJ}.getLkz()) != 0 &&
+$V{UID}==null && $F{F_STEUERKATEGORIE}.startsWith("AuslandEUoUID")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="F_KONTONUMMER" mode="Transparent" x="0" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="55be665c-aac6-4948-a7ec-fdf134765c69"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_KONTONUMMER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Bezeichnung" mode="Transparent" x="30" y="0" width="200" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="de1f6f6e-c2e5-4982-b4f3-31cdedf12c37"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BEZEICHNUNG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Steuerkategorie" mode="Transparent" x="325" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9a743de6-4ab0-4914-82ff-092b52f0c418"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_STEUERKATEGORIE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Der zugeordnete Lieferant" mode="Transparent" x="405" y="0" width="240" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="92a97954-fe61-4141-9a5f-62329b5e3cd7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Anzahl} == null || $V{Anzahl}.intValue() == 0 ? null :
+($V{Anzahl}.intValue() != 1 ? "mehrfach verwendet" :
+$P{P_SQLEXEC}.execute(
+"select C_NAME1NACHNAMEFIRMAZEILE1 from PART_PARTNER where I_ID="+
+"(select PARTNER_I_ID from PART_LIEFERANT where KONTO_I_ID_KREDITORENKONTO ="+
+"(select I_ID from FB_KONTO where C_NR='"+$F{F_KONTONUMMER}+"' and MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"'));"
+))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="UID Nr" mode="Transparent" x="645" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="24ccd49e-4bfe-4ff8-95f8-489e454bf437"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{UID}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="UID für EU fehlt" stretchType="RelativeToBandHeight" x="745" y="0" width="49" height="10" forecolor="#FFD600" backcolor="#FFD600" uuid="42d85f11-0610-4218-80bc-6558d07020d7">
+					<printWhenExpression><![CDATA[!($V{EU_Land}==null || $V{EU_Land}.startsWith( "??" )) &&
+$V{UID}==null]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="LKZ" mode="Transparent" x="745" y="0" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="23e6b629-bccf-4eb5-b345-e2cc51371f72"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LKZ}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="774" y="0" width="30" height="10" backcolor="#FF3333" uuid="945af240-71e1-4894-8470-b0d52797a2e4">
+					<printWhenExpression><![CDATA[!$F{F_AUTOMATISCHE_EROEFFNUNGSBUCHUNG}.startsWith("1")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_AUTOMATISCHE_EROEFFNUNGSBUCHUNG}.startsWith("1") ? "" : "kAE"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<subreport>
+				<reportElement key="Subreport_Laenderartuebersetzungen" positionType="Float" x="30" y="0" width="562" height="10" isRemoveLineWhenBlank="true" uuid="37736615-cf4f-4650-a95f-34ecf54471f6"/>
+				<subreportParameter name="P_SUBREPORTCONNECTION">
+					<subreportParameterExpression><![CDATA[$P{P_SUBREPORTCONNECTION}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_KONTO">
+					<subreportParameterExpression><![CDATA[$F{F_KONTONUMMER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Zebra">
+					<subreportParameterExpression><![CDATA[$V{Zebra}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MANDANT_C_NR">
+					<subreportParameterExpression><![CDATA[$P{MANDANT_C_NR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SQLEXEC">
+					<subreportParameterExpression><![CDATA[$P{P_SQLEXEC}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MODUL">
+					<subreportParameterExpression><![CDATA[$P{P_MODUL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_SUBDIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{P_SUBDIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_SQLEXEC}.subreport( "select k.C_NR as Basiskonto, kla.LAENDERART_C_NR, FB_REVERSECHARGEART.C_NR as Reversechargeart, klaue.C_NR, klaue.C_BEZ, kla.T_GUELTIGAB " 
+	+ " from FB_KONTOLAENDERART as kla "
+	+ " inner join FB_KONTO as k on k.I_ID=kla.KONTO_I_ID "
+	+ " inner join FB_KONTO as klaue on klaue.I_ID=kla.KONTO_I_ID_UEBERSETZT "
+	+ " inner join FB_REVERSECHARGEART on FB_REVERSECHARGEART.I_ID=REVERSECHARGEART_I_ID "
+	+ " where k.C_NR= " + $F{F_KONTONUMMER}
+	+ " and k.MANDANT_C_NR= '" + $P{MANDANT_C_NR} + "';", 
+new String[] {"basiskonto", "laenderart_c_nr", "reversechargeart", "c_nr", "c_bez", "t_gueltigab"} )]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File(com.lp.util.HelperReport.getSubreportPath($P{P_MODUL}, "finanz_steuerkategorien_anz_ueb", $P{MANDANT_C_NR},  $P{REPORT_LOCALE}, $P{P_SUBDIRECTORY}) ).toURL()]]></subreportExpression>
+			</subreport>
 		</band>
 	</detail>
 	<pageFooter>
-		<band splitType="Stretch"/>
+		<band height="1" splitType="Stretch"/>
 	</pageFooter>
+	<lastPageFooter>
+		<band height="10">
+			<textField>
+				<reportElement key="Versteckt" mode="Opaque" x="0" y="0" width="802" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c212a93a-7a92-4e55-8350-7b0a6006319b"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KONTOTYP}.startsWith("Sach") ?
+"V ... Versteckt" :
+"kAE ... keine automatische Eröffnungsbuchung"]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
 	<summary>
 		<band splitType="Stretch"/>
 	</summary>

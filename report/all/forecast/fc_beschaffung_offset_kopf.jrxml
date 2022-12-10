@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fc_beschaffung_offset" columnCount="12" printOrder="Horizontal" pageWidth="360" pageHeight="842" columnWidth="30" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7728861c-ab88-4f40-bd99-ca44df98b8bd">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Verfuegbar">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$P{verfuegbar}.doubleValue() < $V{kum_Bedarf}.doubleValue()
+/* überhaupt zu wenig */]]></conditionExpression>
+			<style mode="Transparent" forecolor="#FF3333" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$P{verfuegbar}.doubleValue() - $V{kum_Bedarf}.doubleValue() < $P{Lagermindest}.doubleValue()
+/* unter Lagermindesstand */]]></conditionExpression>
+			<style mode="Transparent" forecolor="#FF9900" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$P{verfuegbar}.doubleValue() - $V{kum_Bedarf}.doubleValue() > $P{Lagersoll}.doubleValue()
+/* über Lagersollbestand */]]></conditionExpression>
+			<style mode="Transparent" forecolor="#339900" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="verfuegbar" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[insgesamt frei verfuegbare Menge]]></parameterDescription>
+	</parameter>
+	<parameter name="Lagermindest" class="java.lang.Double"/>
+	<parameter name="Lagersoll" class="java.lang.Double"/>
+	<parameter name="StklEbene" class="java.lang.Integer"/>
+	<parameter name="P_FORECASTART" class="java.lang.String">
+		<parameterDescription><![CDATA[Forecast = Monat
+CallOffWoche
+CallOffTag]]></parameterDescription>
+	</parameter>
+	<field name="FCMenge" class="java.math.BigDecimal"/>
+	<field name="EKMenge" class="java.math.BigDecimal"/>
+	<field name="EKPreis" class="java.math.BigDecimal"/>
+	<field name="Mindestbestellmenge" class="java.lang.Double"/>
+	<field name="Offset" class="java.lang.String"/>
+	<variable name="kum_Bedarf" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{EKMenge}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="10" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="Jahr" x="0" y="0" width="313" height="10" uuid="2c8f1ef1-f3f9-4e2c-964d-5193caefe0f3"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_FORECASTART}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="20">
+			<rectangle>
+				<reportElement key="Samstag" x="0" y="0" width="30" height="20" backcolor="#F2D8FB" uuid="8b0ec278-ebec-456f-8122-e7c55b79d3e8">
+					<printWhenExpression><![CDATA[$P{P_FORECASTART}!=null &&
+$P{P_FORECASTART}.contains("Tag") &&
+$F{Offset}.startsWith("Sa")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="Sonntag" x="0" y="0" width="30" height="20" backcolor="#E9A8FF" uuid="71df5a69-266b-48df-b36b-b8adac8d99e7">
+					<printWhenExpression><![CDATA[$P{P_FORECASTART}!=null &&
+$P{P_FORECASTART}.contains("Tag") &&
+$F{Offset}.startsWith("So")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="Jahr" x="0" y="0" width="30" height="20" uuid="19f3a8c7-6282-45ba-83a5-d43499a6e5c3"/>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_FORECASTART}==null || $P{P_FORECASTART}.startsWith("F") ?
+   $F{Offset}.substring(0,3) + "\n"+$F{Offset}.substring($F{Offset}.indexOf(" ")) :
+   ($P{P_FORECASTART}.contains("Tag") ?
+      $F{Offset}.substring(0,9) :
+    $F{Offset}
+   )]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="Jahr" x="0" y="0" width="30" height="20" uuid="eea45512-ae19-4b81-8d9c-d80453d02b70">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<box rightPadding="1">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Offset}
+]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

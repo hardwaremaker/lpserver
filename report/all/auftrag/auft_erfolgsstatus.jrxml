@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="auft_erfolgsstatus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="804" leftMargin="19" rightMargin="19" topMargin="56" bottomMargin="19" uuid="6d76237f-56cb-40a9-9c8b-20f186c4f578">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="307"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_VON" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="P_OPTION_DATUM" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_BIS" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="P_KUNDE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_AUFTRAEGE" class="java.lang.String" isForPrompting="false"/>
+	<field name="Auftragsnummer" class="java.lang.String"/>
+	<field name="Projekt" class="java.lang.String"/>
+	<field name="Belegdatum" class="java.util.Date"/>
+	<field name="Projektleiter" class="java.lang.String"/>
+	<field name="Kunde" class="java.lang.String"/>
+	<field name="SummeFreieRechnungen" class="java.math.BigDecimal"/>
+	<field name="SummeFreieRechnungenOffen" class="java.math.BigDecimal"/>
+	<field name="SummeFreieAnzahlungen" class="java.math.BigDecimal"/>
+	<field name="DatumSchlussrechnung" class="java.util.Date"/>
+	<field name="SummeSchlussrechnung" class="java.math.BigDecimal"/>
+	<field name="SummeSchlussrechnungOffen" class="java.math.BigDecimal"/>
+	<field name="SummeFreieEingangsrechnungenMitAuftragsbezug" class="java.math.BigDecimal"/>
+	<field name="SummeFreieEingangsrechnungenMitAuftragsbezugOffen" class="java.math.BigDecimal"/>
+	<field name="SummeAnzahlungsEingangsrechnungenRestNichtInSchlussrechnung" class="java.math.BigDecimal"/>
+	<field name="SummeSchlussEingangsrechnungen" class="java.math.BigDecimal"/>
+	<field name="SummeSchlussEingangsrechnungenOffen" class="java.math.BigDecimal"/>
+	<field name="SummeMaterialEinsatzkosten" class="java.math.BigDecimal"/>
+	<field name="SummeAZEinsatzkosten" class="java.math.BigDecimal"/>
+	<field name="SummeMaschinenEinsatzkosten" class="java.math.BigDecimal"/>
+	<field name="SummeArbeitsstunden" class="java.math.BigDecimal"/>
+	<field name="SummeMaschinenstunden" class="java.math.BigDecimal"/>
+	<field name="SummeReisekosten" class="java.math.BigDecimal"/>
+	<field name="SummeHandelsware" class="java.math.BigDecimal"/>
+	<field name="Auftragswert" class="java.math.BigDecimal"/>
+	<field name="Auftragsart" class="java.lang.String"/>
+	<variable name="Zebra" class="java.math.BigDecimal" resetType="Page">
+		<variableExpression><![CDATA[$V{Zebra}.negate()]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(1)]]></initialValueExpression>
+	</variable>
+	<variable name="Erloes" class="java.lang.Double">
+		<variableExpression><![CDATA[$F{SummeFreieRechnungen}.doubleValue() +
+$F{SummeFreieAnzahlungen}.doubleValue() +
+$F{SummeSchlussrechnung}.doubleValue()]]></variableExpression>
+	</variable>
+	<variable name="Aufwand" class="java.lang.Double">
+		<variableExpression><![CDATA[$F{SummeFreieEingangsrechnungenMitAuftragsbezug}.doubleValue() +
+$F{SummeAnzahlungsEingangsrechnungenRestNichtInSchlussrechnung}.doubleValue() +
+$F{SummeSchlussEingangsrechnungen}.doubleValue() +
+$F{SummeMaterialEinsatzkosten}.doubleValue() +
+$F{SummeAZEinsatzkosten}.doubleValue() +
+$F{SummeMaschinenEinsatzkosten}.doubleValue() +
+$F{SummeHandelsware}.doubleValue() +
+$F{SummeReisekosten}.doubleValue()]]></variableExpression>
+	</variable>
+	<variable name="DB" class="java.lang.Double">
+		<variableExpression><![CDATA[$V{Erloes}.doubleValue() - $V{Aufwand}.doubleValue()]]></variableExpression>
+	</variable>
+	<variable name="DB_Proz" class="java.lang.Double">
+		<variableExpression><![CDATA[$V{Erloes}.doubleValue() == 0 ?
+new Double(0) :
+$V{DB}.doubleValue() / $V{Erloes}.doubleValue()]]></variableExpression>
+	</variable>
+	<variable name="Gesamt_Erloes" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{Erloes}]]></variableExpression>
+	</variable>
+	<variable name="Gesamt_Aufwand" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{Aufwand}]]></variableExpression>
+	</variable>
+	<variable name="Gesamt_DB" class="java.lang.Double">
+		<variableExpression><![CDATA[$V{Gesamt_Erloes}.doubleValue() - $V{Gesamt_Aufwand}.doubleValue()]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="84" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="REPORT_INFORMATION" mode="Transparent" x="0" y="0" width="582" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b75bca70-3a38-4511-b197-556f24d97c23"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="685" y="0" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5084c54d-08c4-4cc3-aa8c-72c1f903d45d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="782" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="bbe80ed1-73ab-4dc9-9ae4-74091da16ab8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Titel" x="0" y="10" width="160" height="18" uuid="7c3ca225-40b1-46a7-8ce5-b6ead5bfd1d2"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Auftrags-Erfolgsstatus]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="50" y="32" width="50" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="02157cf8-266c-448e-a50e-aa7b382bce3b"/>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Belegdatum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="32" width="50" height="20" uuid="55877ffa-916a-4b40-b70a-6000c0c2f9aa"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Auftrag Nr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="50" y="53" width="80" height="30" forecolor="#000000" backcolor="#FFFFFF" uuid="9edb8cf5-a213-4327-810f-df0a137bab70"/>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Projekt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="100" y="32" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="bd4f5a7d-cc97-423a-adde-68faa10fe7b9"/>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Kunde]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="285" y="15" width="60" height="12" uuid="7f2c2534-91ff-4975-a7cd-76965dd069c2"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_VON}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="160" y="15" width="100" height="12" uuid="1d04d1af-9b66-4210-8186-234e56e784ff"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_OPTION_DATUM}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="375" y="15" width="60" height="12" uuid="60610b3c-335e-4627-ac48-7f4511630e89"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_BIS}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="460" y="15" width="55" height="12" uuid="becdbd0e-90b3-4dd0-884d-2cca22445e9c">
+					<printWhenExpression><![CDATA[$P{P_KUNDE}!= null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA["nur Kunde"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="265" y="15" width="20" height="12" uuid="63884c2f-c836-4c7b-bb6e-b939988d7505"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[von]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="355" y="15" width="20" height="12" uuid="249936b2-16ff-408b-ace6-c4247b81742f"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[bis]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="515" y="15" width="280" height="12" uuid="87cf6b3d-43dc-451b-8e40-9da5742e7ef1"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_KUNDE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="130" y="53" width="120" height="30" uuid="be6332ae-7f5c-45f2-a646-8061b7469010"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Projektleiter]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="250" y="32" width="50" height="20" uuid="d4a0255d-4a5d-4841-81c1-2744a2305c02"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Freie
+Rechnung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="32" width="50" height="20" uuid="d9ea58ef-0ed0-4b50-9fc3-78b37e515b9b"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Freie
+RE-offen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="352" y="32" width="50" height="20" uuid="e01d9419-1198-4f7d-a524-f9914975e44e"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahlungs-
+RE ohne SR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="402" y="32" width="50" height="20" uuid="89d3c2ba-40d0-48f7-8394-22ddba674c57"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Schluss-
+rechnung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="502" y="32" width="50" height="20" uuid="9a104af7-36b7-4c34-aa14-07d454cd172f"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Datum
+Schluss-RE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="452" y="32" width="50" height="20" uuid="10f0f029-4a19-47d4-af2a-ede3eeeec010"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Schluss-RE
+offen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="250" y="53" width="50" height="30" uuid="c068d990-5488-4bd1-907b-e58b08fb1e4e"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[freie ER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="200" y="32" width="50" height="20" uuid="f8ccf6ff-dc7f-4ad2-a4b5-af4002a58c70"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Auftragswert]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="302" y="53" width="50" height="30" uuid="8cdb75c3-37c9-461b-a38e-18307d8566c2"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[freie ER
+offen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="452" y="53" width="50" height="30" uuid="07ab2869-0a35-4471-9a86-18931446b1dc"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Schluss-ER
+offen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="352" y="53" width="50" height="30" uuid="638beab2-bae1-46a2-a4c4-dac0fce73f4f"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Anz.-ER
+Rest nicht in
+Schluss-ER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="402" y="53" width="50" height="30" uuid="38e793ce-518a-4aaa-b72b-252370abfcd4"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Schluss-ER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="502" y="53" width="50" height="30" uuid="01cc95af-9abc-4503-864c-9e8c876e4373"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Handelsware]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="611" y="53" width="50" height="30" uuid="f531d18d-de90-472b-9413-f9a010b6a6a5"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[AZ
+Einsatz]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="661" y="53" width="50" height="30" uuid="6c747896-6420-4714-8324-1a9ae0a205e3"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Maschinen
+Einsatz]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="711" y="53" width="50" height="30" uuid="aabb0997-e001-4d64-a0ba-3b4ccc0acaca"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[ReiKo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="611" y="32" width="50" height="20" uuid="25933208-d374-4c31-8711-edda67d302c3"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Arbeitsstd.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="561" y="53" width="50" height="30" uuid="8db7bc9c-705b-438a-96df-17831ad0fc59"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Material
+Einsatz]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="661" y="32" width="50" height="20" uuid="149b4cf9-185c-4d49-9987-e4b9c6bb5400"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Maschinen-
+stunden]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="83" width="804" height="1" uuid="241cee1d-b6b9-4382-9dd6-857898b17da9"/>
+			</line>
+			<staticText>
+				<reportElement x="711" y="32" width="50" height="20" uuid="95217a71-6306-4a13-bb8e-1411d5817d3d"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[DB]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="761" y="32" width="40" height="20" uuid="c11936a1-3514-4ec9-9eec-bc5d2a192fe8"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[DB %]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="10" y="53" width="40" height="30" forecolor="#000000" backcolor="#FFFFFF" uuid="3e30fe6e-7976-4f47-8496-bdff7eee82e0"/>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Art]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="25" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="804" height="25" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="200b8a85-aec1-4520-b487-543026e8bca3">
+					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="50" y="10" width="80" height="10" uuid="f571e4ea-b249-48f5-83d0-b350f1657294"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Projekt}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="0" y="0" width="50" height="10" uuid="5b64284f-6d4f-4cc1-b29c-a16ea782509e"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Auftragsnummer}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="50" y="0" width="50" height="10" uuid="138e9cec-468c-474f-83cd-d7a5b0457e90"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Belegdatum}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="100" y="0" width="100" height="10" uuid="ece2d023-15e8-47a9-866b-1d5fd22a9cc8"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Kunde}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="130" y="10" width="120" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fe7161a7-bb2d-4824-a468-8a1d33cad982"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Projektleiter}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="200" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="aaf26938-eedb-4be8-bac1-6d1d3acb85f4"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Auftragswert}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="250" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c29fefcc-625c-4983-ab23-539d4a914d19">
+					<printWhenExpression><![CDATA[$F{SummeFreieRechnungen}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeFreieRechnungen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="302" y="0" width="48" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3abc4076-a17d-45f6-b71a-05e7fdb5fe7e">
+					<printWhenExpression><![CDATA[$F{SummeFreieRechnungenOffen}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeFreieRechnungenOffen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="350" y="0" width="52" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7cd3dafe-c6f5-4206-ae0f-37c3b90cb573">
+					<printWhenExpression><![CDATA[$F{SummeFreieAnzahlungen}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeFreieAnzahlungen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="502" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fcbfa9b4-90ea-43fa-a972-82a173c1ef0e"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DatumSchlussrechnung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="402" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e78a54a1-3168-4bb5-921c-a234aec49804">
+					<printWhenExpression><![CDATA[$F{SummeSchlussrechnung}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeSchlussrechnung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="452" y="0" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1fa86493-75cd-43e4-a29c-64acf9facca6">
+					<printWhenExpression><![CDATA[$F{SummeSchlussrechnungOffen}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeSchlussrechnungOffen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="250" y="10" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="463ba113-d3f9-490c-a32d-c0676286819b">
+					<printWhenExpression><![CDATA[$F{SummeFreieEingangsrechnungenMitAuftragsbezug}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeFreieEingangsrechnungenMitAuftragsbezug}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="302" y="10" width="48" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f7014d06-d459-43af-b955-98936da4d7b0">
+					<printWhenExpression><![CDATA[$F{SummeFreieEingangsrechnungenMitAuftragsbezugOffen}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeFreieEingangsrechnungenMitAuftragsbezugOffen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="352" y="10" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a2c72b28-8837-4602-a886-04669b4c02af">
+					<printWhenExpression><![CDATA[$F{SummeAnzahlungsEingangsrechnungenRestNichtInSchlussrechnung}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeAnzahlungsEingangsrechnungenRestNichtInSchlussrechnung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="402" y="10" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a9734b8e-75e1-47aa-aeb3-5596ed7ed08c">
+					<printWhenExpression><![CDATA[$F{SummeSchlussEingangsrechnungen}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeSchlussEingangsrechnungen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="452" y="10" width="49" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="20717bf2-6136-4434-acd8-52b6b25fc8ce">
+					<printWhenExpression><![CDATA[$F{SummeSchlussEingangsrechnungenOffen}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeSchlussEingangsrechnungenOffen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="561" y="10" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="83ed995c-5333-460a-b1fc-717751e9e049">
+					<printWhenExpression><![CDATA[$F{SummeMaterialEinsatzkosten}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeMaterialEinsatzkosten}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="611" y="10" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="aa7f481c-0015-4353-b504-1821728730f7">
+					<printWhenExpression><![CDATA[$F{SummeAZEinsatzkosten}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeAZEinsatzkosten}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="661" y="10" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fc7c2199-3f18-445a-a3c5-41ce2d8ff3ba">
+					<printWhenExpression><![CDATA[$F{SummeMaschinenEinsatzkosten}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeMaschinenEinsatzkosten}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="611" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="bfe53b76-5ad2-4ccd-8c42-7edba562c2a1">
+					<printWhenExpression><![CDATA[$F{SummeArbeitsstunden}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeArbeitsstunden}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="711" y="10" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6a2023d0-ff7f-4060-bf82-26fa4f3ecc85">
+					<printWhenExpression><![CDATA[$F{SummeReisekosten}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeReisekosten}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="501" y="10" width="51" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e4411bd4-4977-4933-80e4-3f9dade4e816">
+					<printWhenExpression><![CDATA[$F{SummeHandelsware}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeHandelsware}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="661" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="45dda023-0610-4aea-acd8-662c3685995c">
+					<printWhenExpression><![CDATA[$F{SummeMaschinenstunden}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SummeMaschinenstunden}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="711" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="27cf1c85-d182-4b31-bc0f-be5ee0039d05">
+					<printWhenExpression><![CDATA[$V{Erloes}.doubleValue() != 0 ||
+$V{Aufwand}.doubleValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{DB}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
+				<reportElement key="DB%&gt;=30" mode="Transparent" x="761" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4e68a7d5-d5d7-419b-b1db-f2c395750ba2">
+					<printWhenExpression><![CDATA[$V{DB_Proz}.doubleValue() * 100 >=30]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{DB_Proz}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
+				<reportElement key="DB%&gt;=10&lt;30" mode="Transparent" x="761" y="0" width="40" height="10" forecolor="#FF6600" backcolor="#FFFFFF" uuid="0e9674d8-de37-4634-94c7-69a655e68a9d">
+					<printWhenExpression><![CDATA[$V{DB_Proz}.doubleValue() * 100 >=10 &&
+$V{DB_Proz}.doubleValue() * 100 <30]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{DB_Proz}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
+				<reportElement key="DB%&lt;10" mode="Transparent" x="761" y="0" width="40" height="10" forecolor="#FF0000" backcolor="#FFFFFF" uuid="e07ae303-14bb-40e1-a98d-d23146370cd6">
+					<printWhenExpression><![CDATA[$V{DB_Proz}.doubleValue() * 100 < 10 &&
+$V{Erloes}.intValue()!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{DB_Proz}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="10" y="10" width="40" height="10" uuid="e5d19e21-d5e4-4976-b5f3-f68b37b181aa">
+					<printWhenExpression><![CDATA[!$F{Auftragsart}.startsWith("Freier")]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Auftragsart}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="40">
+			<staticText>
+				<reportElement x="0" y="0" width="804" height="40" uuid="0fd35b6f-8d6a-4484-a534-32abc80231db"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Bei allen ERs wird davon ausgegangen, dass diese einen Auftragsbezug haben. Es wird jedoch nur der Nettobetrag mit Auftragswertung berücksichtigt.
+Handelsware sind diejenigen Materialaufwände welche in Lieferscheinen bzw. Rechnungen enthalten sind und ihren Ursprung NICHT in den Losen haben.
+Unterschied von Auftragsnachkalkulation. Diese findet sich im Material bzw. Arbeitszeiteinsatz. Differenzen ergeben sich aus der Betrachtung der Gesamtkalkulation, die die Gestehungspreise der Unterlose NICHT berücksichitgt, was die Auftragsnachkalkulation beinhaltet.]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="30" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="0" width="804" height="1" uuid="4c522058-5f4a-4e11-845d-63f40c6ee98e"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="761" y="1" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6e3422db-bfd8-404f-bd3c-dff5a9283542"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Gesamt_DB}.doubleValue() / $V{Gesamt_Erloes}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="711" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7afeb54c-1e1a-46dd-98cd-98006b2d2c7d"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Gesamt_DB}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="501" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="bd868f45-3aa9-48f9-8c42-3e2febc2b037"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Gesamt_Aufwand}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="402" y="1" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c293803a-002f-449a-b9e8-29d5bb62c1ad"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Gesamt_Erloes}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="220" y="2" width="180" height="28" forecolor="#000000" backcolor="#FFFFFF" uuid="93dfd424-e86b-4d70-b81c-f452612ea752"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Gesamt Erlös =
+Freie RE + FreieAnz + SchlussRE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="551" y="2" width="160" height="28" uuid="ef7d521d-9146-44db-9def-b55e689e14e1"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Gesamt Aufwand =
+Freie ER+Anz.Er_nichtinSR+SchlussER+
+MaterialEinsatz+AZEinsatz+MaschinenEinsatz+
+Handelswaren+Reisekosten]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

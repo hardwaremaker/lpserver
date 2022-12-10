@@ -35,7 +35,7 @@ damit bei den Eingangsrechnungen (symbol=ER) belegnr mit extbelegnr vertauscht w
 		<xsl:value-of select="$trennzeichen"/>
 		<xsl:value-of select="./periode"/>
 		<xsl:value-of select="$trennzeichen"/>
-		<!-- bei ER wird Text, bei AR wird Partnerkbz verwendet -->
+		<!-- bei ER wird Text, bei AR wird Partnerkbz oder Partnername1 verwendet -->
 		<xsl:apply-templates select="./text"/>
 		<xsl:value-of select="$trennzeichen"/>
 		<xsl:value-of select="./symbol"/>
@@ -88,13 +88,17 @@ damit bei den Eingangsrechnungen (symbol=ER) belegnr mit extbelegnr vertauscht w
 			<xsl:when test="../symbol='AR'">
 				<xsl:choose>
 					<xsl:when test="../text='text'">text</xsl:when>
+					<!-- bei Bedarf partname1 statt partkbz verwenden -->
 					<xsl:otherwise><xsl:value-of select="../partkbz"/></xsl:otherwise>
+					<!-- <xsl:otherwise><xsl:value-of select="../partname1"/></xsl:otherwise> -->
 				</xsl:choose>
 			</xsl:when>	
 			<xsl:when test="../symbol='GS'">
 				<xsl:choose>
 					<xsl:when test="../text='text'">text</xsl:when>
+					<!-- bei Bedarf partname1 statt partkbz verwenden -->
 					<xsl:otherwise><xsl:value-of select="../partkbz"/></xsl:otherwise>
+					<!-- <xsl:otherwise><xsl:value-of select="../partkbz"/></xsl:otherwise> -->
 				</xsl:choose>
 			</xsl:when>	
 			<xsl:otherwise><xsl:value-of select="../text"/></xsl:otherwise>

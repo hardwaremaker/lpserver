@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ls_lieferschein_wa_etikett" pageWidth="595" pageHeight="421" orientation="Landscape" columnWidth="588" leftMargin="5" rightMargin="2" topMargin="2" bottomMargin="2" uuid="a9baab89-c342-46d3-97a7-2df1936a6be5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -31,6 +32,18 @@
 	<parameter name="P_AUFTRAGSNUMMER" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="P_PROJEKT" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="P_KUNDEAUFTRAG_ADRESSBLOCK" class="java.lang.String"/>
+	<parameter name="P_VERSANDNUMMER2" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_LIEFERANTENNUMMER_RECHNUNGSADRESSE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_AUFTRAG_BESTELLNUMMER" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_IKUNDENUMMER_LIEFERADRESSE" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Die IKundennummer des Lieferkunden. Null, wenn Kundennummer nicht aktiviert]]></parameterDescription>
+	</parameter>
+	<parameter name="P_IKUNDENUMMER_AUFTRAGSADRESSE" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Die IKundennummer des Auftragskunden. Null, wenn kein Auftrag oder Kundennummer nicht aktiviert]]></parameterDescription>
+	</parameter>
+	<parameter name="P_IKUNDENUMMER_RECHNUNGSADRESSE" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Die IKundennummer des Rechnungskunden. Null, wenn Kundennummer nicht aktiviert]]></parameterDescription>
+	</parameter>
 	<field name="F_BESTELLNUMMER" class="java.lang.String">
 		<fieldDescription><![CDATA[Bestell-Nr.]]></fieldDescription>
 	</field>
@@ -72,6 +85,23 @@
 	<field name="F_REVISION" class="java.lang.String"/>
 	<field name="F_KBEZ" class="java.lang.String"/>
 	<field name="F_SUBREPORT_SERIENCHARGENNR" class="java.lang.Object"/>
+	<field name="F_VERPACKUNGSMITTEL_BEZEICHNUNG" class="java.lang.String"/>
+	<field name="F_VERPACKUNGSMITTEL_GEWICHT_IN_KG" class="java.math.BigDecimal"/>
+	<field name="F_VERPACKUNGSMITTEL_KENNUNG" class="java.lang.String"/>
+	<field name="F_VERPACKUNGSMITTELMENGE" class="java.math.BigDecimal"/>
+	<field name="F_FORECAST_NR" class="java.lang.String"/>
+	<field name="F_FORECAST_PROJEKT" class="java.lang.String"/>
+	<field name="F_FORECAST_BEMERKUNG" class="java.lang.String"/>
+	<field name="F_FORECAST_BESTELLNUMMER" class="java.lang.String"/>
+	<field name="F_FORECAST_FORECASTPOSITION_I_ID" class="java.lang.Integer"/>
+	<field name="F_AUFTRAGSNUMMER" class="java.lang.String"/>
+	<field name="F_BEZ_KUNDE_SPR" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="F_ZBEZ_KUNDE_SPR" class="java.lang.String"/>
+	<field name="F_ZBEZ2_KUNDE_SPR" class="java.lang.String"/>
+	<field name="F_KBEZ_KUNDE_SPR" class="java.lang.String"/>
+	<field name="F_KUNDENARTIKELBEZEICHNUNG" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -94,7 +124,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Mandantenadresse}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="KUNDE_ADRESSBLOCK" mode="Transparent" x="0" y="41" width="350" height="84" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e7efc5fa-3678-4f54-be6f-19192336be54"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -245,7 +275,9 @@
 				<textFieldExpression><![CDATA[$P{P_BELEGDATUM}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="0" y="161" width="183" height="38" uuid="0038cf02-9cc1-4b8c-b4d2-bc6c2dd93bbc"/>
+				<reportElement x="0" y="161" width="183" height="38" uuid="0038cf02-9cc1-4b8c-b4d2-bc6c2dd93bbc">
+					<printWhenExpression><![CDATA[com.lp.util.HelperReport.pruefeObCode39Konform($P{P_BESTELLNUMMER})]]></printWhenExpression>
+				</reportElement>
 				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="none">
 					<jr:codeExpression><![CDATA[$P{P_BESTELLNUMMER}]]></jr:codeExpression>
 				</jr:Code128>
@@ -269,6 +301,15 @@
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_LIEFERTERMIN}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="390" y="103" width="183" height="30" uuid="f0e0245b-4714-46a8-b46a-eb1da52f3e2d">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_IKUNDENUMMER_AUFTRAGSADRESSE}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

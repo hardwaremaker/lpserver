@@ -9,6 +9,10 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="EnthaeltSokos" class="java.lang.Boolean"/>
+	<parameter name="P_VK_MENGENSTAFFEL_ANSTATT_SOKO_MENGESTAFFEL" class="java.lang.Boolean"/>
+	<parameter name="Mat_Zuschlag" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[Der Materialzuschlag inkl. Kupferbasis des Kunden]]></parameterDescription>
+	</parameter>
 	<field name="Menge" class="java.math.BigDecimal"/>
 	<field name="BerechneterPreis" class="java.math.BigDecimal"/>
 	<field name="Fixpreis" class="java.math.BigDecimal"/>
@@ -21,38 +25,24 @@
 		<variableExpression><![CDATA[new Double(1).doubleValue() -
 ($F{BerechneterPreis}.doubleValue() / $F{BasisPreis}.doubleValue())]]></variableExpression>
 	</variable>
+	<variable name="Basispreis" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[($F{Basis}.startsWith("Soko-Artikel") &&
+ !$F{Basis}.contains("/VK-Staffel"))
+? $F{BasisPreis} : $V{Basispreis}]]></variableExpression>
+		<initialValueExpression><![CDATA[null]]></initialValueExpression>
+	</variable>
+	<variable name="Knd_Basispreis" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[($F{Basis}.startsWith("Soko-Artikel") &&
+ !$F{Basis}.contains("/VK-Staffel"))
+? $F{BerechneterPreis} : $V{Knd_Basispreis}]]></variableExpression>
+		<initialValueExpression><![CDATA[null]]></initialValueExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[false]]></printWhenExpression>
-			<staticText>
-				<reportElement key="Basispreis" mode="Opaque" x="105" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="d9e22b79-3380-4e3d-a3b6-e0dfe3c33004"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<text><![CDATA[Basispreis]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="Fixpreis" mode="Opaque" x="165" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="95b09bca-1d1c-4588-841d-b0734707974a"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<text><![CDATA[Fixpreis]]></text>
-			</staticText>
 			<staticText>
 				<reportElement key="Art" mode="Opaque" x="0" y="0" width="79" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a5511fd3-805f-47b1-8b53-3299674068ec"/>
 				<box>
@@ -67,33 +57,7 @@
 				<text><![CDATA[Art]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Währung" mode="Opaque" x="350" y="0" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="d88c51c6-dcad-4777-aee3-9cf80bbec06f"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<text><![CDATA[Währung]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="berechneter preis" mode="Opaque" x="275" y="0" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="07dbd9af-1ec5-4f13-b503-cccb36d976b9"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<text><![CDATA[berechneter Preis]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="Menge" mode="Opaque" x="67" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="18d0fc71-d075-4cf2-92d6-dedb74155ed2"/>
+				<reportElement key="Menge" mode="Opaque" x="87" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="18d0fc71-d075-4cf2-92d6-dedb74155ed2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -106,7 +70,7 @@
 				<text><![CDATA[ab Menge]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Rabattsatz" mode="Opaque" x="225" y="0" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="cf4e1258-b7e3-43b7-8321-ba31a8e59154"/>
+				<reportElement key="Basispreis" mode="Opaque" x="125" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="d9e22b79-3380-4e3d-a3b6-e0dfe3c33004"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -116,7 +80,85 @@
 				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<text><![CDATA[Rabattsatz]]></text>
+				<text><![CDATA[Basispreis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Fixpreis" mode="Opaque" x="185" y="0" width="55" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="95b09bca-1d1c-4588-841d-b0734707974a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Fixpreis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Rabattsatz" mode="Opaque" x="240" y="0" width="35" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="cf4e1258-b7e3-43b7-8321-ba31a8e59154"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Rabatt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="berechneter Preis" mode="Opaque" x="275" y="0" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="07dbd9af-1ec5-4f13-b503-cccb36d976b9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Kunden Preis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Rabattsatz" mode="Opaque" x="325" y="0" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="fd15b23e-0b3a-4430-a839-cf8ca176c752"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Rbt-Basis]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Währung" mode="Opaque" x="407" y="0" width="20" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="d88c51c6-dcad-4777-aee3-9cf80bbec06f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Whg]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="RbtZuKundenSokoBasis" mode="Opaque" x="365" y="0" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c966cfc6-e6aa-429a-a4f1-bc7b3a19d17a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[RbtKndBas]]></text>
 			</staticText>
 		</band>
 	</title>
@@ -125,9 +167,12 @@
 	</pageHeader>
 	<detail>
 		<band height="10" splitType="Stretch">
-			<printWhenExpression><![CDATA[$F{Basis}.startsWith("VK-Preisbasis")|| $F{Basis}.startsWith("Soko") || !$P{EnthaeltSokos}]]></printWhenExpression>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="Basis" x="0" y="0" width="79" height="10" uuid="a8e025f0-2030-44dc-a74e-8d93a098e04f"/>
+			<printWhenExpression><![CDATA[!($P{EnthaeltSokos} && $P{P_VK_MENGENSTAFFEL_ANSTATT_SOKO_MENGESTAFFEL} && $F{Basis}.startsWith("VK-Preisbasis")) ||
+ (!$P{P_VK_MENGENSTAFFEL_ANSTATT_SOKO_MENGESTAFFEL} && $F{Basis}.startsWith("VK-Preisbasis") ) ||
+$F{Basis}.startsWith("Soko") ||
+!$P{EnthaeltSokos}]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="Basis" x="0" y="0" width="100" height="10" uuid="a8e025f0-2030-44dc-a74e-8d93a098e04f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -140,7 +185,7 @@
 				<textFieldExpression><![CDATA[$F{Basis}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0##" isBlankWhenNull="true">
-				<reportElement key="Menge" x="79" y="0" width="26" height="10" uuid="1b8ae25d-b91a-4e96-a4a0-e5b66b2dd380"/>
+				<reportElement key="Menge" x="99" y="0" width="26" height="10" uuid="1b8ae25d-b91a-4e96-a4a0-e5b66b2dd380"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -153,7 +198,7 @@
 				<textFieldExpression><![CDATA[$F{Menge}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0000" isBlankWhenNull="true">
-				<reportElement key="Basispreis" isPrintRepeatedValues="false" x="105" y="0" width="60" height="10" uuid="688b62b5-7004-4c92-8e8b-562ff1c5fa4b">
+				<reportElement key="Basispreis" isPrintRepeatedValues="false" x="125" y="0" width="60" height="10" uuid="688b62b5-7004-4c92-8e8b-562ff1c5fa4b">
 					<printWhenExpression><![CDATA[($F{Fixpreis}==null && $F{Rabattsatz}.doubleValue() > 0) ||
 ($F{Fixpreis}!=null && $V{Rabatt_Errechnet}.doubleValue() > 0)]]></printWhenExpression>
 				</reportElement>
@@ -169,7 +214,7 @@
 				<textFieldExpression><![CDATA[$F{BasisPreis}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0000" isBlankWhenNull="true">
-				<reportElement key="Fixpreis" x="165" y="0" width="60" height="10" uuid="62655afb-e139-486a-a473-80739c4e4fe8"/>
+				<reportElement key="Fixpreis" x="185" y="0" width="55" height="10" uuid="62655afb-e139-486a-a473-80739c4e4fe8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -182,7 +227,7 @@
 				<textFieldExpression><![CDATA[$F{Fixpreis}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00 %" isBlankWhenNull="false">
-				<reportElement key="Rabattsatz" x="225" y="0" width="50" height="10" uuid="177913f8-584e-4377-95b8-57899f981c2c">
+				<reportElement key="Rabattsatz" x="245" y="0" width="30" height="10" uuid="177913f8-584e-4377-95b8-57899f981c2c">
 					<printWhenExpression><![CDATA[$F{Fixpreis}==null &&
 $F{Rabattsatz}!=null &&
 $F{Rabattsatz}.doubleValue() > 0]]></printWhenExpression>
@@ -199,7 +244,7 @@ $F{Rabattsatz}.doubleValue() > 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Rabattsatz}.doubleValue()/100]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00 %" isBlankWhenNull="false">
-				<reportElement key="errechneter Rabattsatz" x="225" y="0" width="50" height="10" uuid="2fb338d5-57fb-4965-a324-927fc65b74dd">
+				<reportElement key="errechneter Rabattsatz" x="240" y="0" width="35" height="10" uuid="2fb338d5-57fb-4965-a324-927fc65b74dd">
 					<printWhenExpression><![CDATA[$F{Fixpreis}!=null &&
 $V{Rabatt_Errechnet}.doubleValue() > 0]]></printWhenExpression>
 				</reportElement>
@@ -215,7 +260,7 @@ $V{Rabatt_Errechnet}.doubleValue() > 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$V{Rabatt_Errechnet}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0000" isBlankWhenNull="true">
-				<reportElement key="berechneterPreis" x="275" y="0" width="70" height="10" uuid="4e20e829-e139-48fd-8465-7c934e812611"/>
+				<reportElement key="berechneterPreis" x="275" y="0" width="50" height="10" uuid="4e20e829-e139-48fd-8465-7c934e812611"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -228,7 +273,7 @@ $V{Rabatt_Errechnet}.doubleValue() > 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{BerechneterPreis}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0000" isBlankWhenNull="true">
-				<reportElement key="berechneterPreis_nicht_definiert" x="275" y="0" width="70" height="10" uuid="bb218e9b-63d0-4da8-87df-344e3400154e">
+				<reportElement key="berechneterPreis_nicht_definiert" x="275" y="0" width="50" height="10" uuid="bb218e9b-63d0-4da8-87df-344e3400154e">
 					<printWhenExpression><![CDATA[$F{BerechneterPreis}==null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -242,8 +287,25 @@ $V{Rabatt_Errechnet}.doubleValue() > 0]]></printWhenExpression>
 				</textElement>
 				<textFieldExpression><![CDATA["nicht definiert"]]></textFieldExpression>
 			</textField>
+			<textField pattern="#,##0.00 %" isBlankWhenNull="false">
+				<reportElement key="Rabattsatz zum Basispreis" x="325" y="0" width="40" height="10" uuid="45763021-6268-4b95-ba21-74cdcbb08bb7">
+					<printWhenExpression><![CDATA[$V{Basispreis}!=null &&
+$F{BerechneterPreis}!=null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{Basispreis}.doubleValue() - $F{BerechneterPreis}.doubleValue()) /
+$V{Basispreis}.doubleValue()]]></textFieldExpression>
+			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="Währung" x="350" y="0" width="40" height="10" uuid="cfec7a67-93f4-4c75-98c8-5b849aea5edb"/>
+				<reportElement key="Währung" x="407" y="0" width="20" height="10" uuid="cfec7a67-93f4-4c75-98c8-5b849aea5edb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -254,6 +316,57 @@ $V{Rabatt_Errechnet}.doubleValue() > 0]]></printWhenExpression>
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Waehrung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00 %" isBlankWhenNull="false">
+				<reportElement key="Rabattsatz zum KND-Basispreis" x="365" y="0" width="40" height="10" uuid="56e20c43-be26-42c2-8582-c5b28c2d7789">
+					<printWhenExpression><![CDATA[$V{Basispreis}!=null &&
+$F{BerechneterPreis}!=null &&
+($V{Knd_Basispreis}.doubleValue() - $F{BerechneterPreis}.doubleValue()) > 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{Knd_Basispreis}.doubleValue() - $F{BerechneterPreis}.doubleValue()) /
+$V{Knd_Basispreis}.doubleValue()]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$F{BerechneterPreis}!=null && $P{Mat_Zuschlag}!=null]]></printWhenExpression>
+			<textField pattern="#,##0.0000" isBlankWhenNull="true">
+				<reportElement key="berechneterPreisinklMat" x="275" y="0" width="50" height="10" uuid="cd51c1b0-3126-44d0-a0ed-1106c31a113e">
+					<printWhenExpression><![CDATA[$P{Mat_Zuschlag}.doubleValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{BerechneterPreis}.add($P{Mat_Zuschlag})]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="berechneterPreisinklMat" x="125" y="0" width="200" height="10" uuid="e63dd17e-d940-4a3f-a625-323ce925cdd2">
+					<printWhenExpression><![CDATA[$P{Mat_Zuschlag}.doubleValue() < 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["negativ -> falsche Kupferbasisdefinition"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="syst_dashboard_offene_ag" pageWidth="786" pageHeight="500" whenNoDataType="AllSectionsNoDetail" columnWidth="786" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4aadc31f-6107-4999-a669-37ef722b0119">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="Postgres" class="java.lang.Boolean"/>
+	<field name="i_id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="c_bez" class="java.lang.String"/>
+	<field name="b_summenegativ" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="b_invertiert" class="java.lang.Integer"/>
+	<field name="b_jahresgewinn" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="summengruppe_i_id" class="java.lang.Integer"/>
+	<field name="c_summengruppe" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<variable name="AnzahlKonten" class="java.lang.Integer">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select cast(count(I_ID) as integer) from FB_KONTO where ERGEBNISGRUPPE_I_ID = "+$F{i_id}+";"
+)]]></variableExpression>
+	</variable>
+	<variable name="Zeigen_Gruppen_auf_mich" class="java.lang.Integer">
+		<variableExpression><![CDATA[/* Zeigen andere ErgebnisSummengruppen auf mich und geht es bei mir nicht weiter
+   oder sind Konten hinterlegt, dann stimmt das nicht */
+$P{P_SQLEXEC}.execute(
+"select cast(count(I_ID) as integer) from FB_ERGEBNISGRUPPE where ERGEBNISGRUPPE_I_ID_SUMME="+$F{i_id}+";"
+)]]></variableExpression>
+	</variable>
+	<variable name="derLetzte" class="java.lang.Integer" resetType="None">
+		<variableExpression><![CDATA[/* Ich bin der letzte Eintrag. D.h. diese I_ID hat keine Summengruppe mehr */
+$P{Postgres} ?
+$P{P_SQLEXEC}.execute(
+"select i_id from fb_ergebnisgruppe where MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"' and B_BILANZGRUPPE=0 order by i_reihung desc limit 1;"
+)
+:
+
+$P{P_SQLEXEC}.execute(
+"select TOP 1 I_ID from FB_ERGEBNISGRUPPE where MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"' and B_BILANZGRUPPE=0 order by I_REIHUNG desc;"
+)]]></variableExpression>
+	</variable>
+	<pageHeader>
+		<band height="30" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="12" width="220" height="10" uuid="1e5527bd-a5d8-4c13-90ae-6bfa277d4a7a"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Bezeichnung]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="22" width="786" height="1" uuid="63bfda2a-cb60-4e61-a760-01c431d07e36"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="220" y="12" width="60" height="10" uuid="75409457-7dd2-464c-928a-782198b42c24"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[neg]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="12" width="60" height="10" uuid="2eb79c3b-ad73-4c88-9696-007a35dc0e70"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[inv]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="340" y="12" width="60" height="10" uuid="997b009a-ce9f-4dab-b1ec-fda5556db9f4"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[JahresGew.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="470" y="12" width="220" height="10" uuid="1a3c27a7-bd8d-447f-a3ff-fb68c0d11ce3"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Summengruppe]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="400" y="2" width="30" height="20" uuid="f9f713c0-10e9-4c9e-a2a0-0f9c63cfab44"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Konten]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="430" y="0" width="30" height="22" uuid="6d608ca6-a8b7-4168-b8aa-9cc69070fcee"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<text><![CDATA[Anzahl Untergruppen]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="Bezeichnung" positionType="Float" x="0" y="0" width="220" height="10" uuid="0f9f6125-2479-4020-bfaa-a42e3477abbd">
+					<printWhenExpression><![CDATA[!$F{c_bez}.startsWith("leer    leer    leer")]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{c_bez}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="220" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b9026030-3493-4815-a001-6400a52c6acc"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{b_summenegativ}.intValue() == 1 ? "x" : ""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="280" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="91504279-a8bc-4747-af83-443a2fd15cab"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{b_invertiert}.intValue() == 1 ? "x" : ""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="340" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="51c046c4-5e8f-440b-8898-e1bd577049ba"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{b_jahresgewinn}.intValue() == 1 ? "x" : ""]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0">
+				<reportElement x="400" y="0" width="30" height="10" uuid="f776a82c-81c0-4dea-b872-704d687552a5">
+					<printWhenExpression><![CDATA[$V{AnzahlKonten}.intValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{AnzahlKonten}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0">
+				<reportElement x="430" y="0" width="30" height="10" uuid="b9d307f0-23d3-4c8b-932c-0c42506f37d2">
+					<printWhenExpression><![CDATA[$V{Zeigen_Gruppen_auf_mich}.intValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Zeigen_Gruppen_auf_mich}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="470" y="0" width="220" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2d855478-72ab-48a3-baf1-a5c7fe211398"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{c_summengruppe}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Summengruppe fehlt" mode="Opaque" x="470" y="0" width="220" height="10" forecolor="#000000" backcolor="#FF9999" uuid="71944a44-776e-484f-b929-502e83e2454f">
+					<printWhenExpression><![CDATA[!$F{c_bez}.startsWith("leer    leer    leer") &&
+($V{AnzahlKonten}.intValue() > 0 &&
+ $F{summengruppe_i_id}==null) ||
+($V{Zeigen_Gruppen_auf_mich}.intValue() > 0 &&
+ $F{summengruppe_i_id}==null) &&
+$F{i_id}.intValue() != $V{derLetzte}.intValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Summengruppe fehlt"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Doppelte Definition" mode="Opaque" x="470" y="0" width="220" height="10" forecolor="#000000" backcolor="#FF9933" uuid="daffd169-8692-4e91-8ac4-d5f1d5f85390">
+					<printWhenExpression><![CDATA[$V{AnzahlKonten}.intValue() != 0 &&
+$V{Zeigen_Gruppen_auf_mich}.intValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Konten auf Summengruppen sind nicht zulässig"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<subreport>
+				<reportElement key="Subreport_Konten" positionType="Float" x="0" y="0" width="786" height="10" uuid="bc15f799-821c-42fa-9e2e-8ca007940a99"/>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_SQLEXEC}.subreport(
+"select basis.I_ID, basis.C_BEZ, basis.B_SUMMENEGATIV, basis.B_INVERTIERT, basis.B_JAHRESGEWINN, "+
+"summe.I_ID as summengruppe_i_id, summe.C_BEZ as c_summengruppe "+
+" from FB_ERGEBNISGRUPPE as basis "+ 
+" left outer join FB_ERGEBNISGRUPPE as summe on summe.I_ID=basis.ERGEBNISGRUPPE_I_ID_SUMME "+
+" left outer join FB_KONTO on basis.I_ID = FB_KONTO.ERGEBNISGRUPPE_I_ID "+
+" where basis.MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"' and basis.B_BILANZGRUPPE=0  "+
+" order by basis.I_REIHUNG;",
+new String[] {"i_id",
+"c_bez",
+"b_summenegativ",
+"b_invertiert",
+"b_jahresgewinn",
+"summengruppe_i_id",
+"c_summengruppe"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"flrdruck4205_konten.jasper").toURL()]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

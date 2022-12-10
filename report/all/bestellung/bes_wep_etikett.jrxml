@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 5.5.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bes_wep_etikett" pageWidth="175" pageHeight="102" columnWidth="168" leftMargin="5" rightMargin="2" topMargin="2" bottomMargin="2" uuid="683545a4-6b45-4ec2-9d74-9dd40a92b068">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="4.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="974"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -14,6 +15,7 @@
 	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
 		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
 	</parameter>
+	<parameter name="P_MIT_LOSBUCHUNGEN" class="java.lang.Boolean"/>
 	<field name="F_VERPACKUNGSEINHEIT" class="java.lang.Integer">
 		<fieldDescription><![CDATA[Verpackungsmengeneinheit]]></fieldDescription>
 	</field>
@@ -71,22 +73,41 @@
 	<field name="F_HANDMENGE" class="java.math.BigDecimal"/>
 	<field name="F_WE_REFERENZ" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<field name="F_SUBREPORT_SNRCHNR" class="java.lang.Object"/>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
-	<title>
-		<band splitType="Stretch"/>
-	</title>
-	<pageHeader>
-		<band splitType="Stretch"/>
-	</pageHeader>
-	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
+	<field name="F_GESTEHUNGSPREIS" class="java.math.BigDecimal"/>
+	<field name="F_EINSTANDSPREIS" class="java.math.BigDecimal"/>
+	<field name="F_LIEF1PREIS" class="java.math.BigDecimal"/>
+	<field name="F_EXEMPLAR" class="java.lang.Integer"/>
+	<field name="F_EXEMPLARE_GESAMT" class="java.lang.Integer"/>
+	<field name="F_KURZBEZEICHNUNG" class="java.lang.String"/>
+	<field name="F_REFERENZNUMMER" class="java.lang.String"/>
+	<field name="F_WE_LIEFERSCHEINNUMMER" class="java.lang.String"/>
+	<field name="F_LOS_NUMMER" class="java.lang.String"/>
+	<field name="F_LOS_STUECKLISTE" class="java.lang.String"/>
+	<field name="F_LOS_MENGE" class="java.math.BigDecimal"/>
+	<field name="F_LOS_STUECKLISTE_BEZEICHNUNG" class="java.lang.String"/>
+	<field name="F_LOS_PROJEKT" class="java.lang.String"/>
+	<field name="F_LAGERMENGE" class="java.math.BigDecimal"/>
 	<detail>
 		<band height="98" splitType="Stretch">
+			<printWhenExpression><![CDATA[(
+	!$P{P_MIT_LOSBUCHUNGEN} 
+	&& $F{F_CHARGENNUMMER}==null && $F{F_SERIENNUMMER}==null
+)
+||
+(
+	$P{P_MIT_LOSBUCHUNGEN} && $F{F_LOS_NUMMER}==null 
+	&& $F{F_LAGERMENGE}.compareTo(BigDecimal.ZERO) != 0
+)]]></printWhenExpression>
 			<componentElement>
-				<reportElement x="11" y="0" width="142" height="18" uuid="1247c19f-6af3-4349-8524-c3c9fe6f6bdd"/>
+				<reportElement x="11" y="0" width="142" height="18" uuid="1247c19f-6af3-4349-8524-c3c9fe6f6bdd">
+					<printWhenExpression><![CDATA[!($F{F_IDENT}.contains("Ä") ||
+  $F{F_IDENT}.contains("Ö") ||
+  $F{F_IDENT}.contains("Ü") ||
+  $F{F_IDENT}.contains("ä") ||
+  $F{F_IDENT}.contains("ö") ||
+  $F{F_IDENT}.contains("ü") ||
+  $F{F_IDENT}.contains("ß"))]]></printWhenExpression>
+				</reportElement>
 				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="none">
 					<jr:codeExpression><![CDATA[$F{F_IDENT}]]></jr:codeExpression>
 				</jr:Code128>
@@ -100,7 +121,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_IDENT}]]></textFieldExpression>
 			</textField>
@@ -159,14 +180,14 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="58" width="167" height="10" uuid="875bcac7-999e-4e9f-9b1c-03c1f61ba139"/>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_CHARGENNUMMER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="58" width="167" height="10" uuid="8506ac02-996d-4b85-b6ab-8242a0ac132f"/>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_SERIENNUMMER}]]></textFieldExpression>
 			</textField>
@@ -179,7 +200,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Lagerplz.]]></text>
 			</staticText>
@@ -192,7 +213,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_LAGERORT}]]></textFieldExpression>
 			</textField>
@@ -205,7 +226,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[VPE:]]></text>
 			</staticText>
@@ -218,7 +239,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_VERPACKUNGSEINHEIT}]]></textFieldExpression>
 			</textField>
@@ -231,7 +252,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Gewicht:]]></text>
 			</staticText>
@@ -244,7 +265,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_GEWICHT}]]></textFieldExpression>
 			</textField>
@@ -257,7 +278,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[kg]]></text>
 			</staticText>
@@ -270,7 +291,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[BNR:]]></text>
 			</staticText>
@@ -283,7 +304,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_BESTELLNUMMER}]]></textFieldExpression>
 			</textField>
@@ -296,7 +317,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Menge:]]></text>
 			</staticText>
@@ -309,7 +330,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_ANLIEFERMENGE}]]></textFieldExpression>
 			</textField>
@@ -322,19 +343,242 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{F_EINHEIT}]]></textFieldExpression>
 			</textField>
 		</band>
+		<band height="98">
+			<printWhenExpression><![CDATA[!$P{P_MIT_LOSBUCHUNGEN} &&
+!($F{F_CHARGENNUMMER}==null && $F{F_SERIENNUMMER}==null)]]></printWhenExpression>
+			<subreport isUsingCache="true">
+				<reportElement key="Subreport_Chargendetail" positionType="Float" x="0" y="0" width="168" height="98" isRemoveLineWhenBlank="true" uuid="d76a086b-aaf8-46aa-986c-1a34f2a83fb3"/>
+				<subreportParameter name="P_ZBEZ">
+					<subreportParameterExpression><![CDATA[$F{F_ZBEZ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ANLIEFERMENGE">
+					<subreportParameterExpression><![CDATA[$F{F_ANLIEFERMENGE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_BESTELLNUMMER">
+					<subreportParameterExpression><![CDATA[$F{F_BESTELLNUMMER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_EINHEIT">
+					<subreportParameterExpression><![CDATA[$F{F_EINHEIT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_IDENT">
+					<subreportParameterExpression><![CDATA[$F{F_IDENT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HERSTELLER">
+					<subreportParameterExpression><![CDATA[$F{F_HERSTELLER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LAGERORT">
+					<subreportParameterExpression><![CDATA[$F{F_LAGERORT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_BEZ">
+					<subreportParameterExpression><![CDATA[$F{F_BEZ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ZBEZ2">
+					<subreportParameterExpression><![CDATA[$F{F_ZBEZ2}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LIEFERANTENNAME">
+					<subreportParameterExpression><![CDATA[$F{F_LIEFERANTENNAME}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_HANDMENGE">
+					<subreportParameterExpression><![CDATA[$F{F_HANDMENGE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_VERPACKUNGSEINHEIT">
+					<subreportParameterExpression><![CDATA[$F{F_VERPACKUNGSEINHEIT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$F{F_SUBREPORT_SNRCHNR}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "bs_subreport_snrchnr.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="98">
+			<printWhenExpression><![CDATA[$P{P_MIT_LOSBUCHUNGEN} && $F{F_LOS_NUMMER}!=null]]></printWhenExpression>
+			<staticText>
+				<reportElement key="BNR" mode="Transparent" x="0" y="88" width="21" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="78f46f6c-25b1-4e30-8057-9e8f83022222"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[BNR:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement key="F_ZusatzBEZ" x="0" y="38" width="166" height="10" uuid="345562f2-5f60-44fd-97c5-e5c613b7b4fc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ZBEZ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="58" width="167" height="10" uuid="f099ccf4-5403-4d9e-84b2-26903ba67404"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_CHARGENNUMMER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="F_ZusatzBEZ2" x="0" y="48" width="167" height="10" uuid="816c0eef-b4ee-4295-9507-ecbba6549f2c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ZBEZ2}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="F_EINHEIT" mode="Transparent" x="77" y="78" width="16" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2b3c7d89-469a-4c9a-8a63-0f1fd2538ffa"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_EINHEIT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="F_IDENT" x="0" y="18" width="105" height="10" uuid="ab12c97b-ec3a-4aba-a11d-d442f8e0606b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_IDENT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Losnummer" mode="Transparent" x="38" y="68" width="129" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="916895db-2a12-4664-8906-9193a46cf48e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_LOS_NUMMER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
+				<reportElement key="Losmenge" mode="Transparent" x="39" y="78" width="37" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7f019e89-d9c5-4458-9f42-9c376971a5f0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_LOS_MENGE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="F_WE_DATUM" x="106" y="18" width="60" height="10" uuid="6936f7bd-0c96-41bc-987f-152af3314d05"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_WE_DATUM}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="F_BEZ" x="0" y="28" width="167" height="10" uuid="25170b31-80b3-418b-bd19-58f65eb1c114"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BEZ}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="11" y="0" width="142" height="18" uuid="afed4134-2a23-49b0-a112-d9d1dbc2d0ef">
+					<printWhenExpression><![CDATA[!($F{F_IDENT}.contains("Ä") ||
+  $F{F_IDENT}.contains("Ö") ||
+  $F{F_IDENT}.contains("Ü") ||
+  $F{F_IDENT}.contains("ä") ||
+  $F{F_IDENT}.contains("ö") ||
+  $F{F_IDENT}.contains("ü") ||
+  $F{F_IDENT}.contains("ß"))]]></printWhenExpression>
+				</reportElement>
+				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="none">
+					<jr:codeExpression><![CDATA[$F{F_IDENT}]]></jr:codeExpression>
+				</jr:Code128>
+			</componentElement>
+			<staticText>
+				<reportElement key="Losmenge" mode="Transparent" x="0" y="78" width="38" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="cc74de0b-ad2f-4503-800d-1a2fb550e13b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Losmenge:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="58" width="167" height="10" uuid="fe7a18a5-eae7-4eb2-9794-20bb90c85613"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_SERIENNUMMER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="F_BESTELLNUMMER" mode="Transparent" x="22" y="88" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f321374a-667c-470e-81a6-2cbdb80231cf"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BESTELLNUMMER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="LosNummer" mode="Transparent" x="0" y="68" width="38" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c8856913-09b3-4bd2-99a2-6ca37819012e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Los Nr]]></text>
+			</staticText>
+		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
-	<pageFooter>
-		<band splitType="Stretch"/>
-	</pageFooter>
-	<summary>
-		<band splitType="Stretch"/>
-	</summary>
 </jasperReport>

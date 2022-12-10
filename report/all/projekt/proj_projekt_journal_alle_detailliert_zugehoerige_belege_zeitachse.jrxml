@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proj_projekt_journal_alle_detailliert_zugehoerige_belege_zeitachse" pageWidth="1074" pageHeight="842" columnWidth="1074" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="085ce402-6eb0-4e68-ae21-3c625264b362">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="P_SUBREPORTCONNECTION" class="java.sql.Connection" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_FILTER" class="java.lang.String" isForPrompting="false"/>
+	<field name="F_BELEGART" class="java.lang.String"/>
+	<field name="F_BELEGDATUM" class="java.util.Date"/>
+	<field name="F_BELEGNUMMER" class="java.lang.String"/>
+	<field name="F_STATUS" class="java.lang.String"/>
+	<field name="F_WERT" class="java.math.BigDecimal"/>
+	<field name="F_EBENE" class="java.lang.Integer"/>
+	<field name="F_BELEG_I_ID" class="java.lang.Integer"/>
+	<variable name="Einruecken" class="java.lang.String">
+		<variableExpression><![CDATA[$F{F_EBENE}.intValue() >= 10 ?
+">>>>>>>>>>" :
+(new String("          ")).substring(0,$F{F_EBENE}.intValue())]]></variableExpression>
+	</variable>
+	<variable name="Zebra" class="java.math.BigDecimal" resetType="Page">
+		<variableExpression><![CDATA[$V{Zebra}.negate()]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(1)]]></initialValueExpression>
+	</variable>
+	<variable name="VonBereich" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[com.lp.util.Helper.addiereTageZuDatum(
+    com.lp.util.Helper.parseString2Date(
+        $P{P_FILTER}.substring($P{P_FILTER}.indexOf("von")+ 4, $P{P_FILTER}.indexOf("von")+ 4+10)
+    ), -7)]]></variableExpression>
+	</variable>
+	<variable name="BisBereich" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[com.lp.util.Helper.addiereTageZuDatum(
+    com.lp.util.Helper.parseString2Date(
+        $P{P_FILTER}.substring($P{P_FILTER}.indexOf("von")+ 4, $P{P_FILTER}.indexOf("von")+ 4+10)
+    ), +84-7)   /* das ist die Anzahl der Spalten des Subreports -1 */]]></variableExpression>
+	</variable>
+	<variable name="Von" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{VonBereich}.toLocaleString().substring(0,10)
+/*
+$P{P_FILTER}.substring($P{P_FILTER}.indexOf("von")+10, $P{P_FILTER}.indexOf("von")+10+4)+"-"+
+$P{P_FILTER}.substring($P{P_FILTER}.indexOf("von")+ 7, $P{P_FILTER}.indexOf("von")+ 7+2)+"-"+
+$P{P_FILTER}.substring($P{P_FILTER}.indexOf("von")+ 4, $P{P_FILTER}.indexOf("von")+ 4+2)
+*/]]></variableExpression>
+	</variable>
+	<variable name="Bis" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$V{BisBereich}.toLocaleString().substring(0,10)
+/*
+new java.sql.Timestamp($V{BisBereich}.getTime())
+
+$P{P_FILTER}.substring($P{P_FILTER}.indexOf("bis")+10, $P{P_FILTER}.indexOf("bis")+10+4)+"-"+
+$P{P_FILTER}.substring($P{P_FILTER}.indexOf("bis")+ 7, $P{P_FILTER}.indexOf("bis")+ 7+2)+"-"+
+$P{P_FILTER}.substring($P{P_FILTER}.indexOf("bis")+ 4, $P{P_FILTER}.indexOf("bis")+ 4+2)
+*/]]></variableExpression>
+	</variable>
+	<variable name="LosBeginn" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$F{F_BELEGART}.startsWith("Los") ?
+$P{P_SQLEXEC}.execute( "select T_PRODUKTIONSBEGINN from FERT_LOS where I_ID="+$F{F_BELEG_I_ID}+";"
+) : null]]></variableExpression>
+	</variable>
+	<variable name="LosEnde" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$F{F_BELEGART}.startsWith("Los") ?
+$P{P_SQLEXEC}.execute( "select T_PRODUKTIONSENDE from FERT_LOS where I_ID="+$F{F_BELEG_I_ID}+";"
+) : null]]></variableExpression>
+	</variable>
+	<variable name="AuftragBeginn" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$F{F_BELEGART}.startsWith("Auftrag") ?
+$F{F_BELEGDATUM} : null]]></variableExpression>
+	</variable>
+	<variable name="AuftragEnde" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$F{F_BELEGART}.startsWith("Auftrag") ?
+$P{P_SQLEXEC}.execute( "select T_FINALTERMIN from AUFT_AUFTRAG where I_ID="+$F{F_BELEG_I_ID}+";"
+) : null]]></variableExpression>
+	</variable>
+	<variable name="BestellungBeginn" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$F{F_BELEGART}.startsWith("Bestellung") ?
+$P{P_SQLEXEC}.execute( "select T_BELEGDATUM from BES_BESTELLUNG where I_ID="+$F{F_BELEG_I_ID}+";"
+) : null]]></variableExpression>
+	</variable>
+	<variable name="BestellungEnde" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$F{F_BELEGART}.startsWith("Bestellung") ?
+$P{P_SQLEXEC}.execute( "select T_LIEFERTERMIN from BES_BESTELLUNG where I_ID="+$F{F_BELEG_I_ID}+";"
+) : null]]></variableExpression>
+	</variable>
+	<title>
+		<band height="11" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="0" width="135" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d42ad189-51c8-46ff-8c51-fe90213b348c"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Dazugehörende Belege Zeitachse]]></text>
+			</staticText>
+			<subreport>
+				<reportElement key="Subreport_Tage" positionType="Float" x="220" y="0" width="854" height="10" uuid="693324a5-1ec4-4034-986f-24e5cb0ab768"/>
+				<subreportParameter name="Ueberschrift">
+					<subreportParameterExpression><![CDATA[true]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_FILTER">
+					<subreportParameterExpression><![CDATA[$P{P_FILTER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Bis">
+					<subreportParameterExpression><![CDATA[$V{Bis}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Von">
+					<subreportParameterExpression><![CDATA[$V{Von}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[com.lp.util.HelperReport.getSubreportKalendertage(
+$V{VonBereich},
+$V{BisBereich},
+$P{P_MANDANT_OBJ}.getTheClientDto())
+/*
+$P{P_SQLEXEC}.subreport(
+"SELECT day::date "+
+"FROM   generate_series(timestamp '"+$V{Von}+"', timestamp '"+$V{Bis}+"', interval  '1 day') day;",
+new String[] {"day"}
+)
+*/]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"/proj_projekt_journal_alle_detailliert_zugehoerige_belege_zeitachse_detail.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<line>
+				<reportElement x="0" y="10" width="1074" height="1" uuid="48225c69-452e-4fc5-9d2b-ce4c6eace6fc"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="0" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e8c1cec6-3502-4f44-9b4e-7ca023bae369"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_EBENE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="Belegart" mode="Transparent" x="20" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1ea2c2f0-10fd-4c51-b5d6-a66a9d7750b2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Einruecken}+$F{F_BELEGART}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false" hyperlinkType="GOTO">
+				<reportElement key="Belegnummer" mode="Transparent" x="70" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="cf2bb0ca-02b7-42cb-96ad-a810e6909161"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Einruecken}+$F{F_BELEGNUMMER}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA["Direkt Sprung zu "+$F{F_BELEGART}.trim()+" "+$F{F_BELEGNUMMER}]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[$F{F_BELEGART}.startsWith("Auftrag") ? com.lp.util.GotoHelper.goto_AUFTRAG_AUSWAHL() :
+   ($F{F_BELEGART}.startsWith("Los") ? com.lp.util.GotoHelper.goto_FERTIGUNG_AUSWAHL() :
+      ($F{F_BELEGART}.toUpperCase().contains("RECHNUNG") ? com.lp.util.GotoHelper.goto_RECHNUNG_AUSWAHL() :
+         ($F{F_BELEGART}.toUpperCase().contains("GUTSCHRIFT") ? com.lp.util.GotoHelper.goto_GUTSCHRIFT_AUSWAHL() :
+            ($F{F_BELEGART}.startsWith("Bestellung") ? com.lp.util.GotoHelper.goto_BESTELLUNG_AUSWAHL() :
+                   ($F{F_BELEGART}.startsWith("Angebot") ? com.lp.util.GotoHelper.goto_ANGEBOT_AUSWAHL() :
+                   ($F{F_BELEGART}.startsWith("Reklamation") ? com.lp.util.GotoHelper.goto_REKLAMATION_AUSWAHL() :
+                    ($F{F_BELEGART}.startsWith("Eingangsrechng") ? com.lp.util.GotoHelper.goto_EINGANGSRECHNUNG_AUSWAHL() :
+                   null
+             )
+             )
+             )
+            )
+         )
+      )
+   )
+
+/*
+               ($F{F_BELEGART}.startsWith("Angebot") ? com.lp.util.GotoHelper.goto_ANGEBOT_AUSWAHL() :
+                  ($F{F_BELEGART}.startsWith("Eingangsrechng") ? com.lp.util.GotoHelper.goto_EINGANGSRECHNG_AUSWAHL() :
+*/]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{F_BELEGNUMMER}]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="140" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="0d384908-1170-40f9-ad22-59362f9645f8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BELEGDATUM}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="190" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="912c51d3-73ea-430d-9018-595500207c4f">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BELEG_I_ID}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement key="Subreport_Tage" positionType="Float" x="220" y="0" width="854" height="10" uuid="aece3e0a-b1bb-4547-80cb-fbeab0a0d238"/>
+				<subreportParameter name="VonBereich">
+					<subreportParameterExpression><![CDATA[$V{VonBereich}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Ueberschrift">
+					<subreportParameterExpression><![CDATA[false]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_FILTER">
+					<subreportParameterExpression><![CDATA[$P{P_FILTER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Bis">
+					<subreportParameterExpression><![CDATA[$V{Bis}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="DatenVon">
+					<subreportParameterExpression><![CDATA[$F{F_BELEGART}.startsWith("Los") ? new java.sql.Date($V{LosBeginn}.getTime()) :
+   ($F{F_BELEGART}.startsWith("Auftrag") ? new java.sql.Date($V{AuftragBeginn}.getTime()) :
+        ($F{F_BELEGART}.startsWith("Bestellung") ? new java.sql.Date($V{BestellungBeginn}.getTime()) :
+         $F{F_BELEGDATUM}
+        )
+   )]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="DatenBis">
+					<subreportParameterExpression><![CDATA[$F{F_BELEGART}.startsWith("Los") ? new java.sql.Date($V{LosEnde}.getTime()) :
+   ($F{F_BELEGART}.startsWith("Auftrag") ? new java.sql.Date($V{AuftragEnde}.getTime()) :
+       ($F{F_BELEGART}.startsWith("Bestellung") ? new java.sql.Date($V{BestellungEnde}.getTime()) :
+        $F{F_BELEGDATUM}
+       )
+   )]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Von">
+					<subreportParameterExpression><![CDATA[$V{Von}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="BisBereich">
+					<subreportParameterExpression><![CDATA[$V{BisBereich}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[com.lp.util.HelperReport.getSubreportKalendertage(
+$V{VonBereich},
+$V{BisBereich},
+$P{P_MANDANT_OBJ}.getTheClientDto())
+/*
+$P{P_SQLEXEC}.subreport(
+"SELECT day::date "+
+"FROM   generate_series(timestamp '"+$V{Von}+"', timestamp '"+$V{Bis}+"', interval  '1 day') day;",
+new String[] {"day"}
+)
+*/]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"/proj_projekt_journal_alle_detailliert_zugehoerige_belege_zeitachse_detail.jasper").toURL()]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="auft_wiederbeschaffung_verfuegbarkeiten" pageWidth="170" pageHeight="842" columnWidth="170" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="07a7c4fe-7b7d-4ce1-9391-cf0d521bb56a">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Verfuegbar">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{Mandant}.compareTo($P{MANDANT}) == 0
+/* Mein Mandant */]]></conditionExpression>
+			<style mode="Opaque" forecolor="#999999" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[($F{Lagerstand}.doubleValue() +
+ $F{Bestellt}.doubleValue()) <
+$P{MENGE}.doubleValue()
+
+/* zu wenig */]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FF3333" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[(($F{Lagerstand}.doubleValue() +
+ $F{Bestellt}.doubleValue()) >=
+ $P{MENGE}.doubleValue())
+&&
+($F{Lagerstand}.doubleValue() <
+ $P{MENGE}.doubleValue())
+
+/* ausreichend bestellt */]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FFCC33" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{Lagerstand}.doubleValue() >=
+$P{MENGE}.doubleValue()
+
+/* ausreichend langernd */]]></conditionExpression>
+			<style mode="Opaque" forecolor="#009900" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="MANDANT" class="java.lang.String">
+		<parameterDescription><![CDATA[Der produzierende Mandant]]></parameterDescription>
+	</parameter>
+	<parameter name="BEDARF" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[menge die für die Position benötigt wird]]></parameterDescription>
+	</parameter>
+	<parameter name="MENGE" class="java.math.BigDecimal"/>
+	<field name="Mandant" class="java.lang.String"/>
+	<field name="Lagerstand" class="java.math.BigDecimal"/>
+	<field name="LagerstandSperrlaeger" class="java.math.BigDecimal"/>
+	<field name="Bestellt" class="java.math.BigDecimal"/>
+	<field name="Reserviert" class="java.math.BigDecimal"/>
+	<field name="Fehlmenge" class="java.math.BigDecimal"/>
+	<title>
+		<band height="20" splitType="Stretch">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<staticText>
+				<reportElement key="Lagerstand" positionType="Float" mode="Transparent" x="20" y="10" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="239e40bc-f969-44ab-a2c1-c4147235903c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[lagernd]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Sperrlager" positionType="Float" mode="Transparent" x="60" y="0" width="30" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="ebaa2b97-b5f0-4613-a6d2-ed5e367cf1ca"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Sperr-
+lager]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Verfügbar" positionType="Float" mode="Transparent" x="90" y="9" width="40" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="f20a1d28-5ea6-4c65-8296-6bded0f7108c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Verfügb.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Bestellt" positionType="Float" mode="Transparent" x="130" y="9" width="40" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="fe8d2ff1-7517-4c1f-97d2-466e0830fc7b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Bestellt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Mandant" positionType="Float" mode="Transparent" x="0" y="10" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="59867f87-9785-40ab-ad5d-dba0a2d2a9e8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Mnd]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[$F{Mandant}.compareTo($P{MANDANT}) != 0 && /* nicht der aufrufende Mandant */
+$F{Lagerstand}.compareTo(BigDecimal.ZERO) > 0]]></printWhenExpression>
+			<textField isBlankWhenNull="false">
+				<reportElement key="Mandant" style="Verfuegbar" x="0" y="0" width="20" height="10" uuid="29fb5724-5ea0-434b-be75-f16c2fb8ee36"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Mandant}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="true">
+				<reportElement key="Lagerstand" style="Verfuegbar" mode="Transparent" x="20" y="0" width="40" height="10" uuid="7268af24-4288-41ad-b5cf-85493d09e1fe">
+					<printWhenExpression><![CDATA[$F{Lagerstand}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Lagerstand}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="false">
+				<reportElement key="Sperrlager" style="Verfuegbar" x="60" y="0" width="30" height="10" uuid="068e09d3-9d9a-40ae-bc35-042f1ec77910">
+					<printWhenExpression><![CDATA[$F{LagerstandSperrlaeger}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{LagerstandSperrlaeger}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="true">
+				<reportElement key="Verfuegbar" style="Verfuegbar" mode="Transparent" x="90" y="0" width="40" height="10" isRemoveLineWhenBlank="true" uuid="a58d34c3-7220-49ea-8a64-b89d7ffe1e42"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Lagerstand}.
+subtract($F{Fehlmenge}).
+subtract($F{Reserviert})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="true">
+				<reportElement key="Bestellt" style="Verfuegbar" mode="Transparent" x="130" y="0" width="40" height="10" isRemoveLineWhenBlank="true" uuid="ce150f73-1771-46eb-b160-bd0589b5254e">
+					<printWhenExpression><![CDATA[$F{Bestellt}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Bestellt}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

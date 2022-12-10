@@ -1,0 +1,1500 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proj_projekt_journal_forecast" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="c0805a97-422a-46ac-864b-d6f08ce88614">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Auftrag">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_REALISIERUNG}.before( $V{V_HEUTE} )]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FF0033" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_VKFORTSCHRITT_LEADSTATUS}.startsWith("A")]]></conditionExpression>
+			<style mode="Opaque" forecolor="#66CC00" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
+	<style name="Zeitraum">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_REALISIERUNG} != null &&
+$F{F_REALISIERUNG}.compareTo($V{DreiMonate}) <= 0]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FF8B00" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_REALISIERUNG} != null &&
+$F{F_REALISIERUNG}.after($V{DreiMonate}) &&
+$F{F_REALISIERUNG}.compareTo( $V{SechsMonate}) <= 0]]></conditionExpression>
+			<style mode="Opaque" forecolor="#00B1D0" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_SORTIERUNG" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_FILTER" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_TITLE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="P_BEREICH" class="java.lang.String"/>
+	<parameter name="P_STICHTAG" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="P_PERSON" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_SORTIERENACHPERSONAL" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[1 ... Sortiert nach Personal]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Boolean(false)]]></defaultValueExpression>
+	</parameter>
+	<field name="F_TITEL" class="java.lang.String"/>
+	<field name="F_CNR" class="java.lang.String"/>
+	<field name="F_PARTNER" class="java.lang.String"/>
+	<field name="F_ZIELTERMIN" class="java.lang.String"/>
+	<field name="F_KATEGORIE" class="java.lang.String"/>
+	<field name="F_PRIO" class="java.lang.Integer"/>
+	<field name="F_BELEGDATUM" class="java.lang.String"/>
+	<field name="F_TEXT" class="java.lang.String"/>
+	<field name="F_WER" class="java.lang.String"/>
+	<field name="F_WANN" class="java.lang.String"/>
+	<field name="F_WAS" class="java.lang.String"/>
+	<field name="F_ERZEUGER" class="java.lang.String"/>
+	<field name="F_ZUGEWIESENER" class="java.lang.String"/>
+	<field name="F_DAUER" class="java.lang.Double"/>
+	<field name="F_ZIELWOCHE" class="java.lang.String"/>
+	<field name="F_ZEIT" class="java.sql.Time"/>
+	<field name="F_STATUS" class="java.lang.String"/>
+	<field name="F_ANSPRECHPARTNER" class="java.lang.String"/>
+	<field name="F_DATEINAME" class="java.lang.String"/>
+	<field name="F_FREIGEGEBEN" class="java.lang.Boolean"/>
+	<field name="F_VERRECHENBAR" class="java.lang.String"/>
+	<field name="F_LKZ" class="java.lang.String"/>
+	<field name="F_ORT" class="java.lang.String"/>
+	<field name="F_TYP" class="java.lang.String"/>
+	<field name="F_PLZ" class="java.lang.String"/>
+	<field name="F_WAHRSCHEINLICHKEIT" class="java.lang.Integer"/>
+	<field name="F_UMSATZGEPLANT" class="java.math.BigDecimal"/>
+	<field name="F_GESAMTDAUER" class="java.lang.Double"/>
+	<field name="F_INTERNERLEDIGT_PERSON" class="java.lang.String"/>
+	<field name="F_INTERNERLEDIGT_ZEIT" class="java.util.Date"/>
+	<field name="F_BRANCHE" class="java.lang.String"/>
+	<field name="F_PARTNERKLASSE" class="java.lang.String"/>
+	<field name="F_HTML" class="java.lang.Boolean"/>
+	<field name="F_AENDERUNGSDATUM" class="java.util.Date"/>
+	<field name="F_BETREIBER" class="java.lang.String"/>
+	<field name="F_I_SORT_QUEUE" class="java.lang.Integer"/>
+	<field name="F_SUBREPORT_KINDPROJEKTE" class="java.lang.Object"/>
+	<field name="F_SUBREPORT_VATERPROJEKTE" class="java.lang.Object"/>
+	<field name="F_VKFORTSCHRITT_BEZEICHNUNG" class="java.lang.String"/>
+	<field name="F_VKFORTSCHRITT" class="java.lang.String"/>
+	<field name="F_VKFORTSCHRITT_LEADSTATUS" class="java.lang.String"/>
+	<field name="F_REALISIERUNG" class="java.util.Date"/>
+	<field name="F_WERT_AUFTRAG" class="java.math.BigDecimal"/>
+	<field name="F_WERT_GUTSCHRIFT" class="java.math.BigDecimal"/>
+	<field name="F_WERT_RECHNUNG" class="java.math.BigDecimal"/>
+	<variable name="V_HEUTE" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></variableExpression>
+		<initialValueExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></initialValueExpression>
+	</variable>
+	<variable name="UmsatzErwartet_null" class="java.lang.Double">
+		<variableExpression><![CDATA[$F{F_PARTNER} != null ?
+   ($F{F_UMSATZGEPLANT}.doubleValue() *
+    $F{F_WAHRSCHEINLICHKEIT}.doubleValue() / 100
+   ) :
+$V{UmsatzErwartet}
+
+/* Der Umsatz steckt NUR im Projektkopf drinnen */]]></variableExpression>
+	</variable>
+	<variable name="UmsatzErwartet" class="java.lang.Double">
+		<variableExpression><![CDATA[$V{UmsatzErwartet_null}==null ? 0 : $V{UmsatzErwartet_null}]]></variableExpression>
+	</variable>
+	<variable name="UmsatzErwartet_Zugewiesener" class="java.lang.Double" resetType="Group" resetGroup="Personal" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_PARTNER} != null ?
+$V{UmsatzErwartet} :
+0
+
+/* Der Umsatz steckt NUR im Projektkopf drinnen */]]></variableExpression>
+	</variable>
+	<variable name="Zeitraum" class="java.lang.String">
+		<variableExpression><![CDATA[($F{F_REALISIERUNG}.getYear()+1900)+"-"+($F{F_REALISIERUNG}.getMonth()+10)]]></variableExpression>
+	</variable>
+	<variable name="VKFS_int" class="java.lang.Integer">
+		<variableExpression><![CDATA[$F{F_PARTNER} == null ? 0 :
+($F{F_VKFORTSCHRITT}==null ? 1 :
+ com.lp.util.HelperReport.toInteger($F{F_VKFORTSCHRITT})
+)]]></variableExpression>
+	</variable>
+	<variable name="LISTE_Umsatz" class="java.util.List">
+		<variableExpression><![CDATA[($V{LISTE_Umsatz} == null ? new ArrayList() : $V{LISTE_Umsatz})]]></variableExpression>
+	</variable>
+	<variable name="LISTE_Umsatz_ADD" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{LISTE_Umsatz}.add(new java.lang.Object[] {($F{F_PARTNER}==null ||
+                                              $F{F_REALISIERUNG} == null ||
+                                              $V{UmsatzErwartet} == null ? null : $F{F_ZUGEWIESENER}+$V{Zeitraum}),
+        $F{F_ZUGEWIESENER},
+        $F{F_REALISIERUNG},
+        $V{UmsatzErwartet},
+        $F{F_VKFORTSCHRITT_LEADSTATUS} } )]]></variableExpression>
+	</variable>
+	<variable name="LISTE_VKFS" class="java.util.List">
+		<variableExpression><![CDATA[($V{LISTE_VKFS} == null ? new ArrayList() : $V{LISTE_VKFS})]]></variableExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_gesamt" class="java.lang.Integer">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_gesamt}.intValue() +
+($F{F_PARTNER} != null ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_Zugewiesener" class="java.lang.Integer" resetType="Group" resetGroup="Personal">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_Zugewiesener}.intValue() +
+($F{F_PARTNER} != null ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="VKFS_UMS_10" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 0 && $V{VKFS_int}.intValue() <= 10 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_20" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 10 && $V{VKFS_int}.intValue() <= 20 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_30" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 20 && $V{VKFS_int}.intValue() <= 30 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_40" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 30 && $V{VKFS_int}.intValue() <= 40 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_50" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 40 && $V{VKFS_int}.intValue() <= 50 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_60" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 50 && $V{VKFS_int}.intValue() <= 60 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_70" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 60 && $V{VKFS_int}.intValue() <= 70 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_80" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 70 && $V{VKFS_int}.intValue() <= 80 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_90" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 80 && $V{VKFS_int}.intValue() <= 90 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_UMS_100" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 90 ?
+$V{UmsatzErwartet} : 0]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_10" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 0 && $V{VKFS_int}.intValue() <= 10 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_20" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 10 && $V{VKFS_int}.intValue() <= 20 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_30" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 20 && $V{VKFS_int}.intValue() <= 30 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_40" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 30 && $V{VKFS_int}.intValue() <= 40 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_50" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 40 && $V{VKFS_int}.intValue() <= 50 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_60" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 50 && $V{VKFS_int}.intValue() <= 60 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_70" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 60 && $V{VKFS_int}.intValue() <= 70 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_80" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 70 && $V{VKFS_int}.intValue() <= 80 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_90" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 80 && $V{VKFS_int}.intValue() <= 90 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="VKFS_ANZ_100" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 90 ?
+$V{UmsatzErwartet} : null]]></variableExpression>
+	</variable>
+	<variable name="DreiMonate" class="java.util.Date">
+		<variableExpression><![CDATA[com.lp.util.HelperReport.getLetztenTagDesMonats($V{V_HEUTE}, 3)]]></variableExpression>
+	</variable>
+	<variable name="SechsMonate" class="java.util.Date">
+		<variableExpression><![CDATA[com.lp.util.HelperReport.getLetztenTagDesMonats($V{V_HEUTE}, 6)]]></variableExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_Zugewiesener_drei_Monate" class="java.lang.Integer" resetType="Group" resetGroup="Personal">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_Zugewiesener_drei_Monate}.intValue() +
+($F{F_PARTNER} != null &&
+ $F{F_REALISIERUNG} != null &&
+ $F{F_REALISIERUNG}.compareTo($V{DreiMonate}) <= 0
+    ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_Zugewiesener_sechs_Monate" class="java.lang.Integer" resetType="Group" resetGroup="Personal">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_Zugewiesener_sechs_Monate}.intValue() +
+($F{F_PARTNER} != null &&
+ $F{F_REALISIERUNG} != null &&
+ $F{F_REALISIERUNG}.after($V{DreiMonate}) &&
+ $F{F_REALISIERUNG}.compareTo( $V{SechsMonate}) <= 0
+    ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_Zugewiesener_ohne_Realisierung" class="java.lang.Integer" resetType="Group" resetGroup="Personal">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_Zugewiesener_ohne_Realisierung}.intValue() +
+($F{F_PARTNER} != null &&
+ $F{F_REALISIERUNG} == null
+    ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Umsatz_erwartet_Zugewiesener_drei_Monate" class="java.lang.Double" resetType="Group" resetGroup="Personal">
+		<variableExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_drei_Monate}.doubleValue() +
+($F{F_PARTNER} != null &&
+ $F{F_REALISIERUNG} != null &&
+ $F{F_REALISIERUNG}.compareTo($V{DreiMonate}) <= 0
+    ? $V{UmsatzErwartet}.doubleValue() : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Umsatz_erwartet_Zugewiesener_sechs_Monate" class="java.lang.Double" resetType="Group" resetGroup="Personal">
+		<variableExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_sechs_Monate}.doubleValue() +
+($F{F_PARTNER} != null &&
+ $F{F_REALISIERUNG} != null &&
+ $F{F_REALISIERUNG}.after($V{DreiMonate}) &&
+ $F{F_REALISIERUNG}.compareTo( $V{SechsMonate}) <= 0
+    ? $V{UmsatzErwartet}.doubleValue() : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Umsatz_erwartet_Zugewiesener_ohne_Realisierung" class="java.lang.Double" resetType="Group" resetGroup="Personal">
+		<variableExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_ohne_Realisierung}.doubleValue() +
+($F{F_PARTNER} != null &&
+ $F{F_REALISIERUNG} == null
+    ? $V{UmsatzErwartet}.doubleValue() : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Double(0)]]></initialValueExpression>
+	</variable>
+	<variable name="VKFS_TXT_10" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 0 && $V{VKFS_int}.intValue() <= 10 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_10}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_20" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 10 && $V{VKFS_int}.intValue() <= 20 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_20}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_30" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 20 && $V{VKFS_int}.intValue() <= 30 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_30}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_40" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 30 && $V{VKFS_int}.intValue() <= 40 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_40}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_50" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 40 && $V{VKFS_int}.intValue() <= 50 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_50}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_60" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 50 && $V{VKFS_int}.intValue() <= 60 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_60}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_70" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 60 && $V{VKFS_int}.intValue() <= 70 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_70}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_80" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 70 && $V{VKFS_int}.intValue() <= 80 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_80}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_90" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 80 && $V{VKFS_int}.intValue() <= 90 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_90}]]></variableExpression>
+	</variable>
+	<variable name="VKFS_TXT_100" class="java.lang.String">
+		<variableExpression><![CDATA[$V{VKFS_int}.intValue() > 90 ?
+$F{F_VKFORTSCHRITT_BEZEICHNUNG} : $V{VKFS_TXT_100}]]></variableExpression>
+	</variable>
+	<group name="Personal" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{F_ZUGEWIESENER}]]></groupExpression>
+		<groupHeader>
+			<band height="10">
+				<printWhenExpression><![CDATA[$P{P_SORTIERENACHPERSONAL}]]></printWhenExpression>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement key="Für ZUGEWIESENER" mode="Transparent" x="0" y="0" width="221" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="5bea3927-1568-4cf5-8743-9efe029d7b16"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{F_ZUGEWIESENER}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="50" splitType="Stretch">
+				<line>
+					<reportElement x="0" y="0" width="782" height="1" uuid="56c393a9-a997-4e72-a9df-7223749405e5"/>
+					<graphicElement>
+						<pen lineWidth="0.5"/>
+					</graphicElement>
+				</line>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="F_UMSATZGEPLANT" x="726" y="2" width="55" height="10" isRemoveLineWhenBlank="true" uuid="244ba0d9-9027-4875-969c-06e9d88be352"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{UmsatzErwartet_Zugewiesener}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="false">
+					<reportElement key="Zeitraum JJ-MM" style="Auftrag" mode="Opaque" x="655" y="2" width="35" height="10" isRemoveLineWhenBlank="true" uuid="ca9571e0-a05a-4da0-9a8a-4c2c86e83135"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Anzahl_Projekte_Zugewiesener}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="Projekte gesamt" mode="Opaque" x="565" y="2" width="90" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="46e98a8f-2555-4c81-8e60-9958805e08fe"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Projekte gesamt]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="Projekte" mode="Opaque" x="455" y="12" width="155" height="10" forecolor="#FF8B00" backcolor="#FFFFFF" uuid="b5cf3918-c786-46a1-ad85-89c27c87a1d6"/>
+					<box rightPadding="2">
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Realisierung bis in drei Monaten]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="Projekte" mode="Opaque" x="455" y="22" width="155" height="10" forecolor="#00B1D0" backcolor="#FFFFFF" uuid="9b1d453e-8359-4647-b6a2-270ac48d675c"/>
+					<box rightPadding="2">
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Realisierung in drei -sechs Monaten]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="Projekte" mode="Opaque" x="500" y="32" width="155" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b078e248-fa55-4c70-b832-fb7a41825c7f"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[kein Realisierungstermin]]></text>
+				</staticText>
+				<textField pattern="dd.MM.yyyy">
+					<reportElement key="ProjektbisdreiMonate" mode="Opaque" x="610" y="12" width="45" height="10" forecolor="#FF8B00" backcolor="#FFFFFF" uuid="4bec1790-27ef-4b45-beec-3e1621d3c2fa"/>
+					<textElement verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{DreiMonate}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd.MM.yyyy">
+					<reportElement key="ProjektbisdreiMonate" mode="Opaque" x="610" y="22" width="45" height="10" forecolor="#00B1D0" backcolor="#FFFFFF" uuid="4e8d96c7-5779-460d-97dd-f48e62d7e96e"/>
+					<textElement verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{SechsMonate}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="false">
+					<reportElement key="Zeitraum JJ-MM" style="Auftrag" mode="Opaque" x="655" y="12" width="35" height="10" isRemoveLineWhenBlank="true" forecolor="#FF8B00" uuid="24a5f3dd-c843-45a2-83df-4eac240f63cb"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Anzahl_Projekte_Zugewiesener_drei_Monate}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="false">
+					<reportElement key="Zeitraum JJ-MM" style="Auftrag" mode="Opaque" x="655" y="22" width="35" height="10" isRemoveLineWhenBlank="true" forecolor="#00B1D0" uuid="284799ca-b00d-42d1-9e65-d403276b60c1"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Anzahl_Projekte_Zugewiesener_sechs_Monate}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="false">
+					<reportElement key="Zeitraum JJ-MM" style="Auftrag" mode="Opaque" x="655" y="32" width="35" height="10" isRemoveLineWhenBlank="true" uuid="6b526700-6b07-449a-ac91-1c7dc3b6f3c4"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Anzahl_Projekte_Zugewiesener_ohne_Realisierung}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="F_UMSATZGEPLANT" x="726" y="12" width="55" height="10" isRemoveLineWhenBlank="true" forecolor="#FF8B00" uuid="670a812f-eb35-4b27-9a6b-c7210fafa8cf"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_drei_Monate}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="F_UMSATZGEPLANT" x="726" y="22" width="55" height="10" isRemoveLineWhenBlank="true" forecolor="#00B1D0" uuid="af7c5e8e-4720-43cf-8661-3aa1a23e8b4c"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_sechs_Monate}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="F_UMSATZGEPLANT" x="726" y="32" width="55" height="10" isRemoveLineWhenBlank="true" uuid="3490f4a3-d7e3-479c-8f5c-643a4dccac93"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_ohne_Realisierung}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="Monate" mode="Opaque" x="410" y="2" width="155" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4859f2de-fe01-4914-892e-7d6b37ccc994"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Mnt = Monate seit Projektanlage]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="68" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER" mode="Opaque" x="625" y="0" width="137" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9b6b73bb-d484-4317-a592-44c1c576fb6f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}) + " von "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER" mode="Opaque" x="762" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="11ef6aea-eaca-42c2-91c2-201042656e2e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="624" height="10" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="beff97eb-98bb-4b90-9cd5-52da88b7e490"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="TITLE" mode="Opaque" x="0" y="12" width="300" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="8b23d895-be25-43e6-8dc6-809a3d4238dd"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_TITLE}+" "+$P{P_BEREICH}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="FILTER" mode="Opaque" x="300" y="16" width="481" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="04169624-c791-45aa-8cee-c36daa7af500"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_FILTER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="SORTIERUNG" mode="Opaque" x="300" y="26" width="482" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a94c491a-6fc8-4eaf-a956-ef9002d2f50e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_SORTIERUNG}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Projektnr" mode="Opaque" x="0" y="55" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1cac7464-98f9-4e45-bffa-998d2e956d32"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Projektnr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Kunde/Firma" mode="Opaque" x="55" y="55" width="85" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5f4432b2-1206-4d16-affd-6f826d228d01"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Kunde/Firma PJ.Titel]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Kategorie" mode="Opaque" x="140" y="55" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fc7616a0-1822-49fb-8374-b9f66c4d1f71"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Kategorie]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Typ" mode="Opaque" x="220" y="55" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1bd5a2c0-ae96-4e9d-a2f6-2a1cda98ea8e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Typ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Erzeuger" mode="Opaque" x="270" y="55" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="eea3de4e-1530-4c62-b570-61c315f6bde4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Angelegt von]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Zugewiesener" mode="Opaque" x="315" y="55" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ffd5a798-e005-43b7-b888-7b6de248c268"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Zugewiesen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Belegdatum" mode="Opaque" x="360" y="55" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2a338034-c3ef-4d20-acb2-2766cf424775"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Belegdatum]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Status" mode="Opaque" x="405" y="55" width="70" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d5a01385-ec09-4efe-b581-42c0769d5210"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Status (next Step)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="VK-Fortschritt" mode="Opaque" x="475" y="55" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2db47831-22f1-4ed9-8b6a-419b21b4ecde"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[VK-Fortschritt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="550" y="55" width="25" height="10" uuid="46ed1128-eec0-46fd-9c8f-1d3d1d8d2912"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Lead]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Realisierungstermin" mode="Opaque" x="591" y="55" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ed7e0545-2938-46e5-8d41-97d57da1c26e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Rel.Termin]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Prio" mode="Opaque" x="636" y="55" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c6668576-8ce0-4ad2-ab4c-8b0d4a6e3297"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Prio]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Ums. geplant" mode="Opaque" x="651" y="55" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="386639a4-8f04-43e0-92e8-51886fd8481a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Ums. geplant]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Wahr%" mode="Opaque" x="706" y="55" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ef8943e7-b190-4cf7-ad34-be4d83912b17"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Wahr%]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-3" mode="Opaque" x="0" y="66" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="66f2c5bf-3b2a-48c7-afc9-1d3d514000e2"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="Ums. erwartet" mode="Opaque" x="726" y="55" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c9e1ac43-1f96-4d94-b463-9511290f826f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Ums. erwartet]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="300" y="36" width="90" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="960a59fb-ba52-4118-ae1d-2304705d7965">
+					<printWhenExpression><![CDATA[$P{P_SORTIERENACHPERSONAL}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Sortiert nach Personal"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="450" y="36" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6edabd7a-3bf9-4fcc-b7f4-fdb90f5b91b2"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_STICHTAG}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="410" y="36" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c708a4f3-9cb7-4e0b-9cd6-ac2ae476062b"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Stichtag"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Monate" mode="Opaque" x="575" y="55" width="15" height="10" uuid="c545070e-7090-4e5f-a714-b7c3ccbf8152"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Mnt]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[$F{F_PARTNER} != null]]></printWhenExpression>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="CNR" style="Auftrag" mode="Transparent" x="0" y="0" width="55" height="10" isRemoveLineWhenBlank="true" uuid="634c71eb-ae30-44ca-8d7d-f408af9d92d6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_CNR}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="PARTNER" style="Auftrag" mode="Opaque" x="55" y="0" width="85" height="10" isRemoveLineWhenBlank="true" uuid="2f6a2262-12ba-4cf0-9727-74d6b55cf60c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_PARTNER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="KATEGORIE" style="Auftrag" mode="Opaque" x="140" y="0" width="80" height="10" isRemoveLineWhenBlank="true" uuid="5de98bf6-cb0f-46b0-9090-575d9dbf87a4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_KATEGORIE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="F_TYP" style="Auftrag" x="220" y="0" width="50" height="10" uuid="566677db-16aa-4da5-bc78-ecdd5164f3ed"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_TYP}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="ERZEUGER" style="Auftrag" mode="Transparent" x="270" y="0" width="45" height="10" isRemoveLineWhenBlank="true" uuid="190f4e08-532b-4633-9e92-01d3f21ab662"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ERZEUGER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="ZUGEWIESENER" style="Auftrag" mode="Transparent" x="315" y="0" width="45" height="10" isRemoveLineWhenBlank="true" uuid="e5dcfabe-4e57-4a99-b5a9-d9abc9c09841"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ZUGEWIESENER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="BELEGDATUM" style="Auftrag" mode="Opaque" x="360" y="0" width="45" height="10" isRemoveLineWhenBlank="true" uuid="9c081a80-3ffa-4654-9e01-8a123a758250"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_BELEGDATUM}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="Realisierungstermin" style="Zeitraum" mode="Opaque" x="591" y="0" width="45" height="10" isRemoveLineWhenBlank="true" uuid="5b4d01ba-095b-4828-b969-07a5a88a2e9a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_REALISIERUNG}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="PRIO" style="Auftrag" mode="Opaque" x="636" y="0" width="15" height="10" isRemoveLineWhenBlank="true" uuid="3dc8c47b-edcf-4569-99ab-b26187e63ee7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_PRIO}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="STATUS" style="Auftrag" mode="Transparent" x="405" y="0" width="70" height="10" isRemoveLineWhenBlank="true" uuid="110f7bd0-01a2-4c3a-b0c2-f9e1881d441e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_STATUS}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="F_WAHRSCHEINLICHKEIT" style="Auftrag" mode="Opaque" x="706" y="0" width="15" height="10" isRemoveLineWhenBlank="true" uuid="6b85bced-323e-4c07-8a8b-78eba7dc743f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_WAHRSCHEINLICHKEIT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="%" style="Auftrag" mode="Opaque" x="722" y="0" width="4" height="10" uuid="3bc2db21-566a-4d23-87ba-05220eb15819">
+					<printWhenExpression><![CDATA[new Boolean($F{F_WAHRSCHEINLICHKEIT} != null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="F_UMSATZGEPLANT" style="Auftrag" x="651" y="0" width="55" height="10" isRemoveLineWhenBlank="true" uuid="96bcdf83-6c50-4b44-bc03-292b68fe3fb2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_UMSATZGEPLANT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement style="Auftrag" mode="Transparent" x="475" y="0" width="15" height="10" uuid="5ab82330-865b-4eb7-88e8-26cb34b47931"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_VKFORTSCHRITT} == null ? "---" : $F{F_VKFORTSCHRITT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Leadstatus" style="Auftrag" mode="Transparent" x="550" y="0" width="25" height="10" uuid="1a254d08-0569-4382-a50d-9d6238ea4270"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_VKFORTSCHRITT_LEADSTATUS}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="F_UMSATZGEPLANT" style="Auftrag" x="726" y="0" width="55" height="10" isRemoveLineWhenBlank="true" uuid="cb47cd05-3a44-4207-8c7a-245f8c115e77">
+					<printWhenExpression><![CDATA[$V{UmsatzErwartet}.doubleValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{UmsatzErwartet}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement style="Auftrag" mode="Transparent" x="490" y="0" width="60" height="10" uuid="779b004f-2938-41bc-a9ae-9da65edacd5c"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_VKFORTSCHRITT_BEZEICHNUNG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="Seit_Dauer" style="Zeitraum" mode="Transparent" x="575" y="0" width="15" height="10" uuid="e36fedf3-31a3-42da-9ca8-cb8a670b7cdf"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{V_HEUTE}.getTime() -
+ com.lp.util.Helper.parseString2Date($F{F_BELEGDATUM}).getTime()) / 3600000 / 24 / 30
+
+/* Belegdatum bis heute in Monaten */]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[false &&
+$F{F_PARTNER} != null]]></printWhenExpression>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="60" y="0" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6ea35c25-3b33-410e-8f8b-ddc923ae445d"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{UmsatzErwartet_Zugewiesener}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="190" y="0" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f4d41842-2584-40c3-9021-abbe3b040223"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_drei_Monate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="320" y="0" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5b3a58e4-9931-4058-b41c-185cde477b51"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_sechs_Monate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="440" y="0" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="beac2cb3-1ec7-4ba5-ab66-8e368b8b8fae"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Umsatz_erwartet_Zugewiesener_ohne_Realisierung}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="10" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="cc15039e-b9a9-4dd2-88ab-b298a7402f87"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Zugewiesener]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="140" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="cb979cb5-2a21-4050-9bfc-70f32c3f1110"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[drei Monate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="270" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4af92723-fd1f-45f9-8b6e-099de1033bc7"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[sechs Monate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="390" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="24204931-7252-4aad-978b-dd8cce309914"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[ohne Termin]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="65" splitType="Stretch">
+			<subreport>
+				<reportElement key="Subreport_Summe" positionType="Float" x="0" y="5" width="782" height="10" uuid="2241e847-0478-4c5f-a9a6-1a81d510b2f6"/>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.ListOfArrayDataSource(com.lp.util.HelperReport.sortListNoNull($V{LISTE_Umsatz}),
+    new String[] {"Sort", "F_ZUGEWIESENER", "F_REALISIERUNG", "UmsatzErwartet", "F_VKFORTSCHRITT_LEADSTATUS"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "proj_projekt_journal_forecast_sum.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="19" width="782" height="1" uuid="46a88280-1993-4ac6-b7c2-7a236a254b43"/>
+			</break>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="0" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d2b020ed-f9f8-4694-9d32-8f38aff0ae0e"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_10}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="0" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="700b4d23-68e1-4d64-b8c2-0fef494ccf06"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_10}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="60" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c3c3a464-a3dd-49e3-b853-a4857f7665fc"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_20}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="60" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f856b02b-0497-4bda-9d1c-9cbf55cc1b0e"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_20}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="120" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5d8d3926-4281-45bd-93de-5a312e29471e"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_30}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="120" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4675e272-0d48-4b04-8ff3-e378ee5d4a80"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_30}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="180" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="13967a56-e1bd-4f83-ae76-3a02c6d9c78b"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_40}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="180" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b7af9cbd-a29a-4325-8a71-f6640bbbeb19"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_40}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="240" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f3bf33be-1c9c-4255-ba44-3ea3ecee64c8"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_50}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="240" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="506dd7d6-a016-4dc4-a144-e2201297408a"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_50}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="300" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="cea78bbe-367b-459e-a556-07f702ddd60c"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_60}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="300" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9c27061d-7a2e-455c-9e27-a6886e22360d"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_60}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="360" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="935a7218-99c5-4a4a-aa67-4663915d1c6b"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_70}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="360" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8601c8ca-9bc3-4e56-a333-8f843714e991"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_70}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="420" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="bad96888-0318-426a-a2cd-d868a9607f40"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_80}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="420" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2c6105c2-b13f-403e-be34-26c8d675a97e"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_80}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="480" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="572d0a71-ff19-46a9-bb1d-b151af07bbb8"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_90}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="480" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="76abd1a0-09ce-425d-9a30-4c248affb472"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_90}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="540" y="30" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ed800102-23c6-48ac-afff-946b92a87aae"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_UMS_100}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="540" y="40" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1b3a8ffd-f68e-4620-a578-d049aa5ed83a"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{VKFS_ANZ_100}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk1" positionType="Float" x="0" y="20" width="50" height="10" forecolor="#000000" uuid="f661bd9c-c1d6-4c96-a3da-c238a5575e40"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "010", $V{VKFS_UMS_10},
+                                           $V{VKFS_TXT_10},
+                                           $V{VKFS_ANZ_10}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk2" positionType="Float" x="60" y="20" width="50" height="10" forecolor="#000000" uuid="440d4d73-f5e8-455b-9ba3-c6926f1137f0"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "020", $V{VKFS_UMS_20},
+                                           $V{VKFS_TXT_20},
+                                           $V{VKFS_ANZ_20}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk3" positionType="Float" x="120" y="20" width="50" height="10" forecolor="#000000" uuid="d65130bb-cff0-4798-8032-16041dd96a5f"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "030", $V{VKFS_UMS_30},
+                                           $V{VKFS_TXT_30},
+                                           $V{VKFS_ANZ_30}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk4" positionType="Float" x="180" y="20" width="50" height="10" forecolor="#000000" uuid="ce07fba6-2f7d-4447-a67a-744964550cc0"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "040", $V{VKFS_UMS_40},
+                                           $V{VKFS_TXT_40},
+                                           $V{VKFS_ANZ_40}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk5" positionType="Float" x="240" y="20" width="50" height="10" forecolor="#000000" uuid="834c8964-2f7e-4309-8425-ed79131adf9c"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "050", $V{VKFS_UMS_50},
+                                           $V{VKFS_TXT_50},
+                                           $V{VKFS_ANZ_50}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk6" positionType="Float" x="300" y="20" width="50" height="10" forecolor="#000000" uuid="e6ef37e2-e7cf-4cb3-93fe-edd3daaee303"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "060", $V{VKFS_UMS_60},
+                                           $V{VKFS_TXT_60},
+                                           $V{VKFS_ANZ_60}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk7" positionType="Float" x="360" y="20" width="50" height="10" forecolor="#000000" uuid="560c31bd-9e43-4546-9139-2319d9be6fb1"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "070", $V{VKFS_UMS_70},
+                                           $V{VKFS_TXT_70},
+                                           $V{VKFS_ANZ_70}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk8" positionType="Float" x="420" y="20" width="50" height="10" forecolor="#000000" uuid="7a20c551-6bcb-4ea2-b46f-96eaec57eb8c"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "080", $V{VKFS_UMS_80},
+                                           $V{VKFS_TXT_80},
+                                           $V{VKFS_ANZ_80}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk9" positionType="Float" x="480" y="20" width="50" height="10" forecolor="#000000" uuid="872e8880-955e-4756-b5cf-174147f6fea9"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "090", $V{VKFS_UMS_90},
+                                           $V{VKFS_TXT_90},
+                                           $V{VKFS_ANZ_90}})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Kalk10" positionType="Float" x="540" y="20" width="50" height="10" forecolor="#000000" uuid="779410e5-e86a-43a9-8b53-9277806c34e0"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LISTE_VKFS}.add(new java.lang.Object[] { "100", $V{VKFS_UMS_100},
+                                           $V{VKFS_TXT_100},
+                                           $V{VKFS_ANZ_100}})]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement key="subreport Tricht_Entwicklung" positionType="Float" mode="Opaque" x="0" y="20" width="782" height="45" uuid="965af78d-4651-4c01-9534-ca6d63eba0eb"/>
+				<subreportParameter name="REPORT_INFORMATION">
+					<subreportParameterExpression><![CDATA[$P{REPORT_INFORMATION}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_BEREICH">
+					<subreportParameterExpression><![CDATA[$P{P_BEREICH}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_STICHTAG">
+					<subreportParameterExpression><![CDATA[$P{P_STICHTAG}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.ListOfArrayDataSource(com.lp.util.HelperReport.sortListNoNull($V{LISTE_VKFS}),
+    new String[] {"VKFS", "Umsatz", "VKFS_TXT", "Anzahl"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "proj_projekt_journal_forecast_vkfs.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

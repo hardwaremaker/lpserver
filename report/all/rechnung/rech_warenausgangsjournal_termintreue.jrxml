@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rech_warenausgangsjournal_termintreue" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="42" bottomMargin="14">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rech_warenausgangsjournal_termintreue" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="42" bottomMargin="14" isSummaryWithPageHeaderAndFooter="true" uuid="084ddbf5-6bc5-4efa-b724-15e975f09a2f">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -17,6 +17,12 @@
 	<parameter name="P_GRUPPIERTNACHSTATISTIK" class="java.lang.Boolean" isForPrompting="false"/>
 	<parameter name="P_WAEHRUNG_MANDANT" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="P_MITTEXTEINGABEN" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
 	<field name="F_RECHNUNGSNUMMER" class="java.lang.String"/>
 	<field name="F_DATUM" class="java.util.Date"/>
 	<field name="F_PREIS" class="java.math.BigDecimal"/>
@@ -93,18 +99,71 @@
 		<variableExpression><![CDATA[$V{Zebra}.negate()]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(1)]]></initialValueExpression>
 	</variable>
-	<variable name="SummeStatistik" class="java.math.BigDecimal" calculation="Sum">
-		<variableExpression><![CDATA[($F{F_PREIS}.multiply($F{F_MENGE})).divide($F{F_KURS},RoundingMode.HALF_EVEN)]]></variableExpression>
-	</variable>
-	<variable name="SummeRechnung" class="java.math.BigDecimal" calculation="Sum">
-		<variableExpression><![CDATA[($F{F_PREIS}.multiply($F{F_MENGE})).divide($F{F_KURS},RoundingMode.HALF_EVEN)]]></variableExpression>
+	<variable name="Ueberschreitung" class="java.lang.Integer" resetType="None">
+		<variableExpression><![CDATA[new Integer(2)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(2)]]></initialValueExpression>
 	</variable>
 	<variable name="Lieferpositionen" class="java.lang.Integer" calculation="Sum">
-		<variableExpression><![CDATA[$F{F_MENGE}.compareTo(new BigDecimal(0.0000)) > 0 ? new Integer(1) :
-($F{F_MENGE}.compareTo(new BigDecimal(0.0000)) < 0 ? new Integer(-1) : new Integer(0))]]></variableExpression>
+		<variableExpression><![CDATA[$F{F_MENGE}.doubleValue() > 0 ? 1 :
+($F{F_MENGE}.doubleValue() < 0 ? -1 : 0)]]></variableExpression>
 	</variable>
 	<variable name="V_TAGE_UEBERSCHREITUNG" class="java.lang.Long">
 		<variableExpression><![CDATA[new Long((long)($F{F_LIEFERSCHEINDATUM}.getTime()-$F{F_GEPLANTER_LIEFERTERMIN}.getTime())/(24*3600000))]]></variableExpression>
+	</variable>
+	<variable name="V_TAGE_UEBERSCHREITUNG_STR" class="java.lang.String">
+		<variableExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}.intValue() < 0 ?
+"9"+999999+$V{V_TAGE_UEBERSCHREITUNG}.intValue() :
+"0000000"+$V{V_TAGE_UEBERSCHREITUNG}.intValue()]]></variableExpression>
+	</variable>
+	<variable name="V_TAGE_UEBERSCHREITUNG_STRING" class="java.lang.String">
+		<variableExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}.doubleValue() >= 0 ?
+$V{V_TAGE_UEBERSCHREITUNG_STR}.substring($V{V_TAGE_UEBERSCHREITUNG_STR}.length()-6) :
+"-"+$V{V_TAGE_UEBERSCHREITUNG_STR}.substring($V{V_TAGE_UEBERSCHREITUNG_STR}.length()-6).replace("-","")]]></variableExpression>
+	</variable>
+	<variable name="V_MIN_VERSPAETUNGSTAGE" class="java.lang.Integer" calculation="Lowest">
+		<variableExpression><![CDATA[$F{F_MENGE}.doubleValue() > 0 ?
+$V{V_TAGE_UEBERSCHREITUNG}.intValue() : null]]></variableExpression>
+	</variable>
+	<variable name="V_SUMME_TAGE_ZU_FRUEH" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}.intValue() < 0  && $F{F_MENGE}.doubleValue() > 0 ?
+$V{V_TAGE_UEBERSCHREITUNG} :
+new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="V_ANZAHL_LF_ZU_FRUEH" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}.intValue() < $V{Ueberschreitung}.intValue()*-1 && $F{F_MENGE}.doubleValue() > 0
+? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="V_ANZAHL_LF_PUENKTLICH" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}.intValue() > $V{Ueberschreitung}.intValue() ||
+$V{V_TAGE_UEBERSCHREITUNG}.intValue() < $V{Ueberschreitung}.intValue()*-1 ? 0 : 1
+
+/*
+$F{F_MENGE}.doubleValue() <= 0 ? 0 :
+($V{V_TAGE_UEBERSCHREITUNG}.intValue() >= 10 ? 0 :
+ ($V{V_TAGE_UEBERSCHREITUNG}.intValue() <= -10 ? 0 : 1) ) */]]></variableExpression>
+	</variable>
+	<variable name="V_ANZAHL_LF_ZU_SPAET" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}.intValue() > $V{Ueberschreitung}.intValue() && $F{F_MENGE}.doubleValue() > 0 ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="V_ANZAHL_OHNE_AB" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG} == null && $F{F_MENGE}.doubleValue() > 0 ? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="V_MAX_VERSPAETUNGSTAGE" class="java.lang.Integer" calculation="Highest">
+		<variableExpression><![CDATA[$F{F_MENGE}.doubleValue() > 0 ?
+$V{V_TAGE_UEBERSCHREITUNG}.intValue() : 0]]></variableExpression>
+	</variable>
+	<variable name="V_SUMME_VERSPAETUNGSTAGE" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}.intValue() >= 0  && $F{F_MENGE}.doubleValue() > 0 ?
+$V{V_TAGE_UEBERSCHREITUNG} :
+new Integer(0)]]></variableExpression>
+	</variable>
+	<variable name="LISTE_TAGE" class="java.util.List">
+		<variableExpression><![CDATA[($V{LISTE_TAGE} == null ? new ArrayList() : $V{LISTE_TAGE})]]></variableExpression>
+	</variable>
+	<variable name="LISTE_TAGE_ADD" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{LISTE_TAGE}.add(new java.lang.Object[] { $V{V_TAGE_UEBERSCHREITUNG_STRING},
+                                            $V{V_TAGE_UEBERSCHREITUNG},
+                                            new Integer(1)})]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -115,7 +174,7 @@
 	<pageHeader>
 		<band height="78" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="REPORT_INFORMATION" x="0" y="0" width="535" height="10"/>
+				<reportElement key="REPORT_INFORMATION" x="0" y="0" width="535" height="10" uuid="393589d9-1d29-4734-b8c9-b6a8e7cbd106"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -125,10 +184,10 @@
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Transparent" x="681" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="681" y="0" width="80" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5fd9a2df-c55a-47f7-b062-b5b5bf4d0ca5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -138,10 +197,10 @@
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="761" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="761" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e5b29f4e-ec53-4be3-abde-d95034107ee7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -151,10 +210,10 @@
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Warenausgangs-Journal" x="0" y="20" width="563" height="22"/>
+				<reportElement key="Warenausgangs-Journal" x="0" y="20" width="563" height="22" uuid="4e33e758-f342-47f5-9a87-69109bd798f1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -164,65 +223,60 @@
 				<textElement>
 					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<text><![CDATA[Warenausgangs-Journal Termintreue der Lieferungen]]></text>
+				<text><![CDATA[Warenausgangs-Journal Termintreue der eigenen Lieferungen]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="SORTIERUNG" x="0" y="42" width="236" height="17"/>
+				<reportElement key="SORTIERUNG" x="0" y="42" width="236" height="17" uuid="dde16cd6-7e6e-43eb-bf34-7433eb0ee742"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Sortierung nach " + $P{P_SORTIERUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Sortierung nach " + $P{P_SORTIERUNG}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="von" x="236" y="42" width="25" height="17"/>
+				<reportElement key="von" x="236" y="42" width="25" height="17" uuid="0ff9995e-5f55-4586-aa99-cf7f0742c8ad"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement/>
 				<text><![CDATA[von]]></text>
 			</staticText>
 			<textField pattern="dd.mm.yyyy" isBlankWhenNull="false">
-				<reportElement key="von Datum" x="262" y="42" width="70" height="17"/>
+				<reportElement key="von Datum" x="262" y="42" width="70" height="17" uuid="538ad23b-87de-40c7-8ffa-cb5b9c248396"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_VON}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_VON}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="bis" x="340" y="42" width="25" height="17"/>
+				<reportElement key="bis" x="340" y="42" width="25" height="17" uuid="d23f2b81-a512-4b6f-90c2-0907da53cc98"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement/>
 				<text><![CDATA[bis]]></text>
 			</staticText>
 			<textField pattern="dd.mm.yyyy" isBlankWhenNull="false">
-				<reportElement key="Bis Datum" x="366" y="42" width="70" height="17"/>
+				<reportElement key="Bis Datum" x="366" y="42" width="70" height="17" uuid="3a5f7176-4a26-40cb-b963-fc1e175f42bc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_BIS}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_BIS}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Rech.Nr" x="0" y="66" width="50" height="10"/>
+				<reportElement key="Rech.Nr" x="0" y="66" width="50" height="10" uuid="e69d62ab-b178-4789-8eac-fc2b0271465f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -235,7 +289,7 @@
 				<text><![CDATA[Rech.Nr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="LS-Nr" x="50" y="66" width="50" height="10"/>
+				<reportElement key="LS-Nr" x="50" y="66" width="50" height="10" uuid="0b4a3c63-1285-4644-b007-644e2ff766ac"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -248,7 +302,7 @@
 				<text><![CDATA[LS-Nr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="AB-Nr" x="100" y="66" width="50" height="10"/>
+				<reportElement key="AB-Nr" x="100" y="66" width="50" height="10" uuid="805a4b0f-2749-4858-878e-3ac5e6ef2466"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -261,7 +315,7 @@
 				<text><![CDATA[AB-Nr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Kunde / Adresse" x="150" y="66" width="100" height="10"/>
+				<reportElement key="Kunde / Adresse" x="150" y="66" width="100" height="10" uuid="f6e8bf3d-5a9e-4817-bef6-ca61a0fbbf9d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -274,7 +328,7 @@
 				<text><![CDATA[Kunde / Adresse]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Artikel.Nr" x="250" y="66" width="80" height="10"/>
+				<reportElement key="Artikel.Nr" x="250" y="66" width="80" height="10" uuid="bef9f6f9-6092-4593-a5a9-ca7fbfd21404"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -287,7 +341,7 @@
 				<text><![CDATA[Artikel.Nr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Artikel Bezeichnung" x="330" y="66" width="100" height="10"/>
+				<reportElement key="Artikel Bezeichnung" x="330" y="66" width="100" height="10" uuid="0de5eae4-e14e-42be-a225-7bb80610f5b3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -300,7 +354,7 @@
 				<text><![CDATA[Artikel Bezeichnung]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Menge" x="430" y="66" width="50" height="10"/>
+				<reportElement key="Menge" x="430" y="66" width="50" height="10" uuid="0020cefb-27d4-4908-8b69-5badc1927b57"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -313,7 +367,7 @@
 				<text><![CDATA[Menge]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Me" x="480" y="66" width="20" height="10"/>
+				<reportElement key="Me" x="480" y="66" width="20" height="10" uuid="b6fa53de-4d00-4428-ab7a-f9e560e6879a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -326,7 +380,7 @@
 				<text><![CDATA[Me]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Rech.Datum" x="503" y="66" width="50" height="10"/>
+				<reportElement key="Rech.Datum" x="503" y="66" width="50" height="10" uuid="373df2db-1387-410b-8809-2de053b697dc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -339,7 +393,7 @@
 				<text><![CDATA[Rech.Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="LS-Datum" x="553" y="66" width="50" height="10"/>
+				<reportElement key="LS-Datum" x="553" y="66" width="50" height="10" uuid="0d915598-a88c-4e10-8e35-ab54bdf5ccb4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -352,7 +406,7 @@
 				<text><![CDATA[LS.Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Lieferdauer" x="603" y="56" width="30" height="20"/>
+				<reportElement key="Lieferdauer" x="603" y="56" width="30" height="20" uuid="a88a2fdb-607b-429b-ae97-f3e68bd58203"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -366,7 +420,7 @@
 Dauer]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="geplanter Termin" x="633" y="56" width="50" height="20"/>
+				<reportElement key="geplanter Termin" x="633" y="56" width="50" height="20" uuid="624af5a0-f519-42f8-9718-c8a22f934289"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -379,7 +433,7 @@ Dauer]]></text>
 				<text><![CDATA[geplanter Termin]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Ueberschreitung" x="683" y="46" width="30" height="30"/>
+				<reportElement key="Ueberschreitung" x="683" y="46" width="30" height="30" uuid="120cb6d1-106d-438c-984b-aca40b3a8f63"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -394,7 +448,7 @@ schr.
 Tage]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Grund" x="715" y="56" width="70" height="20"/>
+				<reportElement key="Grund" x="715" y="56" width="70" height="20" uuid="ed376036-a5c3-4446-8d33-de8bb686a7a8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -407,17 +461,15 @@ Tage]]></text>
 				<text><![CDATA[Grund der Überschreitung]]></text>
 			</staticText>
 			<line>
-				<reportElement key="line-1" x="0" y="77" width="785" height="1"/>
+				<reportElement key="line-1" x="0" y="77" width="785" height="1" uuid="3e76e929-5acf-4a8b-abe7-0dc5f0c1e6f5"/>
 			</line>
 		</band>
 	</pageHeader>
-	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
 	<detail>
 		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[$F{F_MENGE}!=null]]></printWhenExpression>
 			<rectangle>
-				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="785" height="10" forecolor="#E6E6E6" backcolor="#E6E6E6">
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="785" height="10" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="64beaab4-7859-4cab-ba5c-c4a75d48d564">
 					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -425,7 +477,7 @@ Tage]]></text>
 				</graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Rechnungsnummer" mode="Transparent" x="0" y="0" width="50" height="10"/>
+				<reportElement key="Rechnungsnummer" mode="Transparent" x="0" y="0" width="50" height="10" uuid="cec832c2-e4d9-4c41-94fb-ca1e21045671"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -435,11 +487,11 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_RECHNUNGSNUMMER}==null ?
+				<textFieldExpression><![CDATA[$F{F_RECHNUNGSNUMMER}==null ?
 "offener LS" : $F{F_RECHNUNGSNUMMER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="LS-Nr" mode="Transparent" x="50" y="0" width="50" height="10"/>
+				<reportElement key="LS-Nr" mode="Transparent" x="50" y="0" width="50" height="10" uuid="06c2e334-5a71-43b2-ac03-2778374a9094"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -449,10 +501,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_LIEFERSCHEINNUMMER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_LIEFERSCHEINNUMMER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Auftragsnummer" mode="Transparent" x="100" y="0" width="50" height="10"/>
+				<reportElement key="Auftragsnummer" mode="Transparent" x="100" y="0" width="50" height="10" uuid="d1061ba7-e885-482e-84e4-61ba1461684c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -462,10 +514,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_AUFTRAGSNUMMER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_AUFTRAGSNUMMER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Firma" mode="Transparent" x="150" y="0" width="100" height="10"/>
+				<reportElement key="Firma" mode="Transparent" x="150" y="0" width="100" height="10" uuid="5913a264-8eb4-4b22-b20f-133d0dc68da4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -475,10 +527,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_KUNDENBEZEICHNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_KUNDENBEZEICHNUNG}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Artikelnummer" mode="Transparent" x="250" y="0" width="80" height="10">
+				<reportElement key="Artikelnummer" mode="Transparent" x="250" y="0" width="80" height="10" uuid="5dae049a-5a99-4b0e-9c60-72ff00aaa5cd">
 					<printWhenExpression><![CDATA[!$F{F_ARTIKELNUMMER}.startsWith( "~" )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -490,10 +542,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ARTIKELNUMMER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ARTIKELNUMMER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="Bezeichnung" mode="Transparent" x="330" y="0" width="100" height="10"/>
+				<reportElement key="Bezeichnung" mode="Transparent" x="330" y="0" width="100" height="10" uuid="271515d9-dbf4-43f1-a3d3-4b0b945bb3ef"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -503,10 +555,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_ARTIKELBEZEICHNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_ARTIKELBEZEICHNUNG}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0;-###0" isBlankWhenNull="true">
-				<reportElement key="Menge" mode="Transparent" x="430" y="0" width="50" height="10"/>
+				<reportElement key="Menge" mode="Transparent" x="430" y="0" width="50" height="10" uuid="0ffa60b9-ae62-4344-8ac6-1208e9f511ad"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -516,10 +568,10 @@ Tage]]></text>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_MENGE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_MENGE}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Einheit" mode="Transparent" x="480" y="0" width="20" height="10"/>
+				<reportElement key="Einheit" mode="Transparent" x="480" y="0" width="20" height="10" uuid="94064601-9c82-4b7c-ab46-9ba0bb8f768e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -529,10 +581,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[""+$F{F_EINHEIT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""+$F{F_EINHEIT}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="Rechnungsdatum" mode="Transparent" x="503" y="0" width="50" height="10"/>
+				<reportElement key="Rechnungsdatum" mode="Transparent" x="503" y="0" width="50" height="10" uuid="af1b2e79-e23e-4101-bdc3-8765d3fd27af"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -542,10 +594,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$F{F_DATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_DATUM}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="LS-Datum" mode="Transparent" x="553" y="0" width="50" height="10"/>
+				<reportElement key="LS-Datum" mode="Transparent" x="553" y="0" width="50" height="10" uuid="342cd18f-4462-4fc3-a3e3-88957743ac1e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -555,10 +607,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$F{F_LIEFERSCHEINDATUM}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_LIEFERSCHEINDATUM}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Lieferdauer" x="603" y="0" width="30" height="10"/>
+				<reportElement key="Lieferdauer" x="603" y="0" width="30" height="10" uuid="6e3185b5-f8ee-476a-89c0-93b7a4438297"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -568,10 +620,10 @@ Tage]]></text>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{F_KUNDE_LIEFERDAUER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_KUNDE_LIEFERDAUER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="Geplanter_Termin" x="633" y="0" width="50" height="10"/>
+				<reportElement key="Geplanter_Termin" x="633" y="0" width="50" height="10" uuid="59852e22-6176-4b3f-913e-cd296d987af7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -581,10 +633,10 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$F{F_GEPLANTER_LIEFERTERMIN}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_GEPLANTER_LIEFERTERMIN}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="Tage_Ueberschreitung" x="683" y="0" width="30" height="10"/>
+				<reportElement key="Tage_Ueberschreitung" x="683" y="0" width="30" height="10" uuid="109f1e1b-dc05-47a2-ba8c-17db0575adf8"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -594,10 +646,10 @@ Tage]]></text>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Long"><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="GrundUeberschreitung" x="715" y="0" width="70" height="10"/>
+				<reportElement key="GrundUeberschreitung" x="715" y="0" width="70" height="10" uuid="72a60971-9e5f-4b77-af82-4ed15e33c16b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -607,33 +659,32 @@ Tage]]></text>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_GRUNDNICHTEINGEHALTEN}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_GRUNDNICHTEINGEHALTEN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="Tage_Ueberschreitung_Null" x="683" y="0" width="30" height="10" uuid="c0331233-e141-49b8-b16a-501570a183b7">
+					<printWhenExpression><![CDATA[$V{V_TAGE_UEBERSCHREITUNG}==null]]></printWhenExpression>
+				</reportElement>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["---"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
 	<pageFooter>
 		<band height="12" splitType="Stretch">
 			<line>
-				<reportElement key="line-2" x="0" y="1" width="785" height="1"/>
+				<reportElement key="line-2" x="0" y="1" width="785" height="1" uuid="273430ff-530c-4d73-b853-ed214c56dca4"/>
 			</line>
 			<staticText>
-				<reportElement key="Anzahl der Positionen abzüglich Rücklieferungen" x="0" y="2" width="250" height="10"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<text><![CDATA[Anzahl der Positionen abzüglich Rücklieferungen]]></text>
-			</staticText>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Lieferpositionen" mode="Transparent" x="250" y="2" width="50" height="10"/>
+				<reportElement key="Anzahl der Positionen abzüglich Rücklieferungen" x="0" y="2" width="180" height="10" uuid="3eaa5261-19a9-4443-a464-a133c47dd510"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -643,11 +694,360 @@ Tage]]></text>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Lieferpositionen}]]></textFieldExpression>
+				<text><![CDATA[Anzahl der Positionen abzüglich Rücklieferungen:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Lieferpositionen" mode="Transparent" x="180" y="2" width="47" height="10" uuid="3d3ba186-01ba-407a-b6fb-00a589a03f4d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Lieferpositionen}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
+	<lastPageFooter>
+		<band height="1"/>
+	</lastPageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="295" splitType="Stretch">
+			<line>
+				<reportElement key="line-2" x="0" y="0" width="785" height="1" uuid="7765f31f-f5af-4226-b6a4-6961a5a43f68"/>
+			</line>
+			<staticText>
+				<reportElement key="Anzahl der Positionen abzüglich Rücklieferungen" x="0" y="1" width="180" height="10" uuid="d1d3a192-5d01-4b84-b57e-9cf7ba77cf68"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl der Positionen abzüglich Rücklieferungen:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Lieferpositionen" mode="Transparent" x="180" y="1" width="47" height="10" uuid="3ea08694-fad5-409c-80ab-3cb3bb5c51fe"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Lieferpositionen}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Anzahl Lieferungen zu früh:" mode="Opaque" x="0" y="11" width="180" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e7f7ecb3-1525-441c-9b64-1cb5eb717f0b"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Anzahl Lieferungen um mehr als "+$V{Ueberschreitung}+" Tage zu früh:"]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Zu früh" mode="Opaque" x="198" y="11" width="29" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c8a8e875-9b16-411d-9235-909f8bbb31c3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_ANZAHL_LF_ZU_FRUEH}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="max. zu früh:" mode="Opaque" x="243" y="11" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ed7affee-15e3-4680-a448-a617da9fc95b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[max. zu früh:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="max. zu früh" mode="Opaque" x="309" y="11" width="22" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6ed3631a-0b1c-4b82-941a-1b0017a03346"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_MIN_VERSPAETUNGSTAGE}.intValue()*-1]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Summe zu früh:" mode="Opaque" x="343" y="11" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a0532147-e5a8-41d7-a996-156d1502c079"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Summe zu früh:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Summe zu früh" mode="Opaque" x="403" y="11" width="22" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="64ef87bd-511d-48cb-b264-01cd764848e1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_SUMME_TAGE_ZU_FRUEH}.intValue()*-1]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Durchschnitt Tage zu früh:" mode="Opaque" x="435" y="11" width="101" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5bc31830-6d52-4dd2-8e73-720c91368763"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Durchschnitt Tage zu früh:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="SchnittTage zu früh" mode="Opaque" x="536" y="11" width="22" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2b0893c0-d529-4c47-bdbb-fbabe0b9f8fd">
+					<printWhenExpression><![CDATA[$V{V_ANZAHL_LF_ZU_FRUEH}.intValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{V_SUMME_TAGE_ZU_FRUEH} / $V{V_ANZAHL_LF_ZU_FRUEH})*-1]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Anzahl Lieferungen innerhalb" mode="Opaque" x="0" y="22" width="180" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e1118108-6fd0-4be0-a9a8-9ac77d1a6e88"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Anzahl Lieferungen innerhalb "+$V{Ueberschreitung}+" Tagen:"]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="pünktlich" mode="Opaque" x="198" y="22" width="29" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7b7eeb72-3a94-4d23-94d8-b638705979d4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_ANZAHL_LF_PUENKTLICH}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Summe zu spät" mode="Opaque" x="343" y="32" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="69235347-98fa-43d8-8ee8-230f25004697">
+					<printWhenExpression><![CDATA[new Boolean($V{V_SUMME_VERSPAETUNGSTAGE}.intValue() > 0)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Summe zu spät:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Durchschnitt Tage zu spät" mode="Opaque" x="536" y="32" width="22" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8d3c461e-215a-4fff-9d3f-4c64ec4a2f88">
+					<printWhenExpression><![CDATA[$V{V_ANZAHL_LF_ZU_SPAET}.intValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_SUMME_VERSPAETUNGSTAGE}/$V{V_ANZAHL_LF_ZU_SPAET}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="max zu spät:" mode="Opaque" x="309" y="32" width="22" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8c7b0f66-9dac-4944-9960-715ac9cb282b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_MAX_VERSPAETUNGSTAGE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="zu spät" mode="Opaque" x="198" y="32" width="29" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c8d9e50c-1ec3-4d0c-8ed6-a5831b5e0128"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_ANZAHL_LF_ZU_SPAET}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Summe zu spät" mode="Opaque" x="403" y="32" width="22" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d273e75b-0d91-4d09-aab8-90ed508cd1ca"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_SUMME_VERSPAETUNGSTAGE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Anzahl Lieferungen zu spät:" mode="Opaque" x="0" y="32" width="180" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="322f82fd-27e5-4ac7-bb6e-c2921a95e804"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Anzahl Lieferungen mehr als "+$V{Ueberschreitung}+" Tage zu spät:"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Durchschnitt Tage:" mode="Opaque" x="435" y="32" width="101" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d0ac327e-d1d7-4045-8693-9f31a5140fc1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Durchschnitt Tage zu spät:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="max zu spät:" mode="Opaque" x="243" y="32" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a8422e3a-60c4-4bcc-9d40-60b54e80293b">
+					<printWhenExpression><![CDATA[new Boolean($V{V_MAX_VERSPAETUNGSTAGE}.intValue() > 0)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[max. zu spät:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Ohne AB" mode="Transparent" x="312" y="1" width="30" height="10" uuid="48b431e5-33eb-47ea-a3aa-04c494c6a7fb"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_ANZAHL_OHNE_AB}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Ohne AB" x="227" y="1" width="82" height="10" uuid="b3d38da9-d9ff-4584-8978-1c01a021c3e4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Ohne Solltermin(AB)]]></text>
+			</staticText>
+			<subreport>
+				<reportElement key="subreport Verteilung" x="0" y="42" width="786" height="251" uuid="78164e0c-65e1-4af9-a361-fa218f8c385f"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.ListOfArrayDataSource(com.lp.util.HelperReport.sortListNoNull($V{LISTE_TAGE}),
+    new String[] {"Sortierung", "Tage", "Anzahl"})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "rech_warenausgangsjournal_termintreue_verteilung.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement key="Ergibt" mode="Opaque" x="570" y="22" width="110" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="262527bd-85b0-4d9b-972c-16ae5e943383"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Ergibt eine Termintreue von]]></text>
+			</staticText>
+			<textField pattern="#,##0.0 %" isBlankWhenNull="false">
+				<reportElement key="pünktlich" mode="Opaque" x="680" y="22" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="fa6023e8-a79e-44d2-bcdb-81ed0438f576"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[1.0 - ($V{V_ANZAHL_LF_ZU_SPAET}.doubleValue() /
+       ($V{V_ANZAHL_LF_PUENKTLICH}.doubleValue() + $V{V_ANZAHL_LF_ZU_FRUEH}.doubleValue() + $V{V_ANZAHL_LF_ZU_SPAET}.doubleValue()))]]></textFieldExpression>
+			</textField>
+		</band>
 	</summary>
 </jasperReport>

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bes_abholauftrag" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="14" bottomMargin="14">
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bes_abholauftrag" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="56" rightMargin="14" topMargin="0" bottomMargin="0" uuid="887e52c2-80b3-4a22-ac37-1cb5b14c60d5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="1.6500000000000001"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="720"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -159,6 +160,36 @@
 	<parameter name="P_LIEFERANT_EORI" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="P_ANSPRECHPARTNER_ABHOLADRESSE" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="P_ANSPRECHPARTNER_ADRESSBLOCK" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_VERPACKUNGSMENGEN_EINGABE" class="java.lang.Integer" isForPrompting="false">
+		<parameterDescription><![CDATA[new Integer(1)]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_SPEDITEUR_ADRESSBLOCK" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_VERTRETERTELEFON" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_VERTRETEREMAIL" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_VERTRETERFAX" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_SUBREPORT_LIEFERGRUPPENTEXTE" class="java.lang.Object" isForPrompting="false"/>
+	<parameter name="P_SUBREPORT_PARTNERKOMMENTAR" class="java.lang.Object" isForPrompting="false"/>
+	<parameter name="P_PERSON_AENDERN" class="com.lp.util.report.PersonRpt" isForPrompting="false"/>
+	<parameter name="P_SPEDITEUR_ANSPRECHPARTNER_TELEFON" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_LIEFERADRESSE_ANSPRECHPARTNER_TELEFON" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_ABHOLADRESSE_ANSPRECHPARTNER_TELEFON" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_BESTELLADRESSE_ANSPRECHPARTNER_TELEFON" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_AENDERUNGSBESTELLUNG_VERSION" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="P_LIEFERART_ORT" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_SUBDIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Das Kostenstellenverzeichnis des Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MODUL" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Das aktuelle Reportmodul]]></parameterDescription>
+	</parameter>
+	<parameter name="MANDANT_C_NR" class="java.lang.String">
+		<parameterDescription><![CDATA[Der aktuelle Mandant]]></parameterDescription>
+	</parameter>
 	<field name="Position" class="java.lang.Integer">
 		<fieldDescription><![CDATA[Durchnummerrierte Position]]></fieldDescription>
 	</field>
@@ -225,9 +256,12 @@
 	<field name="F_ARTIKEL_HOEHE" class="java.lang.Double"/>
 	<field name="F_ARTIKEL_BREITE" class="java.lang.Double"/>
 	<field name="F_ARTIKEL_BAUFORM" class="java.lang.String"/>
-	<field name="F_ARTIKEL_VERPACKUNGSART" class="java.lang.String"/>
+	<field name="F_ARTIKEL_VERPACKUNGSART" class="java.lang.String">
+		<fieldDescription><![CDATA[Aus dem Reiter Technik]]></fieldDescription>
+	</field>
 	<field name="F_ARTIKEL_MATERIAL" class="java.lang.String"/>
 	<field name="F_ANGEBOTSNUMMER" class="java.lang.String"/>
+	<field name="ArtikelGewichtInKG" class="java.math.BigDecimal"/>
 	<variable name="V_SUMME_GESAMTPREIS" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{Gesamtpreis}]]></variableExpression>
 	</variable>
@@ -236,6 +270,61 @@
 	</variable>
 	<variable name="V_RABATTSUMME" class="java.math.BigDecimal">
 		<variableExpression><![CDATA[new BigDecimal($V{V_SUMME_GESAMTPREIS}.doubleValue() * $V{V_RABATTSATZ}.doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="Verpackung_Karton" class="java.lang.Integer">
+		<variableExpression><![CDATA[(int)($F{Menge}.doubleValue()/
+$F{F_POSITIONSOBJEKT}.getFVerpackungsmenge().doubleValue())]]></variableExpression>
+	</variable>
+	<variable name="Verpackung_Einzel" class="java.lang.Double">
+		<variableExpression><![CDATA[$F{Menge}.doubleValue() -
+$V{Verpackung_Karton}.doubleValue() * $F{F_POSITIONSOBJEKT}.getFVerpackungsmenge().doubleValue()]]></variableExpression>
+	</variable>
+	<variable name="Positionsgewicht" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{Einheit}.toUpperCase().compareTo("KG") == 0 ?
+$F{Menge} : $F{ArtikelGewichtInKG}]]></variableExpression>
+	</variable>
+	<variable name="Gesamtgewicht" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{Positionsgewicht} != null ?
+$V{Positionsgewicht} :
+BigDecimal.ZERO]]></variableExpression>
+	</variable>
+	<variable name="Verpackungsmittel" class="java.lang.String">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"SELECT C_NR FROM WW_VERPACKUNGSMITTEL WHERE I_ID=("+
+"SELECT VERPACKUNGSMITTEL_I_ID FROM WW_ARTIKEL WHERE C_NR='"+$F{F_POSITIONSOBJEKT}.getSIdent()+"')"+
+"AND MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></variableExpression>
+	</variable>
+	<variable name="Verpackungsmittel_Gewicht" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"SELECT N_GEWICHT_IN_KG FROM WW_VERPACKUNGSMITTEL WHERE I_ID=("+
+"SELECT VERPACKUNGSMITTEL_I_ID FROM WW_ARTIKEL WHERE C_NR='"+$F{F_POSITIONSOBJEKT}.getSIdent()+"')"+
+"AND MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></variableExpression>
+	</variable>
+	<variable name="Verpackungsmittel_Menge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"SELECT N_VERPACKUNGSMITTELMENGE FROM WW_ARTIKEL WHERE C_NR='"+$F{F_POSITIONSOBJEKT}.getSIdent()+"' "+
+"AND MANDANT_C_NR='"+$P{P_MANDANT_OBJ}.getMandantCNr()+"';"
+)]]></variableExpression>
+	</variable>
+	<variable name="Verpackung_Anzahl" class="java.lang.Double">
+		<variableExpression><![CDATA[(($F{Menge}.doubleValue() %
+       $V{Verpackungsmittel_Menge}.doubleValue()) > 0 ?
+((int) ($F{Menge}.doubleValue() /
+       $V{Verpackungsmittel_Menge}.doubleValue())) + 1  :
+($F{Menge}.doubleValue() /
+       $V{Verpackungsmittel_Menge}.doubleValue())
+)]]></variableExpression>
+	</variable>
+	<variable name="Verpackung_Gewicht" class="java.lang.Double">
+		<variableExpression><![CDATA[$V{Verpackung_Anzahl}.doubleValue() *
+$V{Verpackungsmittel_Gewicht}.doubleValue()]]></variableExpression>
+	</variable>
+	<variable name="Gesamtgewicht_Verpackung" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{Verpackung_Gewicht} != null ?
+$V{Verpackung_Gewicht} :
+BigDecimal.ZERO]]></variableExpression>
 	</variable>
 	<group name="summary">
 		<groupExpression><![CDATA[null]]></groupExpression>
@@ -251,7 +340,7 @@
 		<groupHeader>
 			<band height="15" splitType="Stretch">
 				<staticText>
-					<reportElement key="Pos" mode="Opaque" x="0" y="0" width="23" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Pos" mode="Transparent" x="0" y="0" width="23" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de44dd67-641c-4bb5-89e5-733030054c7b"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -259,13 +348,13 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-						<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<text><![CDATA[Pos]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="Ident Nr Bezeichnung" mode="Opaque" x="25" y="0" width="311" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Artikelnummer Bezeichnung" mode="Transparent" x="25" y="0" width="282" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="95187a75-c0e2-4108-9905-9b3dd957b8d8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -273,13 +362,13 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-						<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<text><![CDATA[Ident Nr / Bezeichnung]]></text>
+					<text><![CDATA[Artikelnummer / Bezeichnung]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="Termin" mode="Opaque" x="353" y="0" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Termin" mode="Transparent" x="310" y="0" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="2cafaf6e-417c-464d-9c20-c36e042c21e7"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -287,13 +376,13 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-						<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<text><![CDATA[Termin]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="Menge" mode="Opaque" x="423" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="Menge" mode="Transparent" x="380" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="290fdbfb-a19d-46b6-88e5-6c7d34286930"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -301,13 +390,13 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-						<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<text><![CDATA[Menge]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="ME" mode="Opaque" x="475" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="ME" mode="Transparent" x="428" y="0" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="90421fd9-1c4f-4083-9323-8df4a17992a8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -315,13 +404,27 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-						<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<text><![CDATA[ME]]></text>
 				</staticText>
+				<staticText>
+					<reportElement key="Gewicht" mode="Transparent" x="453" y="0" width="51" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="ee6513e7-da87-4c2b-851f-7225d6834336"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Gewicht[kg]]]></text>
+				</staticText>
 				<line>
-					<reportElement key="line-11" mode="Opaque" x="0" y="13" width="520" height="1" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="line-11" mode="Opaque" x="0" y="13" width="512" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="8993bf2f-3f6b-4eda-a765-39cec89bee75"/>
 					<graphicElement fill="Solid">
 						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</graphicElement>
@@ -333,229 +436,98 @@
 		</groupFooter>
 	</group>
 	<background>
-		<band splitType="Stretch"/>
+		<band height="842" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-4" mode="Opaque" x="-56" y="0" width="595" height="842" forecolor="#000000" backcolor="#FFFFFF" uuid="4d847fff-b392-41b5-8dd6-37e21ea3fadd"/>
+				<subreportParameter name="REPORT_ROOT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_ROOT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LKZ">
+					<subreportParameterExpression><![CDATA[$P{Adressefuerausdruck}.contains("DEUTSCHLAND") ? "DE" : null]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MITLOGO">
+					<subreportParameterExpression><![CDATA[$P{P_MITLOGO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LOGO_SUBREPORT">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_SUBREPORT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[$P{P_WAEHRUNG}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LOGO">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_IMAGE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_FUSSZEILEN_SUBREPORT">
+					<subreportParameterExpression><![CDATA[$P{P_FUSSZEILEN_SUBREPORT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LOGO_IMAGE">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_IMAGE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{P_LOGO_SUBREPORT}.replaceFirst("logo.","background.")).toURL()]]></subreportExpression>
+			</subreport>
+		</band>
 	</background>
 	<title>
-		<band height="241" splitType="Stretch">
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER" mode="Opaque" x="449" y="0" width="65" height="9" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}) + " von "]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="VON_PAGE_NUMBER" mode="Opaque" x="514" y="0" width="25" height="9" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
-			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="REPORT_INFORMATION-2" mode="Opaque" x="0" y="0" width="375" height="9" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
-			</textField>
+		<band height="323" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement key="Background_Erste_Seite-1" mode="Transparent" x="-56" y="0" width="595" height="300" forecolor="#000000" backcolor="#FFFFFF" uuid="f50ddc15-cac5-49ac-aabd-6a2a11fa5ee3"/>
+				<subreportParameter name="P_LOGO">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_IMAGE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MITLOGO">
+					<subreportParameterExpression><![CDATA[$P{P_MITLOGO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_ROOT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_ROOT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LOGO_IMAGE">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_IMAGE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LOGO_SUBREPORT">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_SUBREPORT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_FUSSZEILEN_SUBREPORT">
+					<subreportParameterExpression><![CDATA[$P{P_FUSSZEILEN_SUBREPORT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{P_LOGO_SUBREPORT}.replaceFirst("logo.","background1.")).toURL()]]></subreportExpression>
+			</subreport>
 			<staticText>
-				<reportElement key="Packliste für Auftrag Nr-1" mode="Opaque" x="0" y="18" width="250" height="24" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
+				<reportElement key="Hinweis" mode="Transparent" x="200" y="0" width="325" height="61" uuid="215d9d44-d270-449d-9cf0-25d8231c2214">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="6"/>
 				</textElement>
-				<text><![CDATA[Abholauftrag für Bestellung Nr]]></text>
+				<text><![CDATA[Hinweis:
+Es wird das Verpackungsmittel aus Artikel Sonstige verwendet
+Über die Verpackungsmittelmenge wird die Anzahl der Verpackungsmittels errechnet (aufgerundet) und
+daraus das Gesamtgewicht der Verpackung(en) errechnet.
+Somit ist das Gewicht der Ware das Nettogewicht plus dem Verpackungsgewicht ergibt sich das Bruttogewicht.
+Nettogewicht, wenn die Mengeneinheit kg, so wird das als Positionsgewicht genommen, sonst Gewicht x Menge]]></text>
 			</staticText>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Belegkennung-1" mode="Opaque" x="290" y="18" width="249" height="24" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_BELEGKENNUNG}]]></textFieldExpression>
-			</textField>
-			<componentElement>
-				<reportElement x="290" y="48" width="246" height="30"/>
-				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="none">
-					<jr:codeExpression><![CDATA["$B"+$P{P_BELEGKENNUNG}]]></jr:codeExpression>
-				</jr:Code128>
-			</componentElement>
-			<staticText>
-				<reportElement key="Lieferant" mode="Transparent" x="0" y="50" width="102" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="true" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Lieferant:]]></text>
-			</staticText>
+			<subreport isUsingCache="true">
+				<reportElement key="Mandantenadresse" mode="Transparent" x="0" y="144" width="292" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b9dd8a6b-47e6-43f7-b592-85954014a183">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<subreportParameter name="P_MANDANTADRESSE">
+					<subreportParameterExpression><![CDATA[$P{Mandantenadresse}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{P_LOGO_SUBREPORT}.replaceFirst("logo.","mandanten_absender.")).toURL()]]></subreportExpression>
+			</subreport>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="Adressefuerausdruck" mode="Transparent" x="0" y="62" width="250" height="60" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{Adressefuerausdruck}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="Termin" mode="Opaque" x="287" y="82" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Termin: ]]></text>
-			</staticText>
-			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="Liefertermin" mode="Opaque" x="357" y="82" width="180" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_LIEFERTERMIN}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="Datum" mode="Opaque" x="287" y="94" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Datum:]]></text>
-			</staticText>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="P_BELEGDATUM" mode="Opaque" x="357" y="94" width="180" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_BELEGDATUM}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="Auftrag" mode="Opaque" x="287" y="106" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Auftrag:]]></text>
-			</staticText>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="P_AUFTRAGSNUMMER" mode="Opaque" x="357" y="106" width="180" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_AUFTRAGSNUMMER}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="Abholadresse" mode="Transparent" x="0" y="132" width="102" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="true" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Abholadresse:]]></text>
-			</staticText>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="Abholadresse" positionType="Float" mode="Transparent" x="0" y="144" width="254" height="48" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_ABHOLADRESSE}==null ? $P{Adressefuerausdruck} : $P{P_ABHOLADRESSE}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="Anlieferadresse" mode="Transparent" x="287" y="132" width="102" height="12" forecolor="#000000" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$P{P_LIEFERADRESSENICHTNULL}]]></printWhenExpression>
+				<reportElement key="Abholadresse" mode="Transparent" x="0" y="156" width="292" height="132" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="fe912217-4a05-47c1-9a06-42635b6776ba">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -564,15 +536,16 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="true" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Anlieferadresse:]]></text>
-			</staticText>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="P_LIEFERADRESSE" positionType="Float" mode="Transparent" x="287" y="144" width="252" height="48" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$P{P_LIEFERADRESSENICHTNULL}]]></printWhenExpression>
-				</reportElement>
+				<textFieldExpression><![CDATA[($P{P_SPEDITEUR_ADRESSBLOCK} == null ? $P{P_SPEDITEUR}+ "\n" : $P{P_SPEDITEUR_ADRESSBLOCK}) +
+"\nAbholadresse: \n" + 
+($P{P_ABHOLADRESSE}==null ? $P{Adressefuerausdruck} : $P{P_ABHOLADRESSE}) +
+($P{P_LIEFERADRESSE} == null ? "" : "\n" + "Anlieferadresse: \n" + $P{P_LIEFERADRESSE})]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="P_LABELBESTELLUNGNR + P_BELEGKENNUNG" positionType="Float" mode="Transparent" x="0" y="289" width="504" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="d3c18f30-cb47-4c89-9941-49664720b918"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -580,102 +553,97 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_LIEFERADRESSE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Abholauftrag für Bestellung Nr: " + $P{P_BELEGKENNUNG}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="Briefanrede" positionType="Float" mode="Transparent" x="0" y="311" width="504" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6124593b-bcb9-4ccc-b174-ecebb94b6408">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[$P{Kopftext}.length() > 5]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Briefanrede}+"\n"+$P{Kopftext}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="P_ANSPRECHPARTNERTELEFON" positionType="Float" mode="Transparent" x="287" y="197" width="249" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="P_ANSPRECHPARTNERTELEFON" mode="Transparent" x="295" y="122" width="212" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="016d600f-ae44-43e7-9f6e-71cccf9d4296">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_ANSPRECHPARTNER_LIEFERADRESSE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_BELEGDATUM}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="Lieferung" positionType="Float" mode="Opaque" x="2" y="209" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Lieferung:]]></text>
-			</staticText>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="P_LIEFERART" positionType="Float" mode="Opaque" x="74" y="209" width="234" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_LIEFERART}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="Projekt" positionType="Float" mode="Opaque" x="2" y="221" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Projekt:]]></text>
-			</staticText>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Projektbezeichnung" positionType="Float" mode="Opaque" x="74" y="221" width="234" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_PROJEKTBEZ}]]></textFieldExpression>
-			</textField>
+			<subreport isUsingCache="true">
+				<reportElement key="Kopf" mode="Transparent" x="295" y="134" width="220" height="155" forecolor="#000000" backcolor="#FFFFFF" uuid="4d3211e1-d559-49ee-85a9-da0f8b7e6aba"/>
+				<subreportParameter name="P_RUECKFRAGEN_AN_LABEL">
+					<subreportParameterExpression><![CDATA["Rückfragen an:"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_RUECKFRAGEN_AN_NAME">
+					<subreportParameterExpression><![CDATA[$P{P_VERTRETER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_RUECKFRAGEN_AN_TELEFON">
+					<subreportParameterExpression><![CDATA[$P{P_MANDANT_OBJ}.getTelefon() + $P{P_VERTRETERTELEFON}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_RUECKFRAGEN_AN_E_MAIL">
+					<subreportParameterExpression><![CDATA[$P{P_VERTRETEREMAIL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_UNSERE_NUMMER_LABEL">
+					<subreportParameterExpression><![CDATA["Kontakt Abholadresse:"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_UNSERE_NUMMER">
+					<subreportParameterExpression><![CDATA[$P{P_ABHOLADRESSE_ANSPRECHPARTNER_TELEFON}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_PARTNER_AP_LABEL">
+					<subreportParameterExpression><![CDATA["Kontakt Anlieferadresse:"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_PARTNER_AP_NAME">
+					<subreportParameterExpression><![CDATA[$P{P_LIEFERADRESSE_ANSPRECHPARTNER_TELEFON}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_PROJEKT_LABEL">
+					<subreportParameterExpression><![CDATA["Projekt:"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_PROJEKT">
+					<subreportParameterExpression><![CDATA[$P{P_PROJEKTBEZ}==null ? "" : $P{P_PROJEKTBEZ}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ANFRAGE_LABEL">
+					<subreportParameterExpression><![CDATA["Unser Anfrage:"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_ANFRAGE">
+					<subreportParameterExpression><![CDATA[$P{P_ANFRAGENUMMER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_AUFTRAG_LABEL">
+					<subreportParameterExpression><![CDATA["Betrifft unseren Auftrag:"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_AUFTRAGSDATUM">
+					<subreportParameterExpression><![CDATA[$P{P_AUFTRAGSNUMMER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[new java.io.File(com.lp.util.HelperReport.getSubreportPath($P{P_MODUL}, "beleginfoblock", $P{MANDANT_C_NR},  $P{REPORT_LOCALE}, $P{P_SUBDIRECTORY}) ).toURL()]]></subreportExpression>
+			</subreport>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="50" splitType="Stretch">
+		<band height="152" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="REPORT_INFORMATION-3" mode="Opaque" x="0" y="0" width="375" height="9" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
-			</textField>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="PAGE_NUMBER-1" mode="Opaque" x="449" y="0" width="65" height="9" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="P_LABELBESTELLUNGNR + P_BELEGKENNUNG" mode="Transparent" x="0" y="132" width="504" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="83bcdebe-54ea-48ff-9766-90f4eedc3f96"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -683,52 +651,9 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}) + " von "]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="VON_PAGE_NUMBER-1" mode="Opaque" x="514" y="0" width="25" height="9" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement key="Abholauftrag für Bestellung Nr" mode="Opaque" x="0" y="14" width="250" height="24" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<text><![CDATA[Abholauftrag für Bestellung Nr]]></text>
-			</staticText>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Belegkennung-2" mode="Opaque" x="290" y="14" width="249" height="24" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_BELEGKENNUNG}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Abholauftrag für Bestellung Nr: " + $P{P_BELEGKENNUNG}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -736,9 +661,9 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="30" splitType="Stretch">
+		<band height="17" splitType="Stretch">
 			<textField pattern="###000" isBlankWhenNull="true">
-				<reportElement key="Position-1" mode="Transparent" x="0" y="0" width="23" height="17" isRemoveLineWhenBlank="true" forecolor="#FFFFFF" backcolor="#FFFFFF">
+				<reportElement key="Position-1" mode="Transparent" x="0" y="0" width="23" height="17" isRemoveLineWhenBlank="true" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="235fe26e-451a-40f9-bbf8-93d5a2550b5d">
 					<printWhenExpression><![CDATA[new Boolean($F{Positionsart}.equals("Ident          ") || $F{Positionsart}.equals("Handeingabe    "))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -748,13 +673,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{Position}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Position}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###000" isBlankWhenNull="true">
-				<reportElement key="Position" mode="Transparent" x="0" y="5" width="23" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Position" mode="Transparent" x="0" y="5" width="23" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="329860ec-0eb3-40b4-a922-c27ae90ba4e2">
 					<printWhenExpression><![CDATA[new Boolean($F{Positionsart}.equals("Ident          ") || $F{Positionsart}.equals("Handeingabe    "))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -764,13 +689,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{Position}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Position}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="Ident" mode="Transparent" x="25" y="5" width="311" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Ident" mode="Transparent" x="25" y="5" width="282" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="9fc4c65b-b4d4-47f2-bec7-48f6a8cf7196">
 					<printWhenExpression><![CDATA[new Boolean($F{Positionsart}.equals("Ident          ") || $F{Positionsart}.equals("Handeingabe    "))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -780,17 +705,17 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Ident}+
+				<textFieldExpression><![CDATA[$F{Ident}+
 ($F{F_ARTIKELCZBEZ2} != null ? "\n"+$F{F_ARTIKELCZBEZ2}:"")+
 ($F{F_LIEFERANT_ARTIKEL_IDENTNUMMER} != null ? "\n" +$F{F_LIEFERANT_ARTIKEL_IDENTNUMMER} :"")+
 ($F{F_LIEFERANT_ARTIKEL_BEZEICHNUNG}!=null ? "\n"+ $F{F_LIEFERANT_ARTIKEL_BEZEICHNUNG} :"")+
 ($F{F_ARTIKEL_HERSTELLER}!=null ? "\nHersteller: " +$F{F_HERSTELLER_NAME} :"")]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Positionstermin" mode="Opaque" x="353" y="5" width="70" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Positionstermin" mode="Transparent" x="310" y="5" width="70" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="acb4eb4c-c765-434c-850d-ac932dc9f9b3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -798,13 +723,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_POSITIONTERMIN}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_POSITIONTERMIN}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
-				<reportElement key="Menge" mode="Opaque" x="423" y="5" width="45" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Menge" mode="Transparent" x="380" y="5" width="45" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="abe28050-b876-4672-becf-74f091ba102b">
 					<printWhenExpression><![CDATA[new Boolean($F{Positionsart}.equals("Ident          ") || $F{Positionsart}.equals("Handeingabe    "))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -814,13 +739,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Menge}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Menge}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Einheit" mode="Opaque" x="475" y="5" width="45" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Einheit" mode="Transparent" x="428" y="5" width="25" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e0ebc5a6-c3ff-43cc-8ff1-b4bfb9bd2454">
 					<printWhenExpression><![CDATA[new Boolean($F{Positionsart}.equals("Ident          ") || $F{Positionsart}.equals("Handeingabe    "))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -830,13 +755,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Einheit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Einheit}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
-				<reportElement key="Gewicht" mode="Opaque" x="423" y="17" width="45" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="Gewicht" mode="Transparent" x="453" y="5" width="50" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="64695ffd-c27e-4144-a118-83975dd90063">
 					<printWhenExpression><![CDATA[new Boolean($F{Positionsart}.equals("Ident          ") || $F{Positionsart}.equals("Handeingabe    "))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -846,29 +771,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Gewicht}]]></textFieldExpression>
-			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Gewichteinheit" mode="Opaque" x="475" y="17" width="45" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[new Boolean($F{Positionsart}.equals("Ident          ") || $F{Positionsart}.equals("Handeingabe    "))]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Gewichteinheit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{Positionsgewicht}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="FreierText" mode="Opaque" x="25" y="30" width="480" height="0" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="FreierText" mode="Transparent" x="25" y="17" width="480" height="0" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="59b5ff69-fbde-4201-a6d7-92b80645b605"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -876,13 +785,13 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Freiertext}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Freiertext}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="Leerzeile" mode="Opaque" x="0" y="30" width="505" height="0" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Leerzeile" mode="Transparent" x="0" y="17" width="505" height="0" forecolor="#000000" backcolor="#FFFFFF" uuid="d158b645-1c1e-4315-93cd-570dd017d747"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -890,10 +799,166 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{Leerzeile}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Leerzeile}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+			<printWhenExpression><![CDATA[($F{Positionsart}.equals("Ident          ") ||
+ $F{Positionsart}.equals("Handeingabe    ")) &&
+$V{Verpackungsmittel} != null]]></printWhenExpression>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="74" y="0" width="90" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="48783490-bc30-4c6f-b655-39904444f03e"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Verpackungsmittel}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="179" y="0" width="25" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="ff376bab-1146-434b-a428-c7e40cc8baba"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Verpackungsmittel_Gewicht}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="224" y="0" width="40" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b3979770-9940-4f58-9904-405411fa04f1"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Verpackungsmittel_Menge}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="164" y="0" width="15" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="683dcce4-2af7-4f3d-b25f-275f85ae658f"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["á"]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="204" y="0" width="15" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="9e47bcd7-426d-4447-84a3-07c0c1e0bffd"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["kg"]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
+				<reportElement key="Menge" mode="Transparent" x="453" y="0" width="50" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="de2e7aba-7f5c-41e4-8f26-8f3c3b378ca2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Verpackung_Gewicht}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0;-#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="25" y="0" width="25" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="acb4a9cd-f952-464d-b7be-a7cf2fd4d9e2"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Verpackung_Anzahl}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="50" y="0" width="15" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="e91f347b-219a-4821-8729-88a249012059"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Stk]]></text>
+			</staticText>
+		</band>
+		<band height="12">
+			<printWhenExpression><![CDATA[$P{P_VERPACKUNGSMENGEN_EINGABE}.intValue() > 0 &&
+($F{Positionsart}.equals("Ident          ") ||
+ $F{Positionsart}.equals("Handeingabe    ")) &&
+$V{Verpackung_Karton} != null && $V{Verpackung_Karton}.intValue() > 0]]></printWhenExpression>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Einheit" mode="Transparent" x="308" y="0" width="25" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="8a39e2c0-4bb9-4e69-8ab6-335d2245f99f">
+					<printWhenExpression><![CDATA[$P{P_VERPACKUNGSMENGEN_EINGABE}.intValue() > 0 &&
+($F{Positionsart}.equals("Ident          ") ||
+ $F{Positionsart}.equals("Handeingabe    ")) &&
+$V{Verpackung_Karton} != null && $V{Verpackung_Karton}.intValue() > 0 &&
+$V{Verpackung_Einzel}.doubleValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Einheit}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.###;-#,##0.###" isBlankWhenNull="true">
+				<reportElement key="Einzelmenge" mode="Transparent" x="285" y="0" width="20" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="ead49d8f-78ad-43f5-9bff-f1dc9f470d8f">
+					<printWhenExpression><![CDATA[$P{P_VERPACKUNGSMENGEN_EINGABE}.intValue() > 0 &&
+($F{Positionsart}.equals("Ident          ") ||
+ $F{Positionsart}.equals("Handeingabe    ")) &&
+$V{Verpackung_Karton} != null && $V{Verpackung_Karton}.intValue() > 0 &&
+$V{Verpackung_Einzel}.doubleValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Verpackung_Einzel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Karton" mode="Transparent" x="260" y="0" width="25" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a6e158ce-4155-4849-961b-2017c40d7d0f">
+					<printWhenExpression><![CDATA[$P{P_VERPACKUNGSMENGEN_EINGABE}.intValue() > 0 &&
+($F{Positionsart}.equals("Ident          ") ||
+ $F{Positionsart}.equals("Handeingabe    ")) &&
+$V{Verpackung_Karton} != null && $V{Verpackung_Karton}.intValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Krt "+
+($V{Verpackung_Einzel}.doubleValue() != 0 ? "+" : "")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0;-#,##0" isBlankWhenNull="true">
+				<reportElement key="Karton" mode="Transparent" x="213" y="0" width="45" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="f28e96b4-87f1-452b-a6b2-910025d7d958">
+					<printWhenExpression><![CDATA[$P{P_VERPACKUNGSMENGEN_EINGABE}.intValue() > 0 &&
+($F{Positionsart}.equals("Ident          ") ||
+ $F{Positionsart}.equals("Handeingabe    ")) &&
+$V{Verpackung_Karton} != null && $V{Verpackung_Karton}.intValue() > 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Verpackung_Karton}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -901,9 +966,292 @@
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band splitType="Stretch"/>
+		<band height="64" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER" positionType="FixRelativeToBottom" mode="Transparent" x="365" y="-10" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="9e2d14b0-9bb9-4039-8026-ee93ce063bed">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}) + " von "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER" positionType="FixRelativeToBottom" mode="Transparent" x="495" y="-10" width="9" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="f36831fc-5a6c-449c-abe9-1354ca5f5a20">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
+			</textField>
+		</band>
 	</pageFooter>
+	<lastPageFooter>
+		<band height="74">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER" positionType="FixRelativeToBottom" mode="Transparent" x="365" y="0" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="6274c74c-1a18-4ed1-b45d-26f8054545d4">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}) + " von "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER" positionType="FixRelativeToBottom" mode="Transparent" x="495" y="0" width="9" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="eca4d7cb-20f7-4e8d-b731-c2b85fce5078"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="121" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="0" width="511" height="1" uuid="cee3ea89-32ac-40ab-b4d3-9e6dd093d72a"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="Gewicht" mode="Transparent" x="290" y="21" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="0c243067-7be7-40d9-8e62-aa5d436e5a24"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Nettogewicht in kg:]]></text>
+			</staticText>
+			<textField pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
+				<reportElement key="Gewicht" mode="Transparent" x="435" y="21" width="68" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="176c4339-1e48-4c0f-81d3-6573b4465c74"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Gesamtgewicht}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Wert" mode="Transparent" x="290" y="3" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="ec00bb0d-4655-4dad-952e-32ba08f240b0"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Sendungswert netto in "+$P{P_WAEHRUNG}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Wert" mode="Transparent" x="435" y="3" width="68" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a567a13f-efab-494f-aecc-6f9f3913bf14"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_SUMME_GESAMTPREIS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Gewicht" mode="Transparent" x="290" y="33" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="9048e442-b922-4abd-8d83-14d7ea975a42"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Verpackungsgewicht in kg:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Gewicht" mode="Transparent" x="290" y="45" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="4bf530ff-f984-4007-9d73-10e55baded8f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Gesamtgewicht in kg:]]></text>
+			</staticText>
+			<textField pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
+				<reportElement key="Gesamtgewicht" mode="Transparent" x="435" y="45" width="68" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="ab59dc60-a486-48a3-911f-59728abc97ad"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{Gesamtgewicht}==null ? BigDecimal.ZERO : $V{Gesamtgewicht}).add(
+($V{Gesamtgewicht_Verpackung}==null ? BigDecimal.ZERO : $V{Gesamtgewicht_Verpackung})
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0##;-#,##0.0##" isBlankWhenNull="true">
+				<reportElement key="Verpackungsgewicht in kg" mode="Transparent" x="435" y="33" width="68" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="712c9ed7-a0bc-44f2-acc6-4cdccbc55bbb"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Gesamtgewicht_Verpackung}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="6" width="275" height="73" uuid="8c09deed-8770-451a-9caa-1078e470bf90">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Hinweis:
+Verpackungsgewicht = Gewicht des Verpackungsmittels mal Menge
+
+Gesamtgewicht = Gewicht der Artikel plus Gewicht der Verpackungsmittel
+Wenn Artikel Mengeneinheit = kg, wird die Menge als Gewicht genommen]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-8" positionType="Float" mode="Transparent" x="428" y="45" width="77" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="8964846a-cfc3-4ea3-9c85-2ea47fd58f1c"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="" positionType="Float" mode="Transparent" x="0" y="85" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="f41b189c-b0f9-49f9-894d-85c48ac142d1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Anliefertermin:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="P_LABELLIEFERTERMIN" positionType="Float" mode="Transparent" x="100" y="85" width="405" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="d7a433eb-d73d-40dc-b3d1-ab13a212eaa9">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_LIEFERTERMIN}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Versandart" positionType="Float" mode="Transparent" x="0" y="97" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="daadc919-9c21-4eb7-823a-e1f3d29882e0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Versandart:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="P_LIEFERART" positionType="Float" mode="Transparent" x="100" y="97" width="405" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="2abe3777-bbb5-433e-964b-378a342b1220"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_LIEFERART}+($P{P_LIEFERART_ORT}==null?"":" "+$P{P_LIEFERART_ORT})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Zahlungskondition" positionType="Float" mode="Transparent" x="0" y="109" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="6b7c9f2a-c8bd-42ac-b528-c58775c1c376">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Zahlungskonditionen:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="P_ZAHLUNGSZIEL" positionType="Float" mode="Transparent" x="100" y="109" width="405" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="75a5b41c-f5a7-4990-8ed9-249735fa3a2d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_ZAHLUNGSKONDITION}]]></textFieldExpression>
+			</textField>
+		</band>
 	</summary>
 </jasperReport>

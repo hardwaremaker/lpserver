@@ -1,12 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.18.1.final using JasperReports Library version 5.5.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="auft_projektblatt_zahlungsplan" pageWidth="786" pageHeight="802" columnWidth="786" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="6d76237f-56cb-40a9-9c8b-20f186c4f578">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<style name="erledigt_grau">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{AlleVorraussetzungenErledigt}]]></conditionExpression>
+			<style mode="Opaque" forecolor="#999999" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
 	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="AB_NETTOWERT" class="java.math.BigDecimal"/>
+	<parameter name="P_WAEHRUNG" class="java.lang.String"/>
 	<field name="Termin" class="java.util.Date"/>
 	<field name="Betrag" class="java.math.BigDecimal"/>
 	<field name="SubreportMeilenstein" class="java.lang.Object"/>
+	<field name="BetragUrsprung" class="java.math.BigDecimal"/>
+	<field name="AlleVorraussetzungenErledigt" class="java.lang.Boolean"/>
+	<variable name="V_HEUTE" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></variableExpression>
+		<initialValueExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></initialValueExpression>
+	</variable>
+	<variable name="Meilenstein" class="java.lang.Integer">
+		<variableExpression><![CDATA[$V{Meilenstein}==null?
+new Integer(1) :
+$V{Meilenstein}.intValue() + 1]]></variableExpression>
+	</variable>
+	<variable name="Summe" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{Betrag}]]></variableExpression>
+	</variable>
+	<variable name="Summe_ursp" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{BetragUrsprung}]]></variableExpression>
+	</variable>
+	<variable name="Summe_offen" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{AlleVorraussetzungenErledigt} ? BigDecimal.ZERO :
+$F{Betrag}]]></variableExpression>
+	</variable>
+	<variable name="Woche" class="java.lang.Integer">
+		<variableExpression><![CDATA[com.lp.util.HelperReport.getCalendarWeekOfDate($F{Termin})]]></variableExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -15,16 +48,16 @@
 			<staticText>
 				<reportElement x="0" y="0" width="100" height="12" uuid="a41da813-fab6-4b99-8a6c-4eed9843a194"/>
 				<textElement verticalAlignment="Bottom">
-					<font fontName="Arial" size="10"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Zahlungsplan]]></text>
+				<text><![CDATA[Zahlungsplan (ZP)]]></text>
 			</staticText>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="26" splitType="Stretch">
+		<band height="21" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Transparent" x="0" y="0" width="50" height="25" forecolor="#000000" backcolor="#FFFFFF" uuid="8e8f9c47-fcaa-4f15-994e-292d28715bb6"/>
+				<reportElement mode="Transparent" x="0" y="0" width="50" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="8e8f9c47-fcaa-4f15-994e-292d28715bb6"/>
 				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None" markup="none">
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
@@ -32,7 +65,7 @@
 				<text><![CDATA[Termin]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Transparent" x="50" y="0" width="65" height="25" forecolor="#000000" backcolor="#FFFFFF" uuid="058edf6a-37da-4e1e-a2fa-725e380b6e3c"/>
+				<reportElement mode="Transparent" x="50" y="0" width="65" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="058edf6a-37da-4e1e-a2fa-725e380b6e3c"/>
 				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None" markup="none">
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
@@ -40,35 +73,61 @@
 				<text><![CDATA[Betrag]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="120" y="0" width="80" height="25" uuid="709416a7-d5c5-4000-83ce-8e05182bfbde"/>
-				<textElement verticalAlignment="Bottom">
-					<font fontName="Arial" size="10"/>
+				<reportElement mode="Transparent" x="120" y="0" width="65" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="6203f747-7411-478e-98d1-50aeb0614f6f"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Meilenstein]]></text>
+				<text><![CDATA[urspr. Betrag]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="200" y="0" width="150" height="25" uuid="2e5a144c-6864-4a63-9dc8-6094df8bbdc7"/>
-				<textElement verticalAlignment="Bottom">
-					<font fontName="Arial" size="10"/>
+				<reportElement mode="Transparent" x="185" y="0" width="20" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="1b695d47-8949-414c-9527-75ea4220913b"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[Kommentar]]></text>
+				<text><![CDATA[MS]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="350" y="0" width="436" height="25" uuid="fb942b7f-c338-4e9e-bdfd-a45d0f623514"/>
+				<reportElement x="210" y="0" width="80" height="20" uuid="709416a7-d5c5-4000-83ce-8e05182bfbde"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Voraussetzung für Meilenstein]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="0" width="200" height="20" uuid="2e5a144c-6864-4a63-9dc8-6094df8bbdc7"/>
 				<textElement verticalAlignment="Bottom">
 					<font fontName="Arial" size="10"/>
 				</textElement>
-				<text><![CDATA[Langbeschreibung]]></text>
+				<text><![CDATA[Kommentar / Langbeschreibung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="600" y="0" width="55" height="20" uuid="960c1afb-e3e6-432b-b33b-0b1ff28314ad"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Erledigt am]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="660" y="0" width="120" height="20" uuid="dfff6cbf-badb-4a11-9843-310c221653a1"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Erledigt durch]]></text>
 			</staticText>
 			<line>
-				<reportElement x="0" y="25" width="786" height="1" uuid="241cee1d-b6b9-4382-9dd6-857898b17da9"/>
+				<reportElement x="0" y="20" width="786" height="1" uuid="241cee1d-b6b9-4382-9dd6-857898b17da9"/>
 			</line>
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="13" splitType="Stretch">
+		<band height="20" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="Termin" mode="Transparent" x="0" y="0" width="55" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="591c19ab-0393-4e3a-a467-60f9ce7c5ba9"/>
+				<reportElement key="Termin" style="erledigt_grau" mode="Opaque" x="0" y="0" width="55" height="12" isRemoveLineWhenBlank="true" uuid="591c19ab-0393-4e3a-a467-60f9ce7c5ba9">
+					<printWhenExpression><![CDATA[$F{Termin}.after( $V{V_HEUTE} ) ||
+$F{AlleVorraussetzungenErledigt}]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -76,12 +135,28 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement verticalAlignment="Top" rotation="None" markup="styled">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Termin}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="Termin zu spät" mode="Opaque" x="0" y="0" width="55" height="12" isRemoveLineWhenBlank="true" uuid="85df1a00-42a2-4e87-b3e5-efdb6956f3b4">
+					<printWhenExpression><![CDATA[!($F{Termin}.after( $V{V_HEUTE} ) ||
+  $F{AlleVorraussetzungenErledigt} )]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Termin}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Betrag" mode="Transparent" x="50" y="0" width="65" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="7c817c0d-542c-4c32-bb01-d016b4408b4b"/>
+				<reportElement key="Betrag" style="erledigt_grau" mode="Transparent" x="50" y="0" width="65" height="12" isRemoveLineWhenBlank="true" uuid="7c817c0d-542c-4c32-bb01-d016b4408b4b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -89,27 +164,146 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Betrag}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="UrspBetrag" style="erledigt_grau" mode="Transparent" x="120" y="0" width="65" height="12" isRemoveLineWhenBlank="true" uuid="8cf0e846-ac97-4fbe-a30b-ca0087560f96">
+					<printWhenExpression><![CDATA[$F{Betrag}.compareTo($F{BetragUrsprung}) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{BetragUrsprung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0">
+				<reportElement style="erledigt_grau" x="185" y="0" width="20" height="12" uuid="355fa170-777e-4af0-a3ff-3a0939f525de"/>
+				<box rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Meilenstein}]]></textFieldExpression>
+			</textField>
 			<subreport isUsingCache="true">
-				<reportElement key="Meilensteine" positionType="Float" x="120" y="0" width="666" height="12" uuid="6de5d30d-5e84-44da-865d-143b03791c6f"/>
+				<reportElement key="Meilensteine" positionType="Float" x="210" y="0" width="576" height="12" uuid="6de5d30d-5e84-44da-865d-143b03791c6f"/>
 				<dataSourceExpression><![CDATA[$F{SubreportMeilenstein}]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "auft_projektblatt_zahlungsplan_meilenstein.jasper"]]></subreportExpression>
 			</subreport>
 			<line>
-				<reportElement positionType="Float" x="120" y="12" width="666" height="1" uuid="12d1aaa9-d0ee-49ae-9eb0-d8b396f96a5c"/>
+				<reportElement style="erledigt_grau" positionType="Float" x="190" y="16" width="596" height="1" uuid="12d1aaa9-d0ee-49ae-9eb0-d8b396f96a5c"/>
 			</line>
+			<textField>
+				<reportElement mode="Opaque" x="55" y="0" width="9" height="12" uuid="80a96523-11f1-4c38-b744-93421db91f8b"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Woche}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
 	<pageFooter>
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="13" splitType="Stretch">
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Summe geplant" mode="Transparent" x="50" y="1" width="65" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="436db56a-22c3-4b6d-aba0-ba453c414386"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Summe}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Summe ursprünglich geplant" mode="Transparent" x="120" y="1" width="65" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b4952068-10e3-451c-b810-aa557e94db7f">
+					<printWhenExpression><![CDATA[$V{Summe}.compareTo($V{Summe_ursp}) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Summe_ursp}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="230" y="1" width="90" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="f2f71bc2-ab56-4b44-9044-d17a222160ae"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[davon noch offen]]></text>
+			</staticText>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Summe offen" mode="Transparent" x="320" y="1" width="65" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="9dc8a5a2-d816-4408-9f66-511ab5f2bdf9"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Summe_offen}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="400" y="1" width="90" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="d61b23e3-6aa1-4c4a-aa43-8b49c2274a17"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[AB Netto Wert]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="490" y="1" width="65" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b83ed541-ccd0-425f-a188-3f72fbe8c41f"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{AB_NETTOWERT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="560" y="1" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="2df430b4-044e-4934-b0df-b04738cbba6d"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="600" y="1" width="90" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a107c801-c72f-40d3-b37a-2c84c58529f4">
+					<printWhenExpression><![CDATA[$P{AB_NETTOWERT}.compareTo($V{Summe}) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Differenz zu AB]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Differenz Positiv" mode="Transparent" x="690" y="1" width="65" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="0c303cda-4757-4908-a1f3-8a408dfa4990">
+					<printWhenExpression><![CDATA[$P{AB_NETTOWERT}.compareTo($V{Summe}) > 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{AB_NETTOWERT}.subtract($V{Summe})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Differenz Negativ" mode="Opaque" x="690" y="1" width="65" height="12" forecolor="#FFFFFF" backcolor="#000000" uuid="5a7a1d4f-cd91-433f-8a22-0b5460812040">
+					<printWhenExpression><![CDATA[$P{AB_NETTOWERT}.compareTo($V{Summe}) < 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{AB_NETTOWERT}.subtract($V{Summe})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="50" y="0" width="335" height="1" uuid="6a301afa-44d8-4f9e-9aaf-8c9868188016"/>
+			</line>
+		</band>
 	</summary>
 </jasperReport>

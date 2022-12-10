@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fert_auslastungsvorschau_detailiert_summe" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="565" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="5a51cb4e-f1b1-4e89-909c-8b00e7f90a6b">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<field name="KW_String" class="java.lang.String"/>
+	<field name="BeginnDatum" class="java.util.Date"/>
+	<field name="Dauer" class="java.lang.Double"/>
+	<field name="Verfuegbarkeit" class="java.math.BigDecimal"/>
+	<variable name="Dauer" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
+		<variableExpression><![CDATA[$F{Dauer}==null ? new Double(0.00) : $F{Dauer}]]></variableExpression>
+	</variable>
+	<variable name="Verfuegbarkeit" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
+		<variableExpression><![CDATA[$F{Verfuegbarkeit}==null ? BigDecimal.ZERO : $F{Verfuegbarkeit}]]></variableExpression>
+	</variable>
+	<variable name="Dauer_gesamt" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{Dauer}==null ? new Double(0.00) : $F{Dauer}]]></variableExpression>
+	</variable>
+	<variable name="Verfuegbarkeit_gesamt" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{Verfuegbarkeit}==null ? BigDecimal.ZERO : $F{Verfuegbarkeit}]]></variableExpression>
+	</variable>
+	<group name="KW">
+		<groupExpression><![CDATA[$F{KW_String}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="15">
+				<rectangle>
+					<reportElement x="164" y="0" width="50" height="12" forecolor="#FF0000" backcolor="#FF0000" uuid="d7b018dd-d9b7-4e31-b3b5-0e2ce86f735d">
+						<printWhenExpression><![CDATA[$V{Dauer}.compareTo($V{Verfuegbarkeit}) > 0]]></printWhenExpression>
+					</reportElement>
+				</rectangle>
+				<textField>
+					<reportElement x="0" y="0" width="50" height="12" uuid="58000161-426a-47a8-9778-1e4d0043a334"/>
+					<textElement>
+						<font fontName="Arial"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{KW_String}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="false">
+					<reportElement mode="Transparent" x="110" y="0" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="67bcc424-4956-4e02-94a9-285b9c41a947"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Dauer}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="false">
+					<reportElement mode="Transparent" x="164" y="0" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7c539fe1-d8ae-4e33-a90e-39a4a42be664"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Verfuegbarkeit}]]></textFieldExpression>
+				</textField>
+				<stackedBarChart>
+					<chart isShowLegend="false" renderType="image">
+						<reportElement key="Verfügbarkeit negativ" x="240" y="0" width="100" height="15" forecolor="#FFFFFF" uuid="dec96bd3-f8ee-4c0b-87ef-484b8a0eb100">
+							<printWhenExpression><![CDATA[$V{Dauer}.compareTo($V{Verfuegbarkeit}) > 0]]></printWhenExpression>
+						</reportElement>
+						<chartTitle/>
+						<chartSubtitle/>
+						<chartLegend textColor="#000000"/>
+					</chart>
+					<categoryDataset>
+						<dataset resetType="None"/>
+						<categorySeries>
+							<seriesExpression><![CDATA["Verfügbar"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{KW_String}]]></categoryExpression>
+							<valueExpression><![CDATA[$V{Verfuegbarkeit}]]></valueExpression>
+						</categorySeries>
+						<categorySeries>
+							<seriesExpression><![CDATA["Dauer"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{KW_String}]]></categoryExpression>
+							<valueExpression><![CDATA[($V{Dauer}.subtract($V{Verfuegbarkeit}))]]></valueExpression>
+						</categorySeries>
+					</categoryDataset>
+					<barPlot isShowLabels="false" isShowTickLabels="false" isShowTickMarks="false">
+						<plot orientation="Horizontal">
+							<seriesColor seriesOrder="0" color="#33FF33"/>
+							<seriesColor seriesOrder="1" color="#FF0000"/>
+						</plot>
+						<itemLabel/>
+						<categoryAxisFormat>
+							<axisFormat verticalTickLabels="false"/>
+						</categoryAxisFormat>
+						<valueAxisFormat>
+							<axisFormat verticalTickLabels="false"/>
+						</valueAxisFormat>
+					</barPlot>
+				</stackedBarChart>
+				<stackedBarChart>
+					<chart isShowLegend="false" renderType="image">
+						<reportElement key="Verfügbarkeit positiv" x="240" y="0" width="100" height="15" forecolor="#FFFFFF" uuid="27a6b7a0-0758-46dd-bd5f-8be008336bff">
+							<printWhenExpression><![CDATA[$V{Dauer}.compareTo($V{Verfuegbarkeit}) <= 0
+]]></printWhenExpression>
+						</reportElement>
+						<chartTitle/>
+						<chartSubtitle/>
+						<chartLegend textColor="#000000"/>
+					</chart>
+					<categoryDataset>
+						<dataset resetType="None"/>
+						<categorySeries>
+							<seriesExpression><![CDATA["Dauer"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{KW_String}]]></categoryExpression>
+							<valueExpression><![CDATA[$V{Dauer}]]></valueExpression>
+						</categorySeries>
+						<categorySeries>
+							<seriesExpression><![CDATA["Verfügbar"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{KW_String}]]></categoryExpression>
+							<valueExpression><![CDATA[$V{Verfuegbarkeit}.subtract($V{Dauer})]]></valueExpression>
+						</categorySeries>
+					</categoryDataset>
+					<barPlot isShowLabels="false" isShowTickLabels="false" isShowTickMarks="false">
+						<plot orientation="Horizontal">
+							<seriesColor seriesOrder="0" color="#0000FF"/>
+							<seriesColor seriesOrder="1" color="#33FF33"/>
+						</plot>
+						<itemLabel/>
+						<categoryAxisFormat>
+							<axisFormat verticalTickLabels="false"/>
+						</categoryAxisFormat>
+						<valueAxisFormat>
+							<axisFormat verticalTickLabels="false"/>
+						</valueAxisFormat>
+					</barPlot>
+				</stackedBarChart>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="40" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="20" uuid="ec77d8dd-c7dc-4713-b054-5d0363677888"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Zusammenfassung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="27" width="50" height="12" uuid="387fc7c7-511e-448d-aff4-a9008e235dab"/>
+				<textElement markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[JJJJ / KW]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="110" y="27" width="50" height="12" uuid="fddb7e3d-d4ac-47cb-b64f-f0eadc45c7a6"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Dauer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="164" y="27" width="50" height="12" uuid="b10ab36d-2014-494d-9e2d-8c002d61bcef"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[verfügbar]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="39" width="220" height="1" uuid="0963f44d-163b-4dfe-b5f5-66161abb916f"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<textField>
+				<reportElement x="0" y="0" width="50" height="12" uuid="9659b103-5d73-420c-b7ea-cc20e3b82330"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{KW_String}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="50" y="0" width="60" height="12" uuid="a5b7f808-bab8-4947-9552-09122db6977a"/>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{BeginnDatum}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0;-#,##0.0">
+				<reportElement x="110" y="0" width="50" height="12" uuid="eb092ae2-cd94-49e5-bc60-6c8406bb5407"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Dauer}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="164" y="0" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c438a9bc-a7a9-48c4-aeff-3b6f28e2e545"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Verfuegbarkeit}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="15">
+			<rectangle>
+				<reportElement x="164" y="0" width="50" height="12" forecolor="#FF0000" backcolor="#FF0000" uuid="9e0aefad-945a-490e-9d07-e3fb7403b73f">
+					<printWhenExpression><![CDATA[$V{Dauer_gesamt}.compareTo($V{Verfuegbarkeit_gesamt}) > 0]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="110" y="1" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="d94ae685-b648-4a4b-92cb-d60f5acbf4b6"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Dauer_gesamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="164" y="1" width="50" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c8568aad-c0bc-4e97-9a61-9ec45a5bc55e"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Verfuegbarkeit_gesamt}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="110" y="0" width="50" height="1" uuid="c900d3da-de91-4afc-891c-16c360263a6d"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="164" y="0" width="50" height="1" uuid="64f71e51-6cf5-41bd-b5ea-efe477f64b8c"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
+</jasperReport>

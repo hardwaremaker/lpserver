@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rekla_lieferanten_eigenschaften_sumary" pageWidth="535" pageHeight="802" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="62f37775-674b-401f-a886-8e4e131a71ce">
+	<property name="ireport.zoom" value="2.0490403660952117"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="REPORT_INFORMATION" class="java.lang.String"/>
+	<parameter name="Gewichtung" class="java.lang.String"/>
+	<parameter name="P_PUNKTEA" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="P_PUNKTEB" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="P_PUNKTEC" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="LIEFERANT_I_ID" class="java.lang.Integer"/>
+	<parameter name="P_BIS" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="P_DOKUMENTENABLAGE" class="java.lang.Boolean" isForPrompting="false"/>
+	<field name="Sort" class="java.lang.String"/>
+	<field name="c_druckname" class="java.lang.String"/>
+	<field name="Inhalt" class="java.lang.String"/>
+	<variable name="InhaltTrim" class="java.lang.String">
+		<variableExpression><![CDATA[$F{Inhalt}.trim()]]></variableExpression>
+	</variable>
+	<variable name="PunkteString" class="java.lang.String">
+		<variableExpression><![CDATA[$V{InhaltTrim}.indexOf(" ") < 0 ?
+$V{InhaltTrim} : $V{InhaltTrim}.substring(0,$V{InhaltTrim}.indexOf(" "))]]></variableExpression>
+	</variable>
+	<variable name="Punkte" class="java.lang.Integer">
+		<variableExpression><![CDATA[$V{PunkteString}.startsWith("-") ? null :
+com.lp.util.HelperReport.toInteger($V{PunkteString})]]></variableExpression>
+	</variable>
+	<variable name="Typ" class="java.lang.String">
+		<variableExpression><![CDATA[$F{c_druckname}.startsWith("Typ") ? $V{InhaltTrim} : $V{Typ}]]></variableExpression>
+	</variable>
+	<variable name="StartKennung" class="java.lang.String">
+		<variableExpression><![CDATA[$F{c_druckname}.substring(0,2)]]></variableExpression>
+	</variable>
+	<variable name="EinzelGewichtungAb" class="java.lang.String">
+		<variableExpression><![CDATA[/* Ko10|Te5|QM20|Na30
+Hier ist die Idee dahinter, dass die ersten beiden Buchstabe
+der Eigenschaft (=c_druckname) in der Gewichtung wiederkommt
+und dass dahinter der Faktor steht mit dem die Gewichtung
+in die Gesamtpunkteberechnung eingeht
+*/
+$P{Gewichtung}.indexOf($V{StartKennung}) < 0 ?
+"--" : $P{Gewichtung}.substring($P{Gewichtung}.indexOf($V{StartKennung}))]]></variableExpression>
+	</variable>
+	<variable name="EinzelGewichtung" class="java.lang.Integer">
+		<variableExpression><![CDATA[com.lp.util.HelperReport.toInteger(
+$V{EinzelGewichtungAb}.indexOf("|") < 0 ?
+$V{EinzelGewichtungAb}.substring(2): $V{EinzelGewichtungAb}.substring(2,$V{EinzelGewichtungAb}.indexOf("|"))
+)]]></variableExpression>
+	</variable>
+	<variable name="SummeEinzelGewichtung" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$V{EinzelGewichtung} == null ? 0 : $V{EinzelGewichtung}.intValue()]]></variableExpression>
+	</variable>
+	<variable name="SummePunkteGewichtet" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$V{Punkte}==null || $V{EinzelGewichtung}==null ? 0.00 :
+($V{Punkte}.doubleValue() *
+ $V{EinzelGewichtung}.doubleValue() / 100)]]></variableExpression>
+	</variable>
+	<variable name="Klasse" class="java.lang.String">
+		<variableExpression><![CDATA[$V{SummePunkteGewichtet}.doubleValue() >= $P{P_PUNKTEA}.doubleValue() ? "A" :
+   $V{SummePunkteGewichtet}.doubleValue() >= $P{P_PUNKTEB}.doubleValue() &&
+   $V{SummePunkteGewichtet}.doubleValue() < $P{P_PUNKTEA}.doubleValue() ? "B" :
+      $V{SummePunkteGewichtet}.doubleValue() >= $P{P_PUNKTEC}.doubleValue() &&
+      $V{SummePunkteGewichtet}.doubleValue() < $P{P_PUNKTEB}.doubleValue() ? "C" : "D"]]></variableExpression>
+	</variable>
+	<pageHeader>
+		<band height="25" splitType="Stretch">
+			<textField>
+				<reportElement key="Lieferanteneigenschaften" mode="Opaque" x="0" y="0" width="160" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="9cc27c7c-dab2-4b18-97a7-d204a4f20377"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Bewertung"+
+($P{P_DOKUMENTENABLAGE}?" mit Dokumentation":"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="200" y="6" width="50" height="18" uuid="d940abc6-0c2b-4d29-91b3-bd6a042dbdd1"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Eigenschaften
+gewichtet [%]]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="255" y="15" width="310" height="9" uuid="04f293fd-a6ed-47f1-88c7-d789be81dc09"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Wert]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="120" y="15" width="30" height="9" uuid="52ff4f3c-0d31-49b8-b766-3e2d595b3e52"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[[%]]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="160" y="6" width="40" height="18" forecolor="#000000" backcolor="#FFFFFF" uuid="24a316b6-50d4-4575-bbb0-2431e4e0e6a3"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Gewichtung
+[%]]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="15" width="120" height="9" uuid="75fb1e1f-85f9-470c-b5ba-a7ca46b038cb"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Eigenschaft]]></text>
+			</staticText>
+			<line>
+				<reportElement mode="Transparent" x="0" y="24" width="450" height="1" uuid="98c2e8a6-2344-4fe8-b5f9-5200d48993e2"/>
+			</line>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="9" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="Punkte" positionType="Float" x="120" y="0" width="30" height="9" isRemoveLineWhenBlank="true" uuid="8450232d-b24c-4901-a707-33c1bf4dbb36"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Punkte}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="Feld ohne Checkbox ohne Editor" positionType="Float" x="255" y="0" width="310" height="9" isRemoveLineWhenBlank="true" uuid="28e87a49-b976-414f-9636-43183c1e4506"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Inhalt}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+				<reportElement key="Einzelgewichtung" positionType="Float" x="210" y="0" width="40" height="9" isRemoveLineWhenBlank="true" uuid="649929c7-4b3a-462d-ba13-cfcddb2f7025"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Punkte}.doubleValue() *
+$V{EinzelGewichtung}.doubleValue() / 100]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement key="Gewichtung" positionType="Float" x="160" y="0" width="40" height="9" isRemoveLineWhenBlank="true" uuid="7eae0576-45d0-4f2e-9b9d-2eb787174d61"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{EinzelGewichtung}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="Druckname" positionType="Float" x="0" y="0" width="120" height="9" isRemoveLineWhenBlank="true" uuid="2bb7490b-7bf1-4a11-ba44-a20b973e095e"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{c_druckname}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="175" splitType="Stretch">
+			<textField>
+				<reportElement mode="Transparent" x="0" y="10" width="220" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3d110497-dfa8-41e4-8dbc-e335e175c501"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Gewichtung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="210" y="1" width="40" height="9" forecolor="#000000" backcolor="#FFFFFF" uuid="e50e4893-1a0b-4637-8c6e-d60d860cca84"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SummePunkteGewichtet}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="160" y="1" width="40" height="9" forecolor="#000000" backcolor="#FFFFFF" uuid="8deaa48d-44b9-4e50-b484-4d7d66e770b9"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SummeEinzelGewichtung}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="160" y="0" width="100" height="1" uuid="4468d285-6cda-4fd9-9cb5-5e4af98d209e"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement mode="Transparent" x="0" y="20" width="220" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="e0180192-cc02-4cd8-bf2a-39f686f58262"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Klasse "+$V{Klasse}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Bewertung A" x="0" y="32" width="409" height="105" uuid="df9e63c2-cb5d-46ff-9f90-8efa0f114e53">
+					<printWhenExpression><![CDATA[$V{Klasse}.equals("A")]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<text><![CDATA[Wir gratulieren zur hervorragenden Qualität und Liefertreue im oben angeführten Zeitraum.
+Bitte achten Sie darauf Ihre Qualität zu halten.
+Wir freuen uns auf die weitere Zusammenarbeit.
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Bewertung B" mode="Transparent" x="0" y="32" width="409" height="105" forecolor="#000000" backcolor="#FFFFFF" uuid="47dc55b1-8e7d-44db-a91c-9cb126589fa0">
+					<printWhenExpression><![CDATA[$V{Klasse}.equals("B")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Vielen Dank für Ihre Lieferungen im oben angeführten Zeitraum.
+Leider fehlt zum A Lieferanten noch ein wenig.
+Bitte arbeiten Sie daran Ihre Qualität zu verbessern.
+Unser QUalitäsmanagment unterstützt Sie gerne.
+
+Wir freuen uns auf die weitere Zusammenarbeit.
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Bewertung C" mode="Transparent" x="0" y="32" width="409" height="105" forecolor="#000000" backcolor="#FFFFFF" uuid="7b52ed56-d446-4202-ac94-704b89055f16">
+					<printWhenExpression><![CDATA[$V{Klasse}.equals("C")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Leider entspricht die Lieferung Ihrer Produkte und Dienstleistungen im angeführten Zeitraum
+nur sehr mangelhaft unseren Qualitätsanforderungen.
+
+Wir fordern Sie auf uns binnen 30Tagen einen Maßnahmenplan zur Verbesserung
+Ihrer Qualität und Termintreue zu übermitteln.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Bewertung D" mode="Transparent" x="0" y="32" width="409" height="105" forecolor="#000000" backcolor="#FFFFFF" uuid="140ececa-ea10-4133-8ce2-69dd11a5e7f8">
+					<printWhenExpression><![CDATA[$V{Klasse}.equals("D")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Ihre Lieferungen im angeführten Zeitraum entsprechen bei weitem nicht den
+geforderten Qualitätsstandards.
+
+Wir müssen Sie daher leider als Lieferant sperren.
+Um weiterhin Anfragen von uns zu erhalten, legen Sie uns einen Maßnahmenplan vor
+in dem ralistisch und glaubwürdig eine dramatische Verbesserung Ihrer Qualität dargelegt wird.
+
+Bis zur Freigabe durch unser Qualitätsmanagement bleiben Sie leider als Lieferant gesperrt.]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement key="MfG" x="0" y="137" width="409" height="36" uuid="053cd0af-7e00-4e70-9599-35dd61a35096"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["mit freundlichen Grüßen\n\n"+
+$P{P_MANDANT_OBJ}.getName1()+"\n"+
+($P{P_MANDANT_OBJ}.getAktuellerBenutzerTitel()==null   ?"":$P{P_MANDANT_OBJ}.getAktuellerBenutzerTitel()+" ")+
+($P{P_MANDANT_OBJ}.getAktuellerBenutzerVorname()==null ?"":$P{P_MANDANT_OBJ}.getAktuellerBenutzerVorname()+" ")+
+($P{P_MANDANT_OBJ}.getAktuellerBenutzerNachname()==null?"":$P{P_MANDANT_OBJ}.getAktuellerBenutzerNachname()+" ")+
+($P{P_MANDANT_OBJ}.getAktuellerBenutzerNTitel()==null  ?"":$P{P_MANDANT_OBJ}.getAktuellerBenutzerNTitel())]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="Update der Punkte" x="260" y="20" width="275" height="12" uuid="fd8f0d98-deb1-4bde-a869-09d62183ea72">
+					<printWhenExpression><![CDATA[$P{P_DOKUMENTENABLAGE}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[com.lp.util.HelperReport.updateLieferantBeurteilung($P{LIEFERANT_I_ID},
+    $V{SummePunkteGewichtet}.intValue(),
+    $P{P_BIS},
+    $V{Klasse},
+    $P{P_MANDANT_OBJ}.getTheClientDto()) == null ? "Update Beurteilung nicht möglich" : ""]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement key="Bis" mode="Transparent" x="260" y="10" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9fa12981-149f-4a4d-898a-388dc2d87527"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_BIS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

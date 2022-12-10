@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proj_projekt_journal_offene_gantt_zeitachse" pageWidth="782" pageHeight="842" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0ac2a9db-f95f-4192-b3dc-0ae5e2410bc1">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Termin">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_WANN}==null]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#FFA132" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_WANN}.before( $V{V_HEUTE} ) &&
+($F{F_ERLEDIGUNGSGRAD} == null || $F{F_ERLEDIGUNGSGRAD}.doubleValue() < 95)]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#FF0000" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String"/>
+	<parameter name="Von" class="java.lang.String"/>
+	<parameter name="Bis" class="java.lang.String"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="BereichVon" class="java.util.Date"/>
+	<parameter name="BereichBis" class="java.util.Date"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<field name="Sort" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="F_WER" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="F_WANN" class="java.util.Date"/>
+	<field name="F_DAUER" class="java.lang.Double"/>
+	<field name="F_HISTORY_TITEL" class="java.lang.String"/>
+	<field name="F_ERLEDIGUNGSGRAD" class="java.lang.Double"/>
+	<variable name="V_HEUTE" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[com.lp.util.Helper.cutDate(Calendar.getInstance(Locale.GERMAN).getTime())]]></variableExpression>
+		<initialValueExpression><![CDATA[com.lp.util.Helper.cutDate(Calendar.getInstance(Locale.GERMAN).getTime())]]></initialValueExpression>
+	</variable>
+	<variable name="DauerTageDouble" class="java.lang.Double" resetType="None">
+		<variableExpression><![CDATA[$F{F_DAUER}==null ? new Double(1.0) : $F{F_DAUER}.doubleValue() / 6.0]]></variableExpression>
+	</variable>
+	<variable name="DauerTage" class="java.lang.Integer" resetType="None">
+		<variableExpression><![CDATA[$V{DauerTageDouble}.intValue()]]></variableExpression>
+	</variable>
+	<variable name="Beginn" class="java.util.Date">
+		<variableExpression><![CDATA[$F{F_WANN}==null ? null :
+($F{F_WANN}.before($P{BereichVon}) ? $P{BereichVon} : $F{F_WANN})]]></variableExpression>
+	</variable>
+	<variable name="Ende" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[$V{Beginn} == null ? null :
+com.lp.util.Helper.addiereTageZuDatum( $V{Beginn}, $V{DauerTage} )]]></variableExpression>
+	</variable>
+	<title>
+		<band height="10">
+			<subreport>
+				<reportElement key="Subreport_Tage" positionType="Float" x="270" y="0" width="727" height="10" uuid="ba3589d1-5c55-4833-846e-8437474e8499"/>
+				<subreportParameter name="Ueberschrift">
+					<subreportParameterExpression><![CDATA[true]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Bis">
+					<subreportParameterExpression><![CDATA[$V{Ende}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Von">
+					<subreportParameterExpression><![CDATA[$F{F_WANN}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="BereichBis">
+					<subreportParameterExpression><![CDATA[$P{BereichBis}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="BereichVon">
+					<subreportParameterExpression><![CDATA[$P{BereichVon}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[com.lp.util.HelperReport.getSubreportKalendertage(
+$P{BereichVon},
+$P{BereichBis},
+$P{P_MANDANT_OBJ}.getTheClientDto())
+/*
+$P{P_SQLEXEC}.subreport(
+"SELECT day::date "+
+"FROM   generate_series(timestamp '"+$P{Von}+"', timestamp '"+$P{Bis}+"', interval  '1 day') day;",
+new String[] {"day"}
+) */]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"/proj_projekt_journal_offene_gantt_zeitachse_detail.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="0" width="60" height="10" uuid="9b5d895d-dc72-49e1-9426-7172cbe1b579"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Wer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="FixRelativeToBottom" x="199" y="0" width="45" height="10" uuid="a009e10b-deb7-4570-a982-50424bdd6cc9"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Termin]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="FixRelativeToBottom" x="250" y="0" width="20" height="10" uuid="392edba5-90df-4a15-97fc-0f636280171d"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[D.[h]]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="FixRelativeToBottom" x="60" y="0" width="139" height="10" uuid="2738e2fa-a637-436b-84f9-cc8e989a8a68"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Was]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Fertig" positionType="FixRelativeToBottom" x="244" y="0" width="6" height="10" uuid="50bf9eda-5cb3-41ce-a700-1646f8c7326f"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[F]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[$F{F_WER}!=null && $F{F_WANN}!=null]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="Wann==null" x="199" y="0" width="45" height="10" forecolor="#FFA132" backcolor="#FFA132" uuid="168f6b73-26de-480c-8df9-e69859f620f8">
+					<printWhenExpression><![CDATA[$F{F_WANN}==null]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="VorHeute" x="199" y="0" width="45" height="10" forecolor="#FF0000" backcolor="#FF0000" uuid="f382fb8a-fe8d-4133-ade0-92fb6d8dae0c">
+					<printWhenExpression><![CDATA[$F{F_WANN}!=null &&
+$F{F_WANN}.before( $V{V_HEUTE} ) &&
+($F{F_ERLEDIGUNGSGRAD} == null || $F{F_ERLEDIGUNGSGRAD}.doubleValue() < 95)]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="60" height="10" uuid="7eb04eec-5013-4e2c-b71a-015e566eccde"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_WER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement style="Termin" mode="Transparent" x="199" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="64aa2e84-0b8c-4d65-811a-a9db5329c2ef"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_WANN}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="250" y="0" width="20" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="19b78000-55a6-4dc1-8740-f3c3cc8772e2"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_DAUER}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement key="Subreport_Tage" positionType="Float" x="270" y="0" width="727" height="10" uuid="d620aeda-a50a-48ad-a1c8-47f479f06d87">
+					<printWhenExpression><![CDATA[$F{F_WANN} != null]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="Ueberschrift">
+					<subreportParameterExpression><![CDATA[false]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Bis">
+					<subreportParameterExpression><![CDATA[$V{Ende}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Von">
+					<subreportParameterExpression><![CDATA[$F{F_WANN}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[com.lp.util.HelperReport.getSubreportKalendertage(
+$P{BereichVon},
+$P{BereichBis},
+$P{P_MANDANT_OBJ}.getTheClientDto())
+/*
+$P{P_SQLEXEC}.subreport(
+"SELECT day::date "+
+"FROM   generate_series(timestamp '"+$P{Von}+"', timestamp '"+$P{Bis}+"', interval  '1 day') day;",
+new String[] {"day"}
+)
+*/]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"/proj_projekt_journal_offene_gantt_zeitachse_detail.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<textField>
+				<reportElement x="60" y="0" width="139" height="10" uuid="9c0c81b8-2303-4d39-9a60-dcf1ec153a96"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_HISTORY_TITEL}==null?"______________________":$F{F_HISTORY_TITEL}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false" hyperlinkType="GOTO">
+				<reportElement key="Fertig" mode="Transparent" x="244" y="0" width="6" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="5928f78c-d9fb-4a27-bc9f-feabe6fdcd1a"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ERLEDIGUNGSGRAD}==null ? "?" :
+($F{F_ERLEDIGUNGSGRAD}.doubleValue() < 10 ? "0" :
+    ($F{F_ERLEDIGUNGSGRAD}.doubleValue() <= 50 ? "-" :
+        ($F{F_ERLEDIGUNGSGRAD}.doubleValue() <= 75 ? "/" :
+            ($F{F_ERLEDIGUNGSGRAD}.doubleValue() <= 95 ? "^" : "√"
+            )
+        )
+    )
+)]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA["Erledigungsgrad"]]></hyperlinkTooltipExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

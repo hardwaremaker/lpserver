@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_liquiditaetsvorschau" pageWidth="595" pageHeight="842" columnWidth="521" leftMargin="44" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="bcb0795d-2f47-4886-b862-5116510ebd9a">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_liquiditaetsvorschau" pageWidth="595" pageHeight="842" columnWidth="531" leftMargin="44" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="bcb0795d-2f47-4886-b862-5116510ebd9a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="21"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="419"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -40,6 +40,17 @@
 	<parameter name="P_MIT_OFFENEN_ANGEBOTEN" class="java.lang.Boolean" isForPrompting="false"/>
 	<parameter name="P_MIT_OFFENEN_AUFTRAEGEN" class="java.lang.Boolean" isForPrompting="false"/>
 	<parameter name="P_MIT_OFFENEN_BESTELLUNGEN" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_MIT_ABGABEN" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_ERZIELTERMIN_NACH_FREIGABEDATUM" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_MIT_AB_ZAHL_ZEITPLAN" class="java.lang.Boolean" isForPrompting="false">
+		<defaultValueExpression><![CDATA[false]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_SUBREPORT_ANGELEGTE_RECHNUNGEN" class="java.lang.Object" isForPrompting="false"/>
+	<parameter name="P_OHNE_VERBUNDENE_UNTERNEHMEN" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
 	<field name="Beleg" class="java.lang.String"/>
 	<field name="Jahr" class="java.lang.Integer"/>
 	<field name="Woche" class="java.lang.Integer"/>
@@ -49,23 +60,64 @@
 	<field name="ZieltageVereinbartesZahlungsziel" class="java.lang.Integer"/>
 	<field name="ZieltageZahlungsmoral" class="java.lang.Integer"/>
 	<field name="Importiert" class="java.lang.Boolean"/>
+	<field name="Artikelnummer" class="java.lang.String"/>
+	<field name="Bezeichnung" class="java.lang.String"/>
+	<field name="Zusatzbezeichnung" class="java.lang.String"/>
+	<field name="Belegunterart" class="java.lang.String"/>
+	<variable name="MitlaufendeSaldoDrucken" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[true]]></variableExpression>
+		<initialValueExpression><![CDATA[true]]></initialValueExpression>
+	</variable>
+	<variable name="Zebra" class="java.math.BigDecimal" resetType="Page">
+		<variableExpression><![CDATA[$F{Netto}.compareTo(new BigDecimal(0.00)) != 0 ?
+$V{Zebra}.negate() :
+$V{Zebra}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(1)]]></initialValueExpression>
+	</variable>
+	<variable name="Abgaben" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{Beleg}.startsWith("Nettogehaelter") ||
+$F{Beleg}.startsWith("Sozialabgaben") ||
+$F{Beleg}.startsWith("Lohnsteuer") ||
+$F{Beleg}.startsWith("UST") ||
+$F{Beleg}.startsWith("VST")]]></variableExpression>
+	</variable>
+	<variable name="B_ZUGANG" class="java.lang.Boolean">
+		<variableExpression><![CDATA[!$F{Beleg}.startsWith( "E" ) &&
+!$F{Beleg}.startsWith( "B" ) &&
+!$F{Beleg}.startsWith( "W" ) &&
+!$F{Beleg}.startsWith( "ZT" ) &&
+!$F{Beleg}.startsWith( "ZK" ) &&
+!$F{Beleg}.startsWith( "ZP BS" ) &&
+!$V{Abgaben}]]></variableExpression>
+	</variable>
+	<variable name="Nicht_Beruecksichtigen" class="java.lang.Boolean">
+		<variableExpression><![CDATA[!$P{P_OHNE_VERBUNDENE_UNTERNEHMEN} ? false :
+($F{Partner}!=null && $F{Partner}.compareTo($P{P_MANDANT_OBJ}.getName1())==0) ? true : false]]></variableExpression>
+	</variable>
 	<variable name="Eingang" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
-		<variableExpression><![CDATA[!$F{Beleg}.startsWith( "ER" ) ?
-($F{Netto}.
- add(($F{Mwst}==null?new BigDecimal(0.00):$F{Mwst}) ) ) :
-new BigDecimal(0.00)]]></variableExpression>
+		<variableExpression><![CDATA[$V{B_ZUGANG} && !$V{Nicht_Beruecksichtigen} ?
+($F{Netto}.add(($F{Mwst}==null ? BigDecimal.ZERO : $F{Mwst}) ) ) :
+BigDecimal.ZERO]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="Abgang" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
-		<variableExpression><![CDATA[$F{Beleg}.startsWith( "ER" ) ?
-($F{Netto}.
- add(($F{Mwst}==null?new BigDecimal(0.00):$F{Mwst}) ) ) :
-new BigDecimal(0.00)]]></variableExpression>
+		<variableExpression><![CDATA[!$V{B_ZUGANG}  && !$V{Nicht_Beruecksichtigen} ?
+    ($F{Netto}.add(($F{Mwst}==null ? BigDecimal.ZERO : $F{Mwst}) ) )
+:
+    BigDecimal.ZERO
+/*
+!$V{B_ZUGANG}  && !$V{Nicht_Beruecksichtigen} ?
+($F{Netto}.add(($F{Mwst}==null ? BigDecimal.ZERO : $F{Mwst}) ) ).multiply(
+$F{Beleg}.startsWith( "ZP BS" ) ? new BigDecimal(-1) : new BigDecimal(1)
+)
+:
+BigDecimal.ZERO
+*/]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<variable name="Wochensaldo" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
-		<variableExpression><![CDATA[$F{Netto}.
- add($F{Mwst}==null?new BigDecimal(0.00):$F{Mwst})]]></variableExpression>
+		<variableExpression><![CDATA[$V{Nicht_Beruecksichtigen} ? BigDecimal.ZERO :
+($F{Netto}.add($F{Mwst}==null?BigDecimal.ZERO:$F{Mwst}))]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0.00)]]></initialValueExpression>
 	</variable>
 	<variable name="Saldo" class="java.math.BigDecimal" incrementType="Group" incrementGroup="KW" calculation="Sum">
@@ -73,18 +125,145 @@ new BigDecimal(0.00)]]></variableExpression>
 add($V{Abgang})]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0.00)]]></initialValueExpression>
 	</variable>
+	<variable name="B_Allgemein" class="java.lang.Boolean">
+		<variableExpression><![CDATA[!$F{Importiert}.booleanValue() &&
+!($F{Beleg}.startsWith("A")) &&
+!($F{Beleg}.startsWith("BS")) &&
+!($F{Beleg}.startsWith("WE")) &&
+!($F{Beleg}.startsWith("ZK")) &&
+!($F{Beleg}.startsWith("Z")) &&
+!$V{Abgaben}.booleanValue() &&
+$F{Netto}.compareTo(new BigDecimal(0.00)) != 0 &&
+!$V{Nicht_Beruecksichtigen}]]></variableExpression>
+	</variable>
+	<variable name="B_Plankosten" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{Importiert}.booleanValue() &&
+!$V{Nicht_Beruecksichtigen} &&
+$F{Netto}.compareTo(BigDecimal.ZERO) != 0]]></variableExpression>
+	</variable>
+	<variable name="B_Angebot" class="java.lang.Boolean">
+		<variableExpression><![CDATA[!$F{Importiert}.booleanValue() &&
+($F{Beleg}.startsWith("A") || $F{Beleg}.startsWith("ZP") || $F{Beleg}.startsWith("ZT") ) &&
+$F{Netto}.compareTo(new BigDecimal(0.00)) != 0 &&
+!$V{Nicht_Beruecksichtigen}]]></variableExpression>
+	</variable>
+	<variable name="B_Bestellung" class="java.lang.Boolean">
+		<variableExpression><![CDATA[!$F{Importiert}.booleanValue() &&
+($F{Beleg}.startsWith("BS") ||
+ $F{Beleg}.startsWith("WE")) &&
+$F{Netto}.compareTo(new BigDecimal(0.00)) != 0 &&
+!$V{Nicht_Beruecksichtigen}]]></variableExpression>
+	</variable>
+	<variable name="B_Abgaben" class="java.lang.Boolean">
+		<variableExpression><![CDATA[!$F{Importiert}.booleanValue() &&
+$V{Abgaben} &&
+!$V{Nicht_Beruecksichtigen}]]></variableExpression>
+	</variable>
+	<variable name="B_Zusatzkosten" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{Beleg}.startsWith("ZK") &&
+$F{Netto}.compareTo(new BigDecimal(0.00)) != 0 &&
+!$V{Nicht_Beruecksichtigen}
+/* Zusatzkosten = Plankosten */]]></variableExpression>
+	</variable>
+	<variable name="Wochensaldo_Allgemein" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
+		<variableExpression><![CDATA[!$V{B_Allgemein} ? BigDecimal.ZERO :
+($F{Netto}.add($F{Mwst}==null?BigDecimal.ZERO:$F{Mwst}))]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0.00)]]></initialValueExpression>
+	</variable>
+	<variable name="Wochensaldo_Plankosten" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
+		<variableExpression><![CDATA[!$V{B_Plankosten} ? BigDecimal.ZERO :
+($F{Netto}.add($F{Mwst}==null?BigDecimal.ZERO:$F{Mwst}))]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0.00)]]></initialValueExpression>
+	</variable>
+	<variable name="Wochensaldo_Angebot" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
+		<variableExpression><![CDATA[!$V{B_Angebot} ? BigDecimal.ZERO :
+($F{Netto}.add($F{Mwst}==null?BigDecimal.ZERO:$F{Mwst}))]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0.00)]]></initialValueExpression>
+	</variable>
+	<variable name="Wochensaldo_Bestellung" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
+		<variableExpression><![CDATA[!$V{B_Bestellung} ? BigDecimal.ZERO :
+($F{Netto}.add($F{Mwst}==null?BigDecimal.ZERO:$F{Mwst}))]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0.00)]]></initialValueExpression>
+	</variable>
+	<variable name="Wochensaldo_Abgaben" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
+		<variableExpression><![CDATA[!$V{B_Abgaben} ? BigDecimal.ZERO :
+($F{Netto}.add($F{Mwst}==null?BigDecimal.ZERO:$F{Mwst}))]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0.00)]]></initialValueExpression>
+	</variable>
+	<variable name="Wochensaldo_Zusatzkosten" class="java.math.BigDecimal" resetType="Group" resetGroup="KW" calculation="Sum">
+		<variableExpression><![CDATA[!$V{B_Zusatzkosten} ? BigDecimal.ZERO :
+($F{Netto}.add($F{Mwst}==null?BigDecimal.ZERO:$F{Mwst}))]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0.00)]]></initialValueExpression>
+	</variable>
+	<variable name="TXT_Wochensaldo_Angebote" class="java.lang.String">
+		<variableExpression><![CDATA[(($P{P_MIT_OFFENEN_ANGEBOTEN}?"Angebote,":" ")+
+ ($P{P_MIT_OFFENEN_AUFTRAEGEN}?"Aufträge,":" ")+
+ ($P{P_MIT_AB_ZAHL_ZEITPLAN} ? "Zahl- & Zeitplan":"")).trim()]]></variableExpression>
+	</variable>
 	<group name="KW">
 		<groupExpression><![CDATA[new Integer($F{Jahr}.intValue() * 100 + $F{Woche}.intValue())]]></groupExpression>
 		<groupHeader>
 			<band/>
 		</groupHeader>
 		<groupFooter>
-			<band height="15">
+			<band height="77">
 				<line>
-					<reportElement x="0" y="0" width="521" height="1" uuid="abc3c644-8f00-404a-943a-bb0f35d6dfa7"/>
+					<reportElement x="0" y="0" width="531" height="1" uuid="abc3c644-8f00-404a-943a-bb0f35d6dfa7"/>
+					<graphicElement>
+						<pen lineWidth="0.5"/>
+					</graphicElement>
 				</line>
 				<textField pattern="###0" isBlankWhenNull="false">
-					<reportElement key="Jahr" mode="Transparent" x="0" y="1" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="81e28188-7f33-4947-856f-6f3f4e4e1384"/>
+					<reportElement key="Jahr" mode="Transparent" x="0" y="1" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="81e28188-7f33-4947-856f-6f3f4e4e1384">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Allgemein}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="false">
+					<reportElement key="Woche" mode="Transparent" x="20" y="1" width="15" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="90aa809f-de49-41a6-9b1c-9da980258510">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Allgemein}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="false">
+					<reportElement key="getMonatVonJahrUndWoche" mode="Transparent" x="40" y="1" width="145" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="9b1c97d1-cf9b-43d5-a18f-4e7f8de82e5e">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Allgemein}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Allgemein"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="V_Wochensaldo" x="410" y="1" width="60" height="10" isRemoveLineWhenBlank="true" uuid="cb833a10-4eba-4d09-915c-d1d5a6c1bf23">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Allgemein}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Wochensaldo_Allgemein}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="false">
+					<reportElement key="Jahr" positionType="Float" mode="Transparent" x="0" y="62" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2fa27d39-24cb-4c46-b6bb-ae58b3bc812e"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -97,7 +276,9 @@ add($V{Abgang})]]></variableExpression>
 					<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0" isBlankWhenNull="false">
-					<reportElement key="Woche" mode="Transparent" x="20" y="1" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="90aa809f-de49-41a6-9b1c-9da980258510"/>
+					<reportElement key="Woche" positionType="Float" mode="Transparent" x="20" y="62" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="00e5ba6e-63ed-4861-9e7c-5fc23cfd83bf">
+						<printWhenExpression><![CDATA[$F{Jahr}.intValue() != 9999]]></printWhenExpression>
+					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -109,52 +290,305 @@ add($V{Abgang})]]></variableExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement key="getMonatVonJahrUndWoche" x="40" y="1" width="145" height="11" uuid="9b1c97d1-cf9b-43d5-a18f-4e7f8de82e5e"/>
-					<textElement>
-						<font size="8"/>
+				<textField pattern="###0" isBlankWhenNull="false">
+					<reportElement key="getMonatVonJahrUndWoche" positionType="Float" mode="Transparent" x="40" y="62" width="145" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="31b05688-8012-4589-ac7d-4edf63c0ef17">
+						<printWhenExpression><![CDATA[$F{Jahr}.intValue() != 9999]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[com.lp.util.HelperReport.getMonatVonJahrUndWoche($F{Jahr},$F{Woche},$P{REPORT_LOCALE})]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00;-#,##0.00">
-					<reportElement key="V_Eingang" x="200" y="1" width="60" height="11" uuid="ad376eeb-6444-4636-b857-eac077f8160d"/>
-					<textElement textAlignment="Right">
-						<font size="8"/>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+					<reportElement key="V_Eingang" positionType="Float" mode="Transparent" x="210" y="62" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e0179a3a-8174-44f6-ae3e-1f7e1272a0ad"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Eingang}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00">
-					<reportElement key="V_Abgang" x="300" y="1" width="60" height="11" uuid="98cbf29e-b7f7-492d-9b5d-84a191bf6536"/>
+					<reportElement key="V_Abgang" positionType="Float" x="310" y="62" width="60" height="10" uuid="17a70b17-e1d5-4c27-ba57-c509a64044aa"/>
 					<textElement textAlignment="Right">
-						<font size="8"/>
+						<font fontName="Arial" size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Abgang}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00">
-					<reportElement key="V_Wochensaldo" x="400" y="1" width="60" height="11" uuid="cb833a10-4eba-4d09-915c-d1d5a6c1bf23"/>
+					<reportElement key="V_Wochensaldo" positionType="Float" x="410" y="62" width="60" height="10" uuid="40c61aac-5d65-4932-b76d-9e4c479dff77"/>
 					<textElement textAlignment="Right">
-						<font size="8"/>
+						<font fontName="Arial" size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Wochensaldo}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00;-#,##0.00">
-					<reportElement key="Saldo+Kontostand" style="Negativ ist rot" x="460" y="1" width="60" height="11" uuid="6938eb4a-f525-4a33-94ec-7433d27eac93"/>
+					<reportElement key="Saldo+Kontostand" style="Negativ ist rot" positionType="Float" x="470" y="62" width="60" height="10" uuid="f5715c89-bc4f-4870-97ce-c1d596e5c36f"/>
 					<textElement textAlignment="Right">
-						<font size="8"/>
+						<font fontName="Arial" size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Saldo}.add($P{P_KONTOSTAND})]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="0" y="61" width="531" height="1" uuid="57c68e92-1241-4f7f-b4be-d3f424027ab3"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineStyle="Solid"/>
+					</graphicElement>
+				</line>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement key="V_Wochensaldo" positionType="Float" x="410" y="11" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#0000FF" uuid="474d4573-3716-44b0-9128-06dc972d25a6">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Plankosten}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Wochensaldo_Plankosten}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Woche" positionType="Float" mode="Transparent" x="20" y="11" width="15" height="10" isRemoveLineWhenBlank="true" forecolor="#0000FF" backcolor="#FFFFFF" uuid="1ab72b6f-2c95-458f-ae5a-73ea996844fc">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Plankosten}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="getMonatVonJahrUndWoche" positionType="Float" mode="Transparent" x="40" y="11" width="145" height="10" isRemoveLineWhenBlank="true" forecolor="#0000FF" backcolor="#FFFFFF" uuid="fa82b86e-8e55-460c-bb19-1c0c3cf36853">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Plankosten}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Plankosten"]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Jahr" positionType="Float" mode="Transparent" x="0" y="11" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#0000FF" backcolor="#FFFFFF" uuid="c42f2b05-3014-4a59-9dc4-5ee3a44302cc">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Plankosten}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement key="V_Wochensaldo" positionType="Float" x="410" y="21" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#00CC00" uuid="cddbb465-a6a8-442b-b302-5cf132401b29">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Angebot}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Wochensaldo_Angebot}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Woche" positionType="Float" mode="Transparent" x="20" y="21" width="15" height="10" isRemoveLineWhenBlank="true" forecolor="#00CC00" backcolor="#FFFFFF" uuid="5ee2b71f-6fa3-4062-a3eb-36c9a972bdea">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Angebot}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="getMonatVonJahrUndWoche" positionType="Float" mode="Transparent" x="40" y="21" width="145" height="10" isRemoveLineWhenBlank="true" forecolor="#00CC00" backcolor="#FFFFFF" uuid="56e0b778-f4a1-41ad-8860-0eeb91474de2">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Angebot}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($V{TXT_Wochensaldo_Angebote}.length()==0 ? "" :
+    $V{TXT_Wochensaldo_Angebote}+", ")+"wiederholende ABs"]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Jahr" positionType="Float" mode="Transparent" x="0" y="21" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#00CC00" backcolor="#FFFFFF" uuid="3997d011-1c00-45a7-ad61-f360d0d62413">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Angebot}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement key="V_Wochensaldo" positionType="Float" x="410" y="31" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#009999" uuid="77e1d5b0-70c2-49f6-b038-c856ebff6d15">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Bestellung}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Wochensaldo_Bestellung}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Woche" positionType="Float" mode="Transparent" x="20" y="31" width="15" height="10" isRemoveLineWhenBlank="true" forecolor="#009999" backcolor="#FFFFFF" uuid="7d5c7d79-0c79-4fd5-94fd-52f4cbf11d97">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Bestellung}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="getMonatVonJahrUndWoche" positionType="Float" mode="Transparent" x="40" y="31" width="145" height="10" isRemoveLineWhenBlank="true" forecolor="#009999" backcolor="#FFFFFF" uuid="a026b01b-3427-4df4-bbd7-b0d37b685deb">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Bestellung}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Bestellung"]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Jahr" positionType="Float" mode="Transparent" x="0" y="31" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#009999" backcolor="#FFFFFF" uuid="45d49a82-cd1b-4e6e-a6b7-3753963b1f61">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Bestellung}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement key="V_Wochensaldo" positionType="Float" x="410" y="41" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#CC00CC" uuid="55ef5274-baa3-46f1-b5a5-48712253e4db">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Abgaben}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Wochensaldo_Abgaben}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Woche" positionType="Float" mode="Transparent" x="20" y="41" width="15" height="10" isRemoveLineWhenBlank="true" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="204a7d95-f31c-4fe7-91d2-642441eb0bca">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Abgaben}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="getMonatVonJahrUndWoche" positionType="Float" mode="Transparent" x="40" y="41" width="145" height="10" isRemoveLineWhenBlank="true" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="2397d64b-7651-431f-a503-25074cacd09e">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Abgaben}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Abgaben"]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Jahr" positionType="Float" mode="Transparent" x="0" y="41" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="70da7fd1-d1f1-4b66-9f93-5a6be76bead5">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Abgaben}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement key="V_Wochensaldo" positionType="Float" x="410" y="51" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#FF9900" uuid="f17ac7c5-24a8-4db5-821c-c76933e09c56">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Zusatzkosten}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Wochensaldo_Zusatzkosten}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Woche" positionType="Float" mode="Transparent" x="20" y="51" width="15" height="10" isRemoveLineWhenBlank="true" forecolor="#FF9900" backcolor="#FFFFFF" uuid="b3ca4ec8-ed2c-468d-8843-b07368ca5a5d">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Zusatzkosten}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="getMonatVonJahrUndWoche" positionType="Float" mode="Transparent" x="40" y="51" width="145" height="10" isRemoveLineWhenBlank="true" forecolor="#FF9900" backcolor="#FFFFFF" uuid="b8d19c59-7057-4b29-8449-80ad7aa656d8">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Zusatzkosten}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Zusatzkosten"]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0" isBlankWhenNull="true">
+					<reportElement key="Jahr" positionType="Float" mode="Transparent" x="0" y="51" width="25" height="10" isRemoveLineWhenBlank="true" forecolor="#FF9900" backcolor="#FFFFFF" uuid="d4276d4b-b2e1-4d98-97ec-cf8dffd1a362">
+						<printWhenExpression><![CDATA[$V{Wochensaldo_Zusatzkosten}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+						<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
 	</group>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
 	<title>
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="104" splitType="Stretch">
+		<band height="116" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="400" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2913968b-918f-48b8-9a80-15baca578c43"/>
 				<box>
@@ -195,7 +629,7 @@ add($V{Abgang})]]></variableExpression>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Liqiditätsvorschau" mode="Opaque" x="0" y="20" width="196" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="73aa523e-258a-48ef-ae2a-84e3d79a16ef"/>
+				<reportElement key="Liqiditätsvorschau" mode="Opaque" x="0" y="15" width="196" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="73aa523e-258a-48ef-ae2a-84e3d79a16ef"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -208,7 +642,7 @@ add($V{Abgang})]]></variableExpression>
 				<text><![CDATA[Liquiditätsvorschau]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Betrachtungszeitraum" mode="Transparent" x="196" y="13" width="90" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="090ca67f-e380-4c68-b84d-e7a69c59f8aa"/>
+				<reportElement key="Betrachtungszeitraum" mode="Transparent" x="196" y="22" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="090ca67f-e380-4c68-b84d-e7a69c59f8aa"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -216,19 +650,19 @@ add($V{Abgang})]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Betrachtungszeitraum]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement mode="Transparent" x="286" y="13" width="60" height="12" uuid="836ca060-572a-4971-b15d-5031e206ad1b"/>
+				<reportElement mode="Transparent" x="296" y="22" width="55" height="12" uuid="836ca060-572a-4971-b15d-5031e206ad1b"/>
 				<textElement textAlignment="Right" verticalAlignment="Bottom">
-					<font size="9"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_VON}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Bis" mode="Transparent" x="350" y="13" width="20" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1a872842-873e-46ea-aa4d-70f168d5d12f"/>
+				<reportElement key="Bis" mode="Transparent" x="355" y="22" width="20" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1a872842-873e-46ea-aa4d-70f168d5d12f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -236,19 +670,19 @@ add($V{Abgang})]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
-					<font fontName="Arial" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[bis]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement mode="Transparent" x="376" y="13" width="60" height="12" uuid="c01c29a7-04b9-439f-88b3-f944c33d074a"/>
+				<reportElement mode="Transparent" x="381" y="22" width="60" height="12" uuid="c01c29a7-04b9-439f-88b3-f944c33d074a"/>
 				<textElement verticalAlignment="Bottom">
-					<font size="9"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_BIS}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="P_WAEHRUNG" mode="Transparent" x="446" y="13" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="95db0307-555d-487d-b684-a89e4a610412"/>
+				<reportElement key="P_WAEHRUNG" mode="Transparent" x="446" y="22" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="95db0307-555d-487d-b684-a89e4a610412"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -256,14 +690,14 @@ add($V{Abgang})]]></variableExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Beträge in "+$P{P_WAEHRUNG}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="196" y="25" width="194" height="12" uuid="6acb43f2-420e-4a75-851e-bc043dcf5a5a"/>
+				<reportElement x="0" y="34" width="194" height="12" uuid="6acb43f2-420e-4a75-851e-bc043dcf5a5a"/>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Zahlungsziel nach "+
 ($P{P_ZIELTERMIN_NACH_ZAHLUNGSMORAL} ?
@@ -272,35 +706,46 @@ add($V{Abgang})]]></variableExpression>
 )]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="196" y="37" width="324" height="12" forecolor="#00CC00" uuid="95243a6e-f77e-4f50-9632-997cc2d77e30">
-					<printWhenExpression><![CDATA[$P{P_MIT_OFFENEN_AUFTRAEGEN} || $P{P_MIT_OFFENEN_ANGEBOTEN}]]></printWhenExpression>
-				</reportElement>
+				<reportElement x="0" y="46" width="194" height="12" uuid="2fc30d29-e5c2-4e0f-a42c-8fc07f5cee64"/>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($P{P_MIT_OFFENEN_AUFTRAEGEN} ? "Mit offenen Aufträgen ":"")+
-($P{P_MIT_OFFENEN_ANGEBOTEN} ? "mit offenen Angeboten":"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ER-Fälligkeit nach "+
+($P{P_ERZIELTERMIN_NACH_FREIGABEDATUM} ?
+    "Freigabedatum" :
+    "ER-Datum"
+)]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="196" y="49" width="324" height="12" forecolor="#009999" uuid="9ba28616-553b-4493-8ba6-85e6bc7e7392">
+				<reportElement x="196" y="34" width="324" height="12" isRemoveLineWhenBlank="true" forecolor="#00CC00" uuid="95243a6e-f77e-4f50-9632-997cc2d77e30">
+					<printWhenExpression><![CDATA[$P{P_MIT_OFFENEN_AUFTRAEGEN}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Mit offenen Aufträgen"+
+($P{P_MIT_AB_ZAHL_ZEITPLAN} ? " und Zahl-Zeitplan berücksichtigt":"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="196" y="46" width="119" height="12" isRemoveLineWhenBlank="true" forecolor="#009999" uuid="9ba28616-553b-4493-8ba6-85e6bc7e7392">
 					<printWhenExpression><![CDATA[$P{P_MIT_OFFENEN_BESTELLUNGEN}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Mit offenen Bestellungen"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="196" y="61" width="324" height="12" forecolor="#0000FF" uuid="cba15d31-69e9-4053-9ebc-6bd21f7df7cd">
+				<reportElement x="196" y="70" width="324" height="12" isRemoveLineWhenBlank="true" forecolor="#0000FF" uuid="cba15d31-69e9-4053-9ebc-6bd21f7df7cd">
 					<printWhenExpression><![CDATA[$P{P_MIT_PLANKOSTEN}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Plankosten aus "+$P{P_PLANKOSTEN_DATEI}+" berücksichtigt"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="Jahr" mode="Opaque" x="0" y="83" width="25" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="0369cfbb-c67e-4676-a877-7d0243fc932c"/>
+				<reportElement key="Jahr" mode="Opaque" x="0" y="95" width="25" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="0369cfbb-c67e-4676-a877-7d0243fc932c"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -313,7 +758,7 @@ add($V{Abgang})]]></variableExpression>
 				<text><![CDATA[Jahr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="KW" mode="Opaque" x="20" y="83" width="15" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="69fd2a52-d0bc-42f0-85a4-50d3bdbaede3"/>
+				<reportElement key="KW" mode="Opaque" x="20" y="95" width="15" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="69fd2a52-d0bc-42f0-85a4-50d3bdbaede3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -326,7 +771,7 @@ add($V{Abgang})]]></variableExpression>
 				<text><![CDATA[KW]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Beleg" mode="Opaque" x="40" y="83" width="65" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="8ef9bf8c-84f5-4409-8f20-f0cee667129b"/>
+				<reportElement key="Beleg" mode="Opaque" x="40" y="95" width="65" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="8ef9bf8c-84f5-4409-8f20-f0cee667129b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -336,10 +781,10 @@ add($V{Abgang})]]></variableExpression>
 				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<text><![CDATA[Beleg]]></text>
+				<text><![CDATA[► Beleg]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Partner" mode="Opaque" x="105" y="83" width="95" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="e4ea3e6d-0e68-49ee-a5f3-495503be9769"/>
+				<reportElement key="Partner" mode="Opaque" x="115" y="95" width="95" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="e4ea3e6d-0e68-49ee-a5f3-495503be9769"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -352,7 +797,7 @@ add($V{Abgang})]]></variableExpression>
 				<text><![CDATA[Partner]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Zahlungseingang" mode="Transparent" x="200" y="83" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="01b8c771-c3c3-4067-a97c-7bdacaa32cec"/>
+				<reportElement key="Zahlungseingang" mode="Transparent" x="210" y="95" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="01b8c771-c3c3-4067-a97c-7bdacaa32cec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -365,7 +810,7 @@ add($V{Abgang})]]></variableExpression>
 				<text><![CDATA[Zahl.eingang]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Mwst Eingang" mode="Transparent" x="260" y="73" width="40" height="21" forecolor="#000000" backcolor="#FFFFFF" uuid="df76fcec-49e8-4d15-ad29-a2349994dcb5"/>
+				<reportElement key="Mwst Eingang" mode="Transparent" x="270" y="85" width="40" height="21" forecolor="#000000" backcolor="#FFFFFF" uuid="df76fcec-49e8-4d15-ad29-a2349994dcb5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -379,7 +824,7 @@ add($V{Abgang})]]></variableExpression>
 MwSt]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Abgang" mode="Transparent" x="300" y="83" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="d8bb7ef3-05d7-498d-8bc5-b7d605d719e3"/>
+				<reportElement key="Abgang" mode="Transparent" x="310" y="95" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="d8bb7ef3-05d7-498d-8bc5-b7d605d719e3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -392,7 +837,7 @@ MwSt]]></text>
 				<text><![CDATA[Zahl.abgang]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Mwst Abgang" mode="Transparent" x="360" y="73" width="40" height="21" forecolor="#000000" backcolor="#FFFFFF" uuid="14672dcd-4fea-410c-8146-031fc9733800"/>
+				<reportElement key="Mwst Abgang" mode="Transparent" x="370" y="85" width="40" height="21" forecolor="#000000" backcolor="#FFFFFF" uuid="14672dcd-4fea-410c-8146-031fc9733800"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -406,7 +851,7 @@ MwSt]]></text>
 MwSt]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Wochensaldo" mode="Opaque" x="400" y="83" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="be534848-a254-401c-91a6-89d7261f0a43"/>
+				<reportElement key="Wochensaldo" mode="Opaque" x="410" y="95" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="be534848-a254-401c-91a6-89d7261f0a43"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -419,7 +864,7 @@ MwSt]]></text>
 				<text><![CDATA[Wochensaldo]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Kumulierter Saldo" mode="Transparent" x="460" y="83" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="544c62e8-8f88-4604-9bc9-d625dd2df22b"/>
+				<reportElement key="Kumulierter Saldo" mode="Transparent" x="470" y="95" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="544c62e8-8f88-4604-9bc9-d625dd2df22b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -432,7 +877,7 @@ MwSt]]></text>
 				<text><![CDATA[Kumuliert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="Kontostand" mode="Opaque" x="40" y="94" width="65" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6ea42471-38c8-4282-bd77-5435e8abd26e">
+				<reportElement key="Kontostand" mode="Opaque" x="40" y="106" width="65" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6ea42471-38c8-4282-bd77-5435e8abd26e">
 					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -447,7 +892,7 @@ MwSt]]></text>
 				<text><![CDATA[Kontostand]]></text>
 			</staticText>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="P_KONTOSTAND" mode="Opaque" x="460" y="94" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="ac06b556-a355-4774-bc96-c0c3e9af06e7">
+				<reportElement key="P_KONTOSTAND" mode="Opaque" x="470" y="106" width="60" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="ac06b556-a355-4774-bc96-c0c3e9af06e7">
 					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
@@ -456,21 +901,54 @@ MwSt]]></text>
 				<textFieldExpression><![CDATA[$P{P_KONTOSTAND}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line-2" mode="Opaque" x="0" y="93" width="521" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="5481f87f-8fe2-4cdc-b768-551a2af942e3"/>
+				<reportElement key="line-2" mode="Opaque" x="0" y="105" width="531" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="5481f87f-8fe2-4cdc-b768-551a2af942e3"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
+			<textField>
+				<reportElement x="326" y="46" width="119" height="12" isRemoveLineWhenBlank="true" forecolor="#CC00CC" uuid="d0c3660f-7db2-467e-bf69-72d1a9d450e0">
+					<printWhenExpression><![CDATA[$P{P_MIT_ABGABEN}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Mit Abgaben"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="196" y="58" width="119" height="12" isRemoveLineWhenBlank="true" forecolor="#00CC00" uuid="8535a501-ca12-4375-b462-334df049a943">
+					<printWhenExpression><![CDATA[$P{P_MIT_OFFENEN_ANGEBOTEN}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Mit offenen Angeboten"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="326" y="58" width="194" height="12" forecolor="#FFFFFF" backcolor="#000000" uuid="e5b9ce82-654e-488d-b5aa-b6f14cc33ddc">
+					<printWhenExpression><![CDATA[$P{P_OHNE_VERBUNDENE_UNTERNEHMEN}]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Ohne verbundene Unternehmen]]></text>
+			</staticText>
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="10" splitType="Stretch">
-			<printWhenExpression><![CDATA[!$F{Importiert}.booleanValue() &&
-!($F{Beleg}.startsWith("A")) &&
-!($F{Beleg}.startsWith("BS")) &&
-$F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$V{B_Allgemein}]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="531" height="10" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="b535d6bd-f343-48da-8397-a534f5fc7984">
+					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="Jahr" mode="Opaque" x="0" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="db087c59-a576-42b0-be6e-04101d23c0f2"/>
+				<reportElement key="Jahr" mode="Transparent" x="0" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="db087c59-a576-42b0-be6e-04101d23c0f2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -483,7 +961,7 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="KW" mode="Opaque" x="20" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6a86c04b-641e-4c11-b809-23d97d6bebe8"/>
+				<reportElement key="KW" mode="Transparent" x="20" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6a86c04b-641e-4c11-b809-23d97d6bebe8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -495,8 +973,8 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Beleg" mode="Opaque" x="40" y="0" width="65" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1d801679-e04c-4bbf-b7d4-02a0ff4b1ab3"/>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false" hyperlinkType="GOTO">
+				<reportElement key="Beleg" mode="Transparent" x="40" y="0" width="75" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1d801679-e04c-4bbf-b7d4-02a0ff4b1ab3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -506,10 +984,41 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{Beleg}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{Belegunterart}.startsWith("Zusatzkosten")?"ZK"+$F{Beleg}.substring(2):
+ $F{Beleg})+
+($F{Belegunterart}==null?"":
+ ($F{Belegunterart}.startsWith("Anzahlung")?"/AZ":
+  ($F{Belegunterart}.startsWith("Schluss")?"/SR":
+   ($F{Belegunterart}.startsWith("Eingangsrechnung")?"":
+    "" /* $F{Belegunterart} */
+   )
+  )
+ )
+)]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA[$F{Beleg}.substring(2)+": "+
+$F{Belegunterart}.substring(0,3)+"; "+
+$F{Beleg}.substring(0,2)]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[$F{Belegunterart}!=null ?
+($F{Belegunterart}.startsWith("Anzahlung") ||
+ $F{Belegunterart}.startsWith("Schluss") ||
+ $F{Belegunterart}.startsWith("Rechnung") ? com.lp.util.GotoHelper.goto_RECHNUNG_AUSWAHL() :
+    $F{Belegunterart}.startsWith("Gut") ||
+    $F{Belegunterart}.startsWith("Wert") ? com.lp.util.GotoHelper.goto_GUTSCHRIFT_AUSWAHL() :
+        $F{Belegunterart}.startsWith("Eingangsrechnung")? com.lp.util.GotoHelper.goto_EINGANGSRECHNUNG_AUSWAHL() :
+            $F{Belegunterart}.startsWith("Zusatz")? com.lp.util.GotoHelper.goto_ZUSATZKOSTEN_AUSWAHL() : null
+) :
+($F{Beleg}.startsWith("BS") ||
+ $F{Beleg}.startsWith("WE")) ? com.lp.util.GotoHelper.goto_BESTELLUNG_AUSWAHL() :
+    $F{Beleg}.startsWith("AB") ? com.lp.util.GotoHelper.goto_AUFTRAG_AUSWAHL() :
+        $F{Beleg}.startsWith("AG") ? com.lp.util.GotoHelper.goto_ANGEBOT_AUSWAHL() : null]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{Beleg}.substring(2)]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Partner" mode="Opaque" x="105" y="0" width="95" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="91ef4524-df8a-41ca-8fc6-2e791e2a26ea"/>
+				<reportElement key="Partner" mode="Transparent" x="115" y="0" width="95" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="91ef4524-df8a-41ca-8fc6-2e791e2a26ea"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -522,8 +1031,8 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Partner}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Brutto_Eingang" mode="Opaque" x="200" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b447636b-f44e-4c2c-ba05-f69b905c39cd">
-					<printWhenExpression><![CDATA[!$F{Beleg}.startsWith( "E" ) && !$F{Beleg}.startsWith( "B" ) && !$F{Beleg}.startsWith( "W" )&& !$F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Brutto_Eingang" mode="Transparent" x="210" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b447636b-f44e-4c2c-ba05-f69b905c39cd">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG}]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -537,8 +1046,9 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Eingang MwSt" mode="Opaque" x="260" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7c599a8b-b34b-46e1-8f5d-2b51d613b007">
-					<printWhenExpression><![CDATA[!$F{Beleg}.startsWith( "E" ) && !$F{Beleg}.startsWith( "B" ) && !$F{Beleg}.startsWith( "W" )&& !$F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Eingang MwSt" mode="Transparent" x="270" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7c599a8b-b34b-46e1-8f5d-2b51d613b007">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -552,8 +1062,8 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Brutto_Abgang" mode="Opaque" x="300" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f1549f11-52ce-420c-bd19-00fdb6d552a4">
-					<printWhenExpression><![CDATA[$F{Beleg}.startsWith( "E" ) || $F{Beleg}.startsWith( "B" ) || $F{Beleg}.startsWith( "W" ) || $F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Brutto_Abgang" mode="Transparent" x="310" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="f1549f11-52ce-420c-bd19-00fdb6d552a4">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG}]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -567,8 +1077,9 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Abgang_MwSt" mode="Opaque" x="360" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b26af153-89c2-4f42-8f67-dbb69c23756c">
-					<printWhenExpression><![CDATA[$F{Beleg}.startsWith( "E" ) || $F{Beleg}.startsWith( "B" ) || $F{Beleg}.startsWith( "W" ) || $F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Abgang_MwSt" mode="Transparent" x="370" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b26af153-89c2-4f42-8f67-dbb69c23756c">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -580,12 +1091,29 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00">
+				<reportElement key="Saldo+Kontostand" positionType="Float" x="470" y="0" width="60" height="10" uuid="b89b2bfe-9967-404f-b0ae-e2ad49407cd0">
+					<printWhenExpression><![CDATA[$V{MitlaufendeSaldoDrucken}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Saldo}.add($P{P_KONTOSTAND})]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="10">
-			<printWhenExpression><![CDATA[$F{Importiert}.booleanValue()]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$V{B_Plankosten}]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="531" height="10" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="9791ed0f-fea0-440c-a0c5-6f29f4abaebd">
+					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="Jahr" mode="Opaque" x="0" y="0" width="25" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="612d868c-5d4d-43d3-90dd-19fb5095dfda"/>
+				<reportElement key="Jahr" mode="Transparent" x="0" y="0" width="25" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="612d868c-5d4d-43d3-90dd-19fb5095dfda"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -598,7 +1126,7 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="KW" mode="Opaque" x="20" y="0" width="15" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="f7e8ee7a-3198-48a0-8d53-c6a5db02934e"/>
+				<reportElement key="KW" mode="Transparent" x="20" y="0" width="15" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="f7e8ee7a-3198-48a0-8d53-c6a5db02934e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -611,7 +1139,7 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Beleg" mode="Opaque" x="40" y="0" width="65" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="8a384273-13c8-481b-afb6-1bc3db42d1a7"/>
+				<reportElement key="Beleg" mode="Transparent" x="40" y="0" width="75" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="8a384273-13c8-481b-afb6-1bc3db42d1a7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -624,7 +1152,7 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Beleg}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Partner" mode="Opaque" x="105" y="0" width="95" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="f610d78e-a207-497e-af6c-c20908a075d2"/>
+				<reportElement key="Partner" mode="Transparent" x="115" y="0" width="95" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="f610d78e-a207-497e-af6c-c20908a075d2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -637,8 +1165,8 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Partner}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Brutto_Eingang" mode="Opaque" x="200" y="0" width="60" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="dc3ac4d2-59ee-43cb-abc0-fb75cdd30e23">
-					<printWhenExpression><![CDATA[!$F{Beleg}.startsWith( "E" )]]></printWhenExpression>
+				<reportElement key="Brutto_Eingang" mode="Transparent" x="210" y="0" width="60" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="dc3ac4d2-59ee-43cb-abc0-fb75cdd30e23">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG}]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -652,8 +1180,9 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst}==null ? new BigDecimal(0.0) : $F{Mwst})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Eingang MwSt" mode="Opaque" x="260" y="0" width="40" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="8bfcacd7-0b1d-4d93-be75-8b0166cc0177">
-					<printWhenExpression><![CDATA[!$F{Beleg}.startsWith( "E" )]]></printWhenExpression>
+				<reportElement key="Eingang MwSt" mode="Transparent" x="270" y="0" width="40" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="8bfcacd7-0b1d-4d93-be75-8b0166cc0177">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -667,8 +1196,8 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Brutto_Abgang" mode="Opaque" x="300" y="0" width="60" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="59ad50bd-42f2-4aaa-a233-066c0f21e809">
-					<printWhenExpression><![CDATA[$F{Beleg}.startsWith( "E" )]]></printWhenExpression>
+				<reportElement key="Brutto_Abgang" mode="Transparent" x="310" y="0" width="60" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="59ad50bd-42f2-4aaa-a233-066c0f21e809">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG}]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -682,8 +1211,9 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst}==null ? new BigDecimal(0.0) : $F{Mwst})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Abgang_MwSt" mode="Opaque" x="360" y="0" width="40" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="746c7147-b0d5-4977-a550-40a93f98943f">
-					<printWhenExpression><![CDATA[$F{Beleg}.startsWith( "E" )]]></printWhenExpression>
+				<reportElement key="Abgang_MwSt" mode="Transparent" x="370" y="0" width="40" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="746c7147-b0d5-4977-a550-40a93f98943f">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -696,13 +1226,29 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
 			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Saldo+Kontostand" positionType="Float" mode="Transparent" x="470" y="0" width="60" height="10" forecolor="#0000FF" backcolor="#FFFFFF" uuid="0b4bf477-6871-44f2-b8eb-a7bf4e795134">
+					<printWhenExpression><![CDATA[$V{MitlaufendeSaldoDrucken}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Saldo}.add($P{P_KONTOSTAND})]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="10">
-			<printWhenExpression><![CDATA[!$F{Importiert}.booleanValue() &&
-($F{Beleg}.startsWith("A")) &&
-$F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$V{B_Angebot}]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="531" height="10" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="4062413d-102a-4b20-acb1-d86333c850d2">
+					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="Jahr" mode="Opaque" x="0" y="0" width="25" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="38e02eba-9737-458b-8b61-f7387a8f7817"/>
+				<reportElement key="Jahr" mode="Transparent" x="0" y="0" width="25" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="38e02eba-9737-458b-8b61-f7387a8f7817"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -715,7 +1261,9 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="KW" mode="Opaque" x="20" y="0" width="15" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="3e6f0348-d2eb-470f-8f5c-02ddf6ee7778"/>
+				<reportElement key="KW" mode="Transparent" x="20" y="0" width="15" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="3e6f0348-d2eb-470f-8f5c-02ddf6ee7778">
+					<printWhenExpression><![CDATA[$F{Jahr}.intValue() != 9999]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -727,8 +1275,8 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Beleg" mode="Opaque" x="40" y="0" width="65" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="d4321e97-83c9-459c-84b5-756ce2b03649"/>
+			<textField pattern="" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement key="Beleg" mode="Transparent" x="40" y="0" width="154" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="d4321e97-83c9-459c-84b5-756ce2b03649"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -739,9 +1287,18 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Beleg}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA[$F{Beleg}.substring(2)+": "+
+$F{Belegunterart}.substring(0,3)+"; "+
+$F{Beleg}.substring(0,2)]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ANGEBOT_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{Beleg}.substring(2)]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Partner" mode="Opaque" x="105" y="0" width="95" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="768a7afa-fbfb-4df9-955b-58d7ddd367af"/>
+				<reportElement key="Partner" mode="Transparent" x="115" y="0" width="95" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="768a7afa-fbfb-4df9-955b-58d7ddd367af"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -754,8 +1311,8 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Partner}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Brutto_Eingang" mode="Opaque" x="200" y="0" width="60" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="9398e821-233c-4255-8255-7c4e152d6cdd">
-					<printWhenExpression><![CDATA[!$F{Beleg}.startsWith( "E" ) && !$F{Beleg}.startsWith( "B" ) && !$F{Beleg}.startsWith( "W" )&& !$F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Brutto_Eingang" mode="Transparent" x="210" y="0" width="60" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="9398e821-233c-4255-8255-7c4e152d6cdd">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG}]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -769,8 +1326,9 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Eingang MwSt" mode="Opaque" x="260" y="0" width="40" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="ffff88ce-b8b8-4d6d-a62d-cc7b873f936e">
-					<printWhenExpression><![CDATA[!$F{Beleg}.startsWith( "E" ) && !$F{Beleg}.startsWith( "B" ) && !$F{Beleg}.startsWith( "W" )&& !$F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Eingang MwSt" mode="Transparent" x="270" y="0" width="40" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="ffff88ce-b8b8-4d6d-a62d-cc7b873f936e">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -784,8 +1342,8 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Brutto_Abgang" mode="Opaque" x="300" y="0" width="60" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="835656e3-536c-41fc-bec8-e947bad7e624">
-					<printWhenExpression><![CDATA[$F{Beleg}.startsWith( "E" ) || $F{Beleg}.startsWith( "B" ) || $F{Beleg}.startsWith( "W" ) || $F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Brutto_Abgang" mode="Transparent" x="310" y="0" width="60" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="835656e3-536c-41fc-bec8-e947bad7e624">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG}]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -799,8 +1357,9 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Abgang_MwSt" mode="Opaque" x="360" y="0" width="40" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="303b20f5-b984-437d-99d7-e0a24681bdaa">
-					<printWhenExpression><![CDATA[$F{Beleg}.startsWith( "E" ) || $F{Beleg}.startsWith( "B" ) || $F{Beleg}.startsWith( "W" ) || $F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Abgang_MwSt" mode="Transparent" x="370" y="0" width="40" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="303b20f5-b984-437d-99d7-e0a24681bdaa">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -812,42 +1371,30 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Saldo+Kontostand" positionType="Float" mode="Transparent" x="470" y="0" width="60" height="10" forecolor="#00CC00" backcolor="#FFFFFF" uuid="debd2842-c1bb-484e-bc8c-8170d5f7364c">
+					<printWhenExpression><![CDATA[$V{MitlaufendeSaldoDrucken}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Saldo}.add($P{P_KONTOSTAND})]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="10">
-			<printWhenExpression><![CDATA[!$F{Importiert}.booleanValue() &&
-($F{Beleg}.startsWith("BS")) &&
-$F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
-			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Abgang_MwSt" mode="Opaque" x="360" y="0" width="40" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="5944d276-ac2c-41d7-9359-d1e1bd5da446">
-					<printWhenExpression><![CDATA[$F{Beleg}.startsWith( "E" ) || $F{Beleg}.startsWith( "B" ) || $F{Beleg}.startsWith( "W" ) || $F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$V{B_Bestellung}]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="531" height="10" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="03852ba3-2ddc-494c-a08f-02842af0eeaf">
+					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
 				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
-			</textField>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="KW" mode="Opaque" x="20" y="0" width="15" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="73c9cdd7-92d0-42f0-8837-e7de537bc25b"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
-			</textField>
-			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="Jahr" mode="Opaque" x="0" y="0" width="25" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="78ecbdb1-c0d2-4737-870b-852fc67bfea3"/>
+				<reportElement key="Jahr" mode="Transparent" x="0" y="0" width="25" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="78ecbdb1-c0d2-4737-870b-852fc67bfea3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -859,9 +1406,57 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
 			</textField>
+			<textField pattern="###0" isBlankWhenNull="false">
+				<reportElement key="KW" mode="Transparent" x="20" y="0" width="15" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="73c9cdd7-92d0-42f0-8837-e7de537bc25b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement key="Beleg" mode="Transparent" x="40" y="0" width="75" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="33ebb1c0-06b6-4b16-930f-0e4355248289"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Beleg}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA[$F{Beleg}.substring(2)+": "+
+$F{Belegunterart}.substring(0,3)+"; "+
+$F{Beleg}.substring(0,2)]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_BESTELLUNG_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{Beleg}.substring(2)]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Partner" mode="Transparent" x="115" y="0" width="95" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="b2428277-8c8a-4b50-ae35-c3ce029a8187"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Partner}]]></textFieldExpression>
+			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Brutto_Eingang" mode="Opaque" x="200" y="0" width="60" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="69f640ff-76db-4e8f-aa42-bc38e015588b">
-					<printWhenExpression><![CDATA[!$F{Beleg}.startsWith( "E" ) && !$F{Beleg}.startsWith( "B" ) && !$F{Beleg}.startsWith( "W" )&& !$F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Brutto_Eingang" mode="Transparent" x="210" y="0" width="60" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="69f640ff-76db-4e8f-aa42-bc38e015588b">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG}]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -875,23 +1470,9 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Brutto_Abgang" mode="Opaque" x="300" y="0" width="60" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="532c1792-dd0c-42e7-8856-1f05a792851e">
-					<printWhenExpression><![CDATA[$F{Beleg}.startsWith( "E" ) || $F{Beleg}.startsWith( "B" ) || $F{Beleg}.startsWith( "W" ) || $F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
-				<reportElement key="Eingang MwSt" mode="Opaque" x="260" y="0" width="40" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="5e9e148d-0c9e-4e17-82d8-e13844aeef10">
-					<printWhenExpression><![CDATA[!$F{Beleg}.startsWith( "E" ) && !$F{Beleg}.startsWith( "B" ) && !$F{Beleg}.startsWith( "W" )&& !$F{Beleg}.startsWith( "Z" )]]></printWhenExpression>
+				<reportElement key="Eingang MwSt" mode="Transparent" x="270" y="0" width="40" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="5e9e148d-0c9e-4e17-82d8-e13844aeef10">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -905,7 +1486,67 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Beleg" mode="Opaque" x="40" y="0" width="65" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="33ebb1c0-06b6-4b16-930f-0e4355248289"/>
+				<reportElement mode="Transparent" x="210" y="0" width="100" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="c051037c-8af2-42a2-86f8-765be13dd999"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Bezeichnung}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Brutto_Abgang" mode="Transparent" x="310" y="0" width="60" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="532c1792-dd0c-42e7-8856-1f05a792851e">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Abgang_MwSt" mode="Transparent" x="370" y="0" width="40" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="5944d276-ac2c-41d7-9359-d1e1bd5da446">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Saldo+Kontostand" positionType="Float" mode="Transparent" x="470" y="0" width="60" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="1317d069-d8be-48b5-913b-fe1d897adaed">
+					<printWhenExpression><![CDATA[$V{MitlaufendeSaldoDrucken}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Saldo}.add($P{P_KONTOSTAND})]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$V{B_Abgaben}]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="531" height="10" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="28d3fb92-0406-4d9a-b21b-d18d6c2000bc">
+					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField pattern="###0" isBlankWhenNull="false">
+				<reportElement key="Jahr" mode="Transparent" x="0" y="0" width="25" height="10" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="51283da6-09dd-4451-930e-9d1abde27e66"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -915,10 +1556,36 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{Beleg}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0" isBlankWhenNull="false">
+				<reportElement key="KW" mode="Transparent" x="20" y="0" width="15" height="10" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="ed7abc0f-01b0-4abb-b375-95d6471e881f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Partner" mode="Opaque" x="105" y="0" width="95" height="10" forecolor="#009999" backcolor="#FFFFFF" uuid="b2428277-8c8a-4b50-ae35-c3ce029a8187"/>
+				<reportElement key="Beleg" mode="Transparent" x="40" y="0" width="75" height="10" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="de45e8e3-36bd-4383-a644-d49675a28314"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Beleg}.replace("Nettogehaelter", "Nettogehälter")]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Partner" mode="Transparent" x="115" y="0" width="95" height="10" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="92b02870-d532-4e55-93a2-ba6209b1ea4f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -929,65 +1596,330 @@ $F{Netto}.compareTo(new BigDecimal(0.00)) != 0]]></printWhenExpression>
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{Partner}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Brutto_Abgang" mode="Transparent" x="310" y="0" width="60" height="10" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="cfbcb072-da9f-4125-9331-36f0bd85b215"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Abgang_MwSt" mode="Transparent" x="370" y="0" width="40" height="10" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="19ca0a68-3cec-403a-8aae-d40bcc9d417b">
+					<printWhenExpression><![CDATA[$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Saldo+Kontostand" positionType="Float" mode="Transparent" x="470" y="0" width="60" height="10" forecolor="#CC00CC" backcolor="#FFFFFF" uuid="5056fd5a-c5e0-4398-9eda-ebd24afc4d60">
+					<printWhenExpression><![CDATA[$V{MitlaufendeSaldoDrucken}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Saldo}.add($P{P_KONTOSTAND})]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$V{B_Zusatzkosten}]]></printWhenExpression>
+			<rectangle>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="0" width="531" height="10" forecolor="#E6E6E6" backcolor="#E6E6E6" uuid="26f7ff6a-9069-4f2a-897d-39a8df79b7d0">
+					<printWhenExpression><![CDATA[new Boolean ($V{Zebra}.intValue() == 1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField pattern="###0" isBlankWhenNull="false">
+				<reportElement key="Jahr" mode="Transparent" x="0" y="0" width="25" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="e8711ace-6045-4f35-afa9-18aaf87fab2e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Jahr}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0" isBlankWhenNull="false">
+				<reportElement key="KW" mode="Transparent" x="20" y="0" width="15" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="15a08b0e-616e-4933-9f53-0a77670a4495"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Woche}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true" hyperlinkType="GOTO">
+				<reportElement key="Beleg" mode="Transparent" x="40" y="0" width="75" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="8865de72-91f1-47a9-9229-2a25bebb1d05"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Beleg}]]></textFieldExpression>
+				<hyperlinkTooltipExpression><![CDATA[$F{Beleg}.substring(2)+": "+
+$F{Belegunterart}.substring(0,3)+"; "+
+$F{Beleg}.substring(0,2)]]></hyperlinkTooltipExpression>
+				<hyperlinkParameter name="WhereToGo">
+					<hyperlinkParameterExpression><![CDATA[com.lp.util.GotoHelper.goto_ZUSATZKOSTEN_AUSWAHL()]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="Key">
+					<hyperlinkParameterExpression><![CDATA[$F{Beleg}.substring(2)]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="Partner" mode="Transparent" x="115" y="0" width="95" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="d1065179-d314-49a8-9aa5-8735ed318842"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Partner}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Brutto_Eingang" mode="Transparent" x="210" y="0" width="60" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="a86c7398-2594-42b9-8525-68dd46898265">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Eingang MwSt" mode="Transparent" x="270" y="0" width="40" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="85c25e5c-5906-4c5b-86c1-e1747f4c7662">
+					<printWhenExpression><![CDATA[$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Brutto_Abgang" mode="Transparent" x="310" y="0" width="60" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="5ba65dc4-e6df-4b1a-b27c-c935d35ea315">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Netto}.add($F{Mwst})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Abgang_MwSt" mode="Transparent" x="370" y="0" width="40" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="e931272f-8eb0-49d6-94bf-8ea08c5b9211">
+					<printWhenExpression><![CDATA[!$V{B_ZUGANG} &&
+$F{Mwst}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Mwst}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="Saldo+Kontostand" positionType="Float" mode="Transparent" x="470" y="0" width="60" height="10" forecolor="#FF9900" backcolor="#FFFFFF" uuid="5c1b463d-7ab6-46fe-88bd-c568091cc5df">
+					<printWhenExpression><![CDATA[$V{MitlaufendeSaldoDrucken}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Saldo}.add($P{P_KONTOSTAND})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<pageFooter>
 		<band splitType="Stretch"/>
 	</pageFooter>
-	<summary>
-		<band height="220" splitType="Stretch">
+	<lastPageFooter>
+		<band height="50">
 			<staticText>
-				<reportElement key="Kreditlimit" mode="Opaque" x="390" y="0" width="60" height="11" forecolor="#000000" backcolor="#FFFFFF" uuid="7b1a4851-1a0e-4c00-8570-a34708a28bd2"/>
+				<reportElement key="Erklärung" mode="Transparent" x="0" y="0" width="270" height="50" forecolor="#000000" backcolor="#FFFFFF" uuid="99f3f815-7fbd-4b45-b8cc-015bddaf812b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
-				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[ABjj/nnn/AZ ... Anzahlungen die auf die AB lauten
+BSjj/nnn/AZ ... Eingangsrechnungs-Anzahlungen die auf die BS lauten
+Lieferscheine werden nicht als geplanter Erlös berücksichtigt, sind aber in den offenen Aufträgen abgezogen. D.h. es wird davon ausgegangen, dass alles verrechenbare auch verrechnet ist.
+ZT ... Zeitplan
+ZP ... Zahlungsplan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Erklärung" mode="Transparent" x="270" y="0" width="261" height="50" forecolor="#000000" backcolor="#FFFFFF" uuid="2ef3faa2-632e-41ee-b745-646025b3e032"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Aufträge werden zum Finaltermin betrachtet. Offene Bestellpositionen zum geplanten / bestätigten Liefertermin, welcher nicht vor heute sein kann,
+Anzahlungs-ERs auf Bestellungen werden immer dem frühesten Liefertermin der Bestellung zugeordnet.
+AG ... Angebote werden zum Realisierungstermin mit Auftragswahrscheinlichkeit gerechnet. AG's ohne Realisierungstermin finden Sie am Ende der Liquiditätsplanung (Jahr 9999)
+Grundsätzlich müssen die Belege aktivert und noch nicht vollständig erledigt sein.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Erklärung" mode="Transparent" x="120" y="29" width="139" height="17" forecolor="#000000" backcolor="#FFFFFF" uuid="09c9a9aa-8b98-422a-bdce-96e38d7fbe1f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Die Wochensummen der verschiedenen Bereiche werden kursive angedruckt.]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="200" splitType="Stretch">
+			<staticText>
+				<reportElement key="Kreditlimit" mode="Opaque" x="0" y="0" width="40" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7b1a4851-1a0e-4c00-8570-a34708a28bd2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement verticalAlignment="Bottom" rotation="None">
 					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Kreditlimit:]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_KREDITLIMIT" x="450" y="0" width="70" height="11" uuid="26f48d96-2c1f-440c-8ea8-4045dc0abb5f"/>
-				<textElement textAlignment="Right" verticalAlignment="Bottom"/>
+				<reportElement key="P_KREDITLIMIT" x="40" y="0" width="70" height="10" uuid="26f48d96-2c1f-440c-8ea8-4045dc0abb5f"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial" size="8"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$P{P_KREDITLIMIT}]]></textFieldExpression>
 			</textField>
 			<lineChart>
-				<chart>
-					<reportElement x="0" y="19" width="520" height="181" uuid="8cdeadab-dd7e-4309-ba4f-39712c3c7600"/>
+				<chart renderType="image">
+					<reportElement x="0" y="10" width="520" height="180" uuid="8cdeadab-dd7e-4309-ba4f-39712c3c7600"/>
 					<chartTitle/>
 					<chartSubtitle/>
-					<chartLegend/>
+					<chartLegend>
+						<font fontName="Arial" size="8"/>
+					</chartLegend>
 				</chart>
 				<categoryDataset>
 					<categorySeries>
 						<seriesExpression><![CDATA["Saldo"]]></seriesExpression>
-						<categoryExpression><![CDATA[com.lp.util.HelperReport.getMonatVonJahrUndWoche($F{Jahr},$F{Woche},$P{REPORT_LOCALE}).substring(0,3)+
-", KW:"+$F{Woche}]]></categoryExpression>
+						<categoryExpression><![CDATA["KW:"+$F{Woche}+" "+
+com.lp.util.HelperReport.getMonatVonJahrUndWoche($F{Jahr},$F{Woche},$P{REPORT_LOCALE}).substring(0,3)]]></categoryExpression>
 						<valueExpression><![CDATA[$V{Saldo}.add($P{P_KONTOSTAND})]]></valueExpression>
 					</categorySeries>
 					<categorySeries>
+						<seriesExpression><![CDATA["Null"]]></seriesExpression>
+						<categoryExpression><![CDATA["KW:"+$F{Woche}+" "+
+com.lp.util.HelperReport.getMonatVonJahrUndWoche($F{Jahr},$F{Woche},$P{REPORT_LOCALE}).substring(0,3)]]></categoryExpression>
+						<valueExpression><![CDATA[BigDecimal.ZERO]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
 						<seriesExpression><![CDATA["Kreditlimit"]]></seriesExpression>
-						<categoryExpression><![CDATA[com.lp.util.HelperReport.getMonatVonJahrUndWoche($F{Jahr},$F{Woche},$P{REPORT_LOCALE}).substring(0,3)+
-", KW:"+$F{Woche}]]></categoryExpression>
+						<categoryExpression><![CDATA["KW:"+$F{Woche}+" "+
+com.lp.util.HelperReport.getMonatVonJahrUndWoche($F{Jahr},$F{Woche},$P{REPORT_LOCALE}).substring(0,3)]]></categoryExpression>
 						<valueExpression><![CDATA[$P{P_KREDITLIMIT}]]></valueExpression>
 					</categorySeries>
 				</categoryDataset>
-				<linePlot>
-					<plot labelRotation="45.0"/>
-					<categoryAxisLabelExpression><![CDATA["Kalenderwochen"]]></categoryAxisLabelExpression>
+				<linePlot isShowShapes="false">
+					<plot labelRotation="45.0">
+						<seriesColor seriesOrder="0" color="#006600"/>
+						<seriesColor seriesOrder="1" color="#0000FF"/>
+						<seriesColor seriesOrder="2" color="#FF0000"/>
+					</plot>
+					<categoryAxisLabelExpression><![CDATA[]]></categoryAxisLabelExpression>
 					<categoryAxisFormat labelRotation="45.0">
-						<axisFormat/>
+						<axisFormat>
+							<labelFont>
+								<font fontName="Arial" size="8"/>
+							</labelFont>
+							<tickLabelFont>
+								<font fontName="Arial" size="6"/>
+							</tickLabelFont>
+						</axisFormat>
 					</categoryAxisFormat>
 					<valueAxisLabelExpression><![CDATA[$P{P_WAEHRUNG}]]></valueAxisLabelExpression>
 					<valueAxisFormat>
-						<axisFormat/>
+						<axisFormat>
+							<labelFont>
+								<font fontName="Arial" size="8"/>
+							</labelFont>
+							<tickLabelFont>
+								<font fontName="Arial" size="8"/>
+							</tickLabelFont>
+						</axisFormat>
 					</valueAxisFormat>
 				</linePlot>
 			</lineChart>
+			<subreport isUsingCache="true" runToBottom="false">
+				<reportElement key="Subreport angelegte Rechnungen" positionType="Float" x="0" y="190" width="531" height="10" isRemoveLineWhenBlank="true" uuid="83638473-57e1-4957-96e4-76118892cb6a"/>
+				<dataSourceExpression><![CDATA[$P{P_SUBREPORT_ANGELEGTE_RECHNUNGEN}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{REPORT_DIRECTORY} + "finanz_liquiditaetsvorschau_angelegte_rechnungen.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</summary>
 </jasperReport>

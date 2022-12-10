@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_intrastat_summary" pageWidth="800" pageHeight="802" columnWidth="800" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_intrastat_summary" pageWidth="800" pageHeight="802" columnWidth="800" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7452667b-a5d7-43da-8f3b-1fc5ae017822">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="15"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
 		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
@@ -16,6 +16,7 @@
 	<parameter name="P_BIS" class="java.util.Date" isForPrompting="false">
 		<parameterDescription><![CDATA[Bis]]></parameterDescription>
 	</parameter>
+	<field name="SORT" class="java.lang.String"/>
 	<field name="F_UID" class="java.lang.String"/>
 	<field name="F_WARENVERKEHRSNUMMER" class="java.lang.String">
 		<fieldDescription><![CDATA[Warenverkehrsnummer]]></fieldDescription>
@@ -45,23 +46,44 @@
 	<variable name="Anzahl" class="java.lang.Integer">
 		<variableExpression><![CDATA[$V{Anzahl} == null ? new Integer(1) :
 (
+ $F{SORT}.compareTo($V{Old}) == 0 ?
+ $V{Anzahl} : new Integer($V{Anzahl}.intValue()+1)
+)
+/*
+$V{Anzahl} == null ? new Integer(1) :
+(
  ($F{F_UID}.substring(0,2)+$F{F_WARENVERKEHRSNUMMER}).compareTo($V{Old}) == 0 ?
  $V{Anzahl} : new Integer($V{Anzahl}.intValue()+1)
-) ]]></variableExpression>
+)
+*/]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
 	</variable>
 	<variable name="Old" class="java.lang.String">
-		<variableExpression><![CDATA[$F{F_UID}.substring(0,2)+$F{F_WARENVERKEHRSNUMMER}]]></variableExpression>
+		<variableExpression><![CDATA[$F{SORT}
+/* $F{F_UID}.substring(0,2)+$F{F_WARENVERKEHRSNUMMER} */]]></variableExpression>
 	</variable>
 	<group name="UID">
-		<groupExpression><![CDATA[$F{F_UID}.substring(0,2)+$F{F_WARENVERKEHRSNUMMER}]]></groupExpression>
+		<groupExpression><![CDATA[$F{SORT}
+/* $F{F_UID} + "|" +$F{F_WARENVERKEHRSNUMMER} */
+/* $F{F_UID}.substring(0,2)+$F{F_WARENVERKEHRSNUMMER} */]]></groupExpression>
 		<groupHeader>
 			<band/>
 		</groupHeader>
 		<groupFooter>
-			<band height="14">
-				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-					<reportElement key="Pos" mode="Transparent" x="0" y="0" width="25" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+			<band height="17">
+				<printWhenExpression><![CDATA[$F{F_WARENVERKEHRSNUMMER}.compareTo("???   0000 00 00") != 0]]></printWhenExpression>
+				<rectangle>
+					<reportElement x="35" y="1" width="140" height="10" forecolor="#FF3333" backcolor="#FF3333" uuid="ba454ea3-c949-4aff-9471-3528cb526a5f">
+						<printWhenExpression><![CDATA[$F{F_UID} == null || $F{F_UID}.length() < 3]]></printWhenExpression>
+					</reportElement>
+				</rectangle>
+				<rectangle>
+					<reportElement x="257" y="1" width="79" height="10" forecolor="#FF3333" backcolor="#FF3333" uuid="6168400f-a6f0-4385-a690-b455ce077fda">
+						<printWhenExpression><![CDATA[$V{Gewicht} == null || $V{Gewicht}.signum() == 0]]></printWhenExpression>
+					</reportElement>
+				</rectangle>
+				<textField isStretchWithOverflow="true" pattern="####0" isBlankWhenNull="true">
+					<reportElement key="Pos" mode="Transparent" x="0" y="0" width="30" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="b9a6d5e5-a184-4103-984c-5afad201e5ec"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -71,49 +93,51 @@
 					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
 						<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Anzahl}==null ? new Integer(1) : $V{Anzahl}.intValue()+1]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{Anzahl}==null ? new Integer(1) : $V{Anzahl}
+/* $V{Anzahl}==null ? new Integer(1) : $V{Anzahl}.intValue()+1 */]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="30" y="0" width="80" height="12"/>
+					<reportElement x="34" y="0" width="142" height="12" uuid="fa8b341c-a9f0-43e5-ad09-cc626327a742"/>
 					<textElement>
 						<font fontName="Arial"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{F_UID}.substring(0,2)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{F_UID}
+/* $F{F_UID}.substring(0,2) */]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="110" y="0" width="80" height="12"/>
+					<reportElement x="176" y="0" width="80" height="12" uuid="bafa6f16-094d-4131-b634-227242ef6189"/>
 					<textElement>
 						<font fontName="Arial"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{F_WARENVERKEHRSNUMMER}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{F_WARENVERKEHRSNUMMER}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.0">
-					<reportElement x="190" y="0" width="80" height="12"/>
+				<textField pattern="#,##0.000">
+					<reportElement x="256" y="0" width="80" height="12" uuid="367cb516-2503-4637-9dca-54016e02a2e3"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Gewicht}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{Gewicht}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.0">
-					<reportElement x="270" y="0" width="80" height="12"/>
+				<textField pattern="#,##0.000">
+					<reportElement x="336" y="0" width="80" height="12" uuid="fdb95ca7-a47e-4053-a1b5-3ba483f7bcb7"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Menge}]]></textFieldExpression>
-				</textField>
-				<textField pattern="#,##0.00">
-					<reportElement x="350" y="0" width="80" height="12"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial"/>
-					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Wert}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{Menge}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00">
-					<reportElement x="430" y="0" width="80" height="12"/>
+					<reportElement x="416" y="0" width="80" height="12" uuid="467bf0ef-b8f3-4144-af75-be5cf90801f8"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial"/>
 					</textElement>
-					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{StatWert}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{Wert}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement x="496" y="0" width="80" height="12" uuid="5afdbc4f-dd23-4a8c-9389-fdd720c5f06c"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{StatWert}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -126,102 +150,93 @@
 	</title>
 	<pageHeader>
 		<band height="55" splitType="Stretch">
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="REPORT_INFORMATION" mode="Transparent" x="0" y="0" width="585" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
-			</textField>
 			<staticText>
-				<reportElement x="0" y="15" width="123" height="18"/>
+				<reportElement x="0" y="15" width="123" height="18" uuid="5c27a1b7-fba7-4f54-bf47-5e555e392c62"/>
 				<textElement verticalAlignment="Bottom">
 					<font fontName="Arial" size="14"/>
 				</textElement>
 				<text><![CDATA[Zusammenfassung]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="40" width="25" height="13"/>
+				<reportElement x="0" y="40" width="30" height="13" uuid="964db6a6-eaad-41e0-ad83-438d61bebe7d"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<text><![CDATA[Pos]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="30" y="40" width="80" height="13"/>
+				<reportElement x="34" y="40" width="142" height="13" uuid="3cd91f47-a24e-460d-be08-f582b4ba15c5"/>
 				<textElement>
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<text><![CDATA[UID]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="110" y="40" width="80" height="13"/>
+				<reportElement x="176" y="40" width="80" height="13" uuid="b1a83f4a-1d9e-4486-853c-14606e50edb3"/>
 				<textElement>
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<text><![CDATA[WVK]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="190" y="40" width="80" height="13"/>
+				<reportElement x="256" y="40" width="80" height="13" uuid="1e5805c7-6f7b-4d6d-bfdc-73a77a534f41"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<text><![CDATA[Masse]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="270" y="40" width="80" height="13"/>
+				<reportElement x="336" y="40" width="80" height="13" uuid="d964ed1a-e789-4c7a-911b-9034eddcaca1"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<text><![CDATA[Bes.Maßeinheit]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="350" y="40" width="80" height="13"/>
+				<reportElement x="416" y="40" width="80" height="13" uuid="0604eea7-f891-4551-8055-4fc20e18c6d2"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<text><![CDATA[Rech.-Betrag]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="430" y="40" width="80" height="13"/>
+				<reportElement x="496" y="40" width="80" height="13" uuid="066d1c94-a7da-4fd8-90f3-a6b2fe760fef"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<text><![CDATA[Stat.Wert]]></text>
 			</staticText>
 			<line>
-				<reportElement x="0" y="52" width="800" height="1"/>
+				<reportElement x="0" y="52" width="800" height="1" uuid="616bb1f8-9f68-4e6a-a115-47ccc67db28b"/>
 			</line>
 			<textField pattern="dd. MM. yyyy" isBlankWhenNull="false">
-				<reportElement key="P_BIS" x="410" y="19" width="100" height="14"/>
+				<reportElement key="P_BIS" x="410" y="19" width="100" height="14" uuid="4d76fed3-828d-4a17-bb21-7e2c78485394"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement verticalAlignment="Bottom"/>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{P_BIS}]]></textFieldExpression>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_BIS}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd. MM. yyyy" isBlankWhenNull="false">
-				<reportElement key="P_VON" x="275" y="19" width="100" height="14"/>
+				<reportElement key="P_VON" x="275" y="19" width="100" height="14" uuid="f00e958d-b414-4ed7-9a3a-99f235e361fe"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement verticalAlignment="Bottom"/>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{P_VON}]]></textFieldExpression>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_VON}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="Intrastat Meldung Vorschau" mode="Opaque" x="123" y="15" width="140" height="18" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="Intrastat Meldung Vorschau" mode="Opaque" x="123" y="15" width="140" height="18" forecolor="#000000" backcolor="#FFFFFF" uuid="8fe570fe-b3dd-4217-9e33-5a63265c03bc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -231,15 +246,15 @@
 				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
 					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{P_VERFAHREN}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{P_VERFAHREN}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="14" splitType="Stretch">
 			<printWhenExpression><![CDATA[false]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="Pos" mode="Transparent" x="0" y="0" width="25" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF"/>
+			<textField isStretchWithOverflow="true" pattern="####0" isBlankWhenNull="true">
+				<reportElement key="Pos" mode="Transparent" x="0" y="0" width="30" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="3208afca-783c-422f-967f-ecbbb4d4f87f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -249,49 +264,49 @@
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="styled">
 					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="30" y="0" width="80" height="12"/>
+				<reportElement x="34" y="0" width="142" height="12" uuid="e61b40de-476d-4b91-be78-76b1f26abf85"/>
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_UID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_UID}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="110" y="0" width="80" height="12"/>
+				<reportElement x="176" y="0" width="80" height="12" uuid="d5491c3c-fce1-4978-b7db-fce042e04d77"/>
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{F_WARENVERKEHRSNUMMER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_WARENVERKEHRSNUMMER}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.0">
-				<reportElement x="190" y="0" width="80" height="12"/>
+			<textField pattern="#,##0.000">
+				<reportElement x="256" y="0" width="80" height="12" uuid="456cfb57-ea68-44c2-ad20-23b2c8e1f5d3"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_GEWICHT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_GEWICHT}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.0">
-				<reportElement x="270" y="0" width="80" height="12"/>
+			<textField pattern="#,##0.000">
+				<reportElement x="336" y="0" width="80" height="12" uuid="d1e02b79-9d20-447b-86ac-9f389a63bd2a"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_MENGE}]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00">
-				<reportElement x="350" y="0" width="80" height="12"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial"/>
-				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_WERT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_MENGE}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="430" y="0" width="80" height="12"/>
+				<reportElement x="416" y="0" width="80" height="12" uuid="0eae1c33-e609-4f27-9904-b3846ce06324"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{F_STATISTISCHERWERT}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{F_WERT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="496" y="0" width="80" height="12" uuid="4b7d1bac-5f12-46d9-8f06-cba8c57e6ec2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_STATISTISCHERWERT}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

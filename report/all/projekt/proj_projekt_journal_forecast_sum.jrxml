@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="proj_projekt_journal_trichter_prio" pageWidth="782" pageHeight="842" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0ac2a9db-f95f-4192-b3dc-0ae5e2410bc1">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Auftrag">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{F_REALISIERUNG}.before( $V{V_HEUTE} )]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FF0033" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String"/>
+	<field name="Sort" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="F_ZUGEWIESENER" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="F_REALISIERUNG" class="java.util.Date"/>
+	<field name="UmsatzErwartet" class="java.lang.Double"/>
+	<field name="F_VKFORTSCHRITT_LEADSTATUS" class="java.lang.String"/>
+	<variable name="V_HEUTE" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></variableExpression>
+		<initialValueExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></initialValueExpression>
+	</variable>
+	<variable name="Lead" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{F_VKFORTSCHRITT_LEADSTATUS}==null ||
+$F{F_VKFORTSCHRITT_LEADSTATUS}.startsWith("N") ||
+$F{F_VKFORTSCHRITT_LEADSTATUS}.startsWith("L") ? true : false]]></variableExpression>
+	</variable>
+	<variable name="Umsatz_Zug_Lead" class="java.lang.Double" resetType="Group" resetGroup="Zugewiesener" calculation="Sum">
+		<variableExpression><![CDATA[$V{Lead} ?
+$F{UmsatzErwartet} :
+BigDecimal.ZERO]]></variableExpression>
+	</variable>
+	<variable name="Umsatz_Zug_Oppty" class="java.lang.Double" resetType="Group" resetGroup="Zugewiesener" calculation="Sum">
+		<variableExpression><![CDATA[!$V{Lead} ?
+$F{UmsatzErwartet} :
+BigDecimal.ZERO]]></variableExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_Zug_Lead" class="java.lang.Integer" resetType="Group" resetGroup="Zugewiesener">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_Zug_Lead}.intValue() +
+($V{Lead} ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_Zug_Oppty" class="java.lang.Integer" resetType="Group" resetGroup="Zugewiesener">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_Zug_Oppty}.intValue() +
+(!$V{Lead} ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Umsatz_Zug_Mon_Lead" class="java.lang.Double" resetType="Group" resetGroup="Sort" calculation="Sum">
+		<variableExpression><![CDATA[$V{Lead} ?
+$F{UmsatzErwartet} :
+BigDecimal.ZERO]]></variableExpression>
+	</variable>
+	<variable name="Umsatz_Zug_Mon_Oppty" class="java.lang.Double" resetType="Group" resetGroup="Sort" calculation="Sum">
+		<variableExpression><![CDATA[!$V{Lead} ?
+$F{UmsatzErwartet} :
+BigDecimal.ZERO]]></variableExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_Zug_Mon_Lead" class="java.lang.Integer" resetType="Group" resetGroup="Sort">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_Zug_Mon_Lead}.intValue() +
+($V{Lead} ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Anzahl_Projekte_Zug_Mon_Oppty" class="java.lang.Integer" resetType="Group" resetGroup="Sort">
+		<variableExpression><![CDATA[$V{Anzahl_Projekte_Zug_Mon_Oppty}.intValue() +
+(!$V{Lead} ? 1 : 0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<group name="Zugewiesener">
+		<groupExpression><![CDATA[$F{F_ZUGEWIESENER}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="20">
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="0" y="0" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="a3034e49-2d94-4ec6-9815-c21d66f8a7e4"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="0.5" lineStyle="Solid"/>
+					</graphicElement>
+				</line>
+				<textField pattern="#,##0.00">
+					<reportElement x="220" y="1" width="60" height="10" uuid="061e241f-4f34-4b61-ad12-52a5de79318f"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Umsatz_Zug_Lead}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement x="330" y="1" width="60" height="10" uuid="c9a5c649-1453-47a9-9f28-4e0a7ff3fd2b"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Umsatz_Zug_Oppty}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="280" y="1" width="40" height="10" uuid="18578041-e945-460c-a143-70760a58dbd1"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Anzahl_Projekte_Zug_Lead}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="390" y="1" width="40" height="10" uuid="328551d9-177a-43f2-b5ab-a3a040ef7d91"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Anzahl_Projekte_Zug_Oppty}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Sort">
+		<groupExpression><![CDATA[$F{Sort}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="10">
+				<textField>
+					<reportElement x="0" y="0" width="100" height="10" uuid="373acc11-3fdb-4232-b146-4e48539d3ab9"/>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{F_ZUGEWIESENER}]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement mode="Transparent" x="732" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="61c8e6ca-6dc5-4f92-8539-cf2bdf062fb5">
+						<printWhenExpression><![CDATA[false]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Sort}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0">
+					<reportElement style="Auftrag" x="150" y="0" width="30" height="10" uuid="0948ff38-3e9c-4bff-bd04-1793e9887a58"/>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{F_REALISIERUNG}.getYear()+1900]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement style="Auftrag" x="220" y="0" width="60" height="10" uuid="bbc7a6db-3a59-4cce-a15b-c2d72fe5fdec">
+						<printWhenExpression><![CDATA[$V{Umsatz_Zug_Mon_Lead}.doubleValue() != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Umsatz_Zug_Mon_Lead}]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0">
+					<reportElement style="Auftrag" x="130" y="0" width="18" height="10" uuid="1609a963-2fd4-49df-89d2-787794877763"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{F_REALISIERUNG}.getMonth()+1]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement style="Auftrag" x="330" y="0" width="60" height="10" uuid="9feff83d-a36b-458b-b887-604dd380f955">
+						<printWhenExpression><![CDATA[$V{Umsatz_Zug_Mon_Oppty}.doubleValue() != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Umsatz_Zug_Mon_Oppty}]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement style="Auftrag" x="441" y="0" width="60" height="10" uuid="c062d63c-2251-495d-b095-6c82e6342682">
+						<printWhenExpression><![CDATA[false]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{F_VKFORTSCHRITT_LEADSTATUS}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement style="Auftrag" x="390" y="0" width="40" height="10" uuid="b690807d-83b0-4906-9b80-38cf0cf8b99f">
+						<printWhenExpression><![CDATA[$V{Anzahl_Projekte_Zug_Mon_Oppty}.doubleValue() != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Anzahl_Projekte_Zug_Mon_Oppty}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement style="Auftrag" x="280" y="0" width="40" height="10" uuid="fc587dba-3da0-4a34-a1cd-a507a69bbb79">
+						<printWhenExpression><![CDATA[$V{Anzahl_Projekte_Zug_Mon_Lead}.intValue() != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Anzahl_Projekte_Zug_Mon_Lead}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="20" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="200" height="10" uuid="22ddfbce-904a-47dc-a9f0-622d8e5baa2b"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Projekt Forecast nach Zugewiesener und Monaten]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="20" splitType="Stretch">
+			<staticText>
+				<reportElement x="1" y="0" width="100" height="19" uuid="a3fdf973-52a6-4e18-b408-73bea3c225aa"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Zugewiesener]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="130" y="0" width="50" height="19" uuid="c1a78967-c419-4e56-a2fa-01ef5ce04563"/>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Rel.Termin]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="220" y="0" width="60" height="19" uuid="28270c8b-6436-4a05-8a94-9d06e3c67f25"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Lead Umsatz erwartet]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="320" y="0" width="70" height="19" uuid="050a74ac-bdbc-4640-a9e4-44ebbf38c1b4"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Oppty Umsatz erwartet (> Lead)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="441" y="0" width="60" height="19" uuid="76faa8d7-e61a-4b62-833e-ee3a0023dc4d">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Lead Status]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-3" mode="Opaque" x="0" y="19" width="782" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="2e6f00ea-cd1f-43c6-8f21-0012d50fe96f"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="280" y="0" width="40" height="19" uuid="e0432af7-c112-4e06-9ec9-5f026ca20fbf"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Lead
+Projekte]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="390" y="0" width="40" height="19" uuid="7fbdaee4-36b5-44dd-92f2-ed34282d0b2b"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Oppty
+Projekte]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
+			<textField>
+				<reportElement x="0" y="0" width="100" height="10" uuid="99e0a50e-c4b5-452b-8559-a85219fd9108"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_ZUGEWIESENER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="130" y="0" width="50" height="10" uuid="ddeb6075-379b-48fe-bba6-c7d4bcd204dc"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_REALISIERUNG}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="220" y="0" width="60" height="10" uuid="8d67c4ea-d6af-4882-a991-5215c6dc1aff">
+					<printWhenExpression><![CDATA[$V{Lead}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{UmsatzErwartet}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="732" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c5196395-ab75-41a1-b087-7c01c58ad0cd"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Sort}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="330" y="0" width="60" height="10" uuid="ad1bbe83-ccb1-44c1-9f05-725708bc8982">
+					<printWhenExpression><![CDATA[!$V{Lead}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{UmsatzErwartet}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="441" y="0" width="60" height="10" uuid="7ebd700d-6e5e-469e-b668-2568adfb88cd">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_VKFORTSCHRITT_LEADSTATUS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+</jasperReport>

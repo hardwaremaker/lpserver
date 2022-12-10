@@ -70,16 +70,21 @@
 		<jar href="lib/commons-beanutils.jar" />
 		<jar href="lib/commons-beanutils-bean-collections.jar" />
 		<jar href="lib/commons-beanutils-core.jar" />
-		<jar href="lib/commons-codec-1.6.jar" />
+		<jar href="lib/commons-codec-1.9.jar" />
 		<jar href="lib/commons-collections-3.1.jar" />
 		<jar href="lib/commons-digester.jar" />
 		<jar href="lib/commons-httpclient.jar" />
 		<jar href="lib/commons-io-1.0.jar" />
 		<jar href="lib/commons-lang-1.0.1.jar" />
-		<jar href="lib/commons-logging.jar" />
+		<jar href="lib/commons-logging-1.2.jar" />
 		<jar href="lib/ejb3-persistence.jar" />
 		<jar href="lib/grouplayout.jar" />
+		<jar href="lib/httpclient-4.5.2.jar" />
+		<jar href="lib/httpcore-4.4.5.jar" />
 		<jar href="lib/iText-2.1.7.js2.jar" />
+		<jar href="lib/jackson-annotations-2.2.3.jar" />
+		<jar href="lib/jackson-core-2.2.3.jar" />
+		<jar href="lib/jackson-databind-2.2.3.jar" />
 		<jar href="lib/jai_codec.jar" />
 		<jar href="lib/jai_core.jar" />
 		<jar href="lib/jasperreports-5.5.0.jar" />
@@ -96,6 +101,7 @@
 		<jar href="lib/jfreechart-1.0.13-experimental.jar" />
 		<jar href="lib/jfreechart-1.0.13-swt.jar" />
 		<jar href="lib/jhall.jar" />
+		<jar href="lib/jruby.jar" />
 		<jar href="lib/jtds-1.2.jar" /> 
 		<jar href="lib/jxl.jar" />
 		<jar href="lib/kunststoff.jar" />
@@ -113,10 +119,6 @@
 		<jar href="lib/swtgraphics2d.jar" />
 		<jar href="lib/xml-apis.jar" />
 		<jar href="lib/xml-apis-ext.jar" />
-		<jar href="lib/jruby.jar" />
-		<jar href="lib/jackson-annotations-2.2.3.jar" />
-		<jar href="lib/jackson-core-2.2.3.jar" />
-		<jar href="lib/jackson-databind-2.2.3.jar" />
 	</resources>
 
 	<application-desc 

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 5.5.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fc_forecastpositionen_zeitachse" columnCount="14" printOrder="Horizontal" pageWidth="765" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="54" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="c0805a97-422a-46ac-864b-d6f08ce88614">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.9230756500000017"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Wochentag">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{Feiertag} != null]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#8ED0E4" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{Feiertag}==null &&
+com.lp.util.HelperReport.getWochentag($P{REPORT_LOCALE},
+new java.sql.Timestamp($F{Datum}.getTime())).startsWith("So")]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#FFA132" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{Feiertag}==null &&
+com.lp.util.HelperReport.getWochentag($P{REPORT_LOCALE},
+new java.sql.Timestamp($F{Datum}.getTime())).startsWith("Sa")]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#FFCF98" fontName="Arial"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{Feiertag}==null &&
+(com.lp.util.HelperReport.getWochentag($P{REPORT_LOCALE},
+ new java.sql.Timestamp($F{Datum}.getTime())).startsWith("M") ||
+ com.lp.util.HelperReport.getWochentag($P{REPORT_LOCALE},
+ new java.sql.Timestamp($F{Datum}.getTime())).startsWith("F") )]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#CCCCCC" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="P_ARTIKELNUMMER" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="Lagerstand" class="java.math.BigDecimal"/>
+	<parameter name="Debug" class="java.lang.Boolean"/>
+	<field name="Datum" class="java.util.Date"/>
+	<variable name="von" class="java.lang.String">
+		<variableExpression><![CDATA[$F{Datum}.toLocaleString().substring(6,10)+"-"+
+$F{Datum}.toLocaleString().substring(3,5)+"-"+
+"01 00:00:00"]]></variableExpression>
+	</variable>
+	<variable name="bis" class="java.lang.String">
+		<variableExpression><![CDATA[com.lp.util.HelperReport.getLetztenTagDesMonats($F{Datum},0).toLocaleString().substring(6,10)+"-"+
+com.lp.util.HelperReport.getLetztenTagDesMonats($F{Datum},0).toLocaleString().substring(3,5)+"-"+
+com.lp.util.HelperReport.getLetztenTagDesMonats($F{Datum},0).toLocaleString().substring(0,2)+" 23:59:59"]]></variableExpression>
+	</variable>
+	<variable name="LS_Menge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(N_MENGE) from LS_LIEFERSCHEINPOSITION where LIEFERSCHEIN_I_ID in("+
+"select I_ID from LS_LIEFERSCHEIN where T_BELEGDATUM >= '"+$V{von}+"' and T_BELEGDATUM <= '"+$V{bis}+"' and LIEFERSCHEINSTATUS_C_NR!='Storniert' "+
+") and ARTIKEL_I_ID=(select HERSTELLER_I_ID from WW_ARTIKEL where C_NR='"+$P{P_ARTIKELNUMMER}+"');"
+)]]></variableExpression>
+	</variable>
+	<variable name="AB_Menge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(N_MENGE) from AUFT_AUFTRAGPOSITION where AUFTRAG_I_ID in("+
+"select I_ID from AUFT_AUFTRAG where T_LIEFERTERMIN >= '"+$V{von}+"' and T_LIEFERTERMIN <= '"+$V{bis}+"' and AUFTRAGSTATUS_C_NR!='Storniert' "+
+") and ARTIKEL_I_ID=(select I_ID from WW_ARTIKEL where C_NR='"+$P{P_ARTIKELNUMMER}+"');"
+)]]></variableExpression>
+	</variable>
+	<variable name="FC_Menge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(N_MENGE) from FC_FORECASTPOSITION where T_TERMIN >= '"+$V{von}+"' and T_TERMIN <= '"+$V{bis}+"' "+
+"and ARTIKEL_I_ID=(select I_ID from WW_ARTIKEL where C_NR='"+$P{P_ARTIKELNUMMER}+"') "+
+"and FORECASTAUFTRAG_I_ID in (select I_ID from FC_FORECASTAUFTRAG where STATUS_C_NR='Freigegeben');"
+)]]></variableExpression>
+	</variable>
+	<variable name="AB_Menge_notnull" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{AB_Menge} == null ?
+BigDecimal.ZERO :
+$V{AB_Menge}]]></variableExpression>
+	</variable>
+	<variable name="FC_Menge_notnull" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{FC_Menge} == null ?
+BigDecimal.ZERO :
+$V{FC_Menge}]]></variableExpression>
+	</variable>
+	<variable name="AB_FC_Menge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{AB_Menge_notnull}.compareTo($V{FC_Menge_notnull}) < 0 ?
+$V{FC_Menge_notnull} :
+$V{AB_Menge_notnull}]]></variableExpression>
+	</variable>
+	<variable name="FC_kummuliert" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{AB_FC_Menge}]]></variableExpression>
+	</variable>
+	<variable name="Zebra" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{Zebra}.negate()]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(1)]]></initialValueExpression>
+	</variable>
+	<variable name="BS_Menge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(N_MENGE) from WW_ARTIKELBESTELLT where ARTIKEL_I_ID="+
+"(select I_ID from WW_ARTIKEL where C_NR='"+$P{P_ARTIKELNUMMER}+"') "+
+"and T_LIEFERTERMIN >= '"+$V{von}+"' and T_LIEFERTERMIN <= '"+$V{bis}+"';"
+)]]></variableExpression>
+	</variable>
+	<variable name="LOS_Groesse" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(FERT_LOS.N_LOSGROESSE) from FERT_LOS  "+
+"where STUECKLISTE_I_ID="+
+"(select I_ID from STK_STUECKLISTE where ARTIKEL_I_ID="+
+"  (select I_ID from WW_ARTIKEL where C_NR='"+$P{P_ARTIKELNUMMER}+"')  "+
+") and STATUS_C_NR!='Erledigt' and STATUS_C_NR!='Storniert' "+
+"and T_PRODUKTIONSENDE >= '"+$V{von}+"' and T_PRODUKTIONSENDE <= '"+$V{bis}+"';"
+)]]></variableExpression>
+	</variable>
+	<variable name="LOS_Ablieferung" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select sum(FERT_LOSABLIEFERUNG.N_MENGE) from FERT_LOS  "+
+"inner join FERT_LOSABLIEFERUNG on FERT_LOS.I_ID = FERT_LOSABLIEFERUNG.LOS_I_ID  "+
+"where STUECKLISTE_I_ID="+
+"(select I_ID from STK_STUECKLISTE where ARTIKEL_I_ID="+
+" (select I_ID from WW_ARTIKEL where C_NR='"+$P{P_ARTIKELNUMMER}+"') "+
+") and STATUS_C_NR!='Erledigt' and STATUS_C_NR!='Storniert' "+
+"and T_PRODUKTIONSENDE >= '"+$V{von}+"' and T_PRODUKTIONSENDE <= '"+$V{bis}+"';"
+)]]></variableExpression>
+	</variable>
+	<variable name="LOS_Menge" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{LOS_Ablieferung} == null ? $V{LOS_Groesse} :
+($V{LOS_Groesse}.doubleValue() > $V{LOS_Ablieferung}.doubleValue() ?
+    $V{LOS_Groesse}.subtract($V{LOS_Ablieferung}) :
+    BigDecimal.ZERO
+)]]></variableExpression>
+	</variable>
+	<variable name="Zulauf_kummuliert" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{BS_Menge}.add($V{LOS_Menge})]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="10" splitType="Stretch">
+			<staticText>
+				<reportElement x="-15" y="0" width="100" height="10" uuid="c9a0592b-04ee-4a68-8e4a-ada00e04901a"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Zeitdaten]]></text>
+			</staticText>
+			<textField pattern="#,##0" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="300" y="0" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c3295ce3-49b3-4b42-935b-5bd35c0bcbd0">
+					<printWhenExpression><![CDATA[$P{Debug}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Lagerstand}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="80" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="54" height="75" forecolor="#EEEEEE" backcolor="#EEEEEE" uuid="0fea194c-984f-4b98-8720-978ec0f44004">
+					<printWhenExpression><![CDATA[$V{Zebra}.compareTo( new BigDecimal(1.0)) >= 0]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" pattern="yyyy-MM">
+				<reportElement key="Monat" mode="Transparent" x="0" y="0" width="54" height="10" backcolor="#FFFFFF" uuid="c777bec1-e05f-45cc-99d7-ca1bafd717c8"/>
+				<textElement textAlignment="Right" rotation="None">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Datum}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="11" y="10" width="43" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="dac88276-8435-49af-91ff-dc8e83febc3d"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LS_Menge}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="11" y="20" width="43" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4b1bfe4a-6a76-4342-9482-150d8c70d942"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{AB_Menge}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="11" y="30" width="43" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="c06c8129-8679-4ce5-94b7-f14ccc47b4e9"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{FC_Menge}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="Reichweite Lager" x="0" y="70" width="54" height="5" forecolor="#006600" backcolor="#006600" uuid="a5edb957-da39-437a-80ef-6a03afe65859">
+					<printWhenExpression><![CDATA[$V{FC_kummuliert}.doubleValue() <= $P{Lagerstand}.doubleValue()]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="11" y="40" width="43" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="852559a8-6c76-4faa-aee3-f059c9a77901">
+					<printWhenExpression><![CDATA[$V{AB_FC_Menge}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{AB_FC_Menge}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="11" y="50" width="43" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3a4441f8-7b48-4f07-b4c4-ede6ebb3a10f">
+					<printWhenExpression><![CDATA[$V{BS_Menge}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{BS_Menge}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="Reichweite mit Zulauf" x="0" y="75" width="54" height="5" forecolor="#FF9734" backcolor="#FF9734" uuid="935ea989-3950-4f8d-85c9-87f0ed32ec95">
+					<printWhenExpression><![CDATA[$V{FC_kummuliert}.doubleValue() <= $P{Lagerstand}.doubleValue()+$V{Zulauf_kummuliert}.doubleValue()]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="11" y="60" width="43" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="097a1323-8152-458a-9f87-35e2f696c8dd"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{LOS_Menge}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="20">
+			<printWhenExpression><![CDATA[$P{Debug}]]></printWhenExpression>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="0" y="0" width="43" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a2826462-0a31-47ef-a584-7c4694920ce4"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{von}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement mode="Opaque" x="0" y="10" width="43" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="1da69026-6e00-4ed6-b338-764c24e47dcb"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{bis}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -32,10 +32,12 @@
 		<xsl:value-of select="$trennzeichen"/>
 		<xsl:value-of select="./periode"/>
 		<xsl:value-of select="$trennzeichen"/>
-		<!-- folgende Zeile auskommentieren wenn Partnerkbz verwendet wird -->
+		<!-- folgende Zeile auskommentieren wenn Partnerkbz oder Partnername1 verwendet wird -->
 		<xsl:value-of select="./text"/>
-		<!-- folgende Zeile auskommentieren wenn Text verwendet wird -->
-		<!--  <xsl:value-of select="./partkbz"/> -->
+		<!-- folgende Zeile auskommentieren wenn Text oder Partnername1 verwendet wird -->
+		<!-- <xsl:value-of select="./partkbz"/> -->
+		<!-- folgende Zeile auskommentieren wenn Text oder Partnerkbz verwendet wird -->
+		<!-- <xsl:value-of select="./partname1"/> -->
 		<xsl:value-of select="$trennzeichen"/>
 		<xsl:value-of select="./symbol"/>
 		<xsl:value-of select="$trennzeichen"/>

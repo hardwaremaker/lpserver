@@ -1,0 +1,814 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_einfache_erfolgsrechnung" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="804" leftMargin="19" rightMargin="19" topMargin="14" bottomMargin="14" uuid="e1624a0e-51d1-4c2c-a7e6-4bbbdfafb8ef">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.3636363636363635"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="DB" mode="Opaque" forecolor="#000000" backcolor="#FFFFFF">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{ErtragProz}.doubleValue() < 0]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FF0000" backcolor="#FFFFFF" isBold="true"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{ErtragProz}.doubleValue()*100 < 30]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FF8B00" backcolor="#FFFFFF" isBold="true"/>
+		</conditionalStyle>
+	</style>
+	<style name="DB_gesamt" mode="Opaque" forecolor="#000000" backcolor="#FFFFFF">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{ErtragGesamtProz}.doubleValue() < 0]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FF0000" backcolor="#FFFFFF" isBold="true"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{ErtragGesamtProz}.doubleValue()*100 < 30]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FF8B00" backcolor="#FFFFFF" isBold="true"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_WAEHRUNG" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_GESCHAEFTSJAHR" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MANDANT_OBJ" class="com.lp.server.system.service.ReportMandantDto" isForPrompting="false"/>
+	<parameter name="P_MIT_LAGERWERT" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_MIT_HFLAGER" class="java.lang.Boolean"/>
+	<parameter name="P_MIT_PERSONALSTUNDEN" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="P_MIT_MASCHINENSTUNDEN" class="java.math.BigDecimal" isForPrompting="false"/>
+	<field name="F_MONAT" class="java.lang.String"/>
+	<field name="F_NETTOUMSATZ_RE" class="java.math.BigDecimal"/>
+	<field name="F_NETTOUMSATZ_ER" class="java.math.BigDecimal"/>
+	<field name="F_NETTOUMSATZ_ZK" class="java.math.BigDecimal"/>
+	<field name="F_PERSONALKOSTEN" class="java.math.BigDecimal"/>
+	<field name="F_LAGER_GESTEHUNGSWERT_ZUM_MONATSLETZTEN" class="java.math.BigDecimal"/>
+	<field name="F_HF_GESTEHUNGSWERT_MATERIAL_ZUM_MONATSLETZTEN" class="java.math.BigDecimal"/>
+	<field name="F_HF_GESTEHUNGSWERT_ARBEIT_ZUM_MONATSLETZTEN" class="java.math.BigDecimal"/>
+	<field name="F_PERSONALSTUNDEN" class="java.math.BigDecimal"/>
+	<field name="F_MASCHINENSTUNDEN" class="java.lang.Double"/>
+	<variable name="LetzterMonatMitUmsatz" class="java.lang.String">
+		<variableExpression><![CDATA[$V{LetzterMonatMitUmsatz} == null ?
+$F{F_MONAT} :
+($F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ||
+ $F{F_NETTOUMSATZ_ER}.compareTo(BigDecimal.ZERO) != 0 ? $F{F_MONAT} :$V{LetzterMonatMitUmsatz}
+)]]></variableExpression>
+	</variable>
+	<variable name="Rohertrag" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{F_NETTOUMSATZ_RE}
+.subtract($F{F_NETTOUMSATZ_ER})
+.subtract($F{F_NETTOUMSATZ_ZK})]]></variableExpression>
+	</variable>
+	<variable name="Ertrag" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{Rohertrag}
+.subtract($F{F_PERSONALKOSTEN})]]></variableExpression>
+	</variable>
+	<variable name="Ertrag_kumuliert" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ||
+$F{F_NETTOUMSATZ_ER}.compareTo(BigDecimal.ZERO) != 0 ?
+$V{Rohertrag}
+.subtract($F{F_PERSONALKOSTEN}) :
+BigDecimal.ZERO]]></variableExpression>
+	</variable>
+	<variable name="ErtragProz" class="java.lang.Double">
+		<variableExpression><![CDATA[$V{Ertrag}.doubleValue() /
+$F{F_NETTOUMSATZ_RE}.doubleValue()]]></variableExpression>
+	</variable>
+	<variable name="V_NETTOUMSATZ_RE" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_NETTOUMSATZ_RE}]]></variableExpression>
+	</variable>
+	<variable name="V_NETTOUMSATZ_ER" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_NETTOUMSATZ_ER}]]></variableExpression>
+	</variable>
+	<variable name="V_NETTOUMSATZ_ZK" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_NETTOUMSATZ_ZK}]]></variableExpression>
+	</variable>
+	<variable name="V_NETTOUMSATZ_PK" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_PERSONALKOSTEN}]]></variableExpression>
+	</variable>
+	<variable name="ErtragGesamtProz" class="java.lang.Double">
+		<variableExpression><![CDATA[($V{V_NETTOUMSATZ_RE}.doubleValue()
+ -$V{V_NETTOUMSATZ_ER}.doubleValue()
+ -$V{V_NETTOUMSATZ_ZK}.doubleValue()
+ -$V{V_NETTOUMSATZ_PK}.doubleValue()) /
+$V{V_NETTOUMSATZ_RE}.doubleValue()]]></variableExpression>
+	</variable>
+	<variable name="Rohertrag_Chart" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ||
+$F{F_NETTOUMSATZ_ER}.compareTo(BigDecimal.ZERO) != 0 ?
+$V{Rohertrag} : $V{Rohertrag_Chart}]]></variableExpression>
+	</variable>
+	<variable name="Ertrag_Chart" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ||
+$F{F_NETTOUMSATZ_ER}.compareTo(BigDecimal.ZERO) != 0 ?
+$V{Ertrag} : $V{Ertrag_Chart}]]></variableExpression>
+	</variable>
+	<variable name="UmsatzproPersonalStunde" class="java.lang.Double">
+		<variableExpression><![CDATA[$F{F_PERSONALSTUNDEN}.compareTo(BigDecimal.ZERO) != 0 &&
+$F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ?
+$F{F_NETTOUMSATZ_RE}.doubleValue() / $F{F_PERSONALSTUNDEN}.doubleValue() :
+0.00]]></variableExpression>
+	</variable>
+	<variable name="Personalstunden" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{F_PERSONALSTUNDEN}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="85" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="REPORT_INFORMATION" mode="Opaque" x="0" y="0" width="660" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="2bf0913a-f9be-42e1-a760-7a783ac3bb7c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER" mode="Transparent" x="680" y="0" width="100" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="fe569a58-a9e0-4acc-955d-a389c92bfa96"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER" mode="Transparent" x="780" y="0" width="20" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="01c09959-1587-4912-a3cf-0f657de4334f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Ausgangs Rechnungs Umsatzübersicht" mode="Opaque" x="0" y="22" width="230" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="9f823ab5-c301-4449-a40e-5786509c99aa"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="18" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[einfache Erfolgsrechnung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="GESCHAEFTSJAHR" mode="Opaque" x="0" y="46" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1f344a08-9afa-4184-b8d6-7da42fe762f9"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Geschäftsjahr]]></text>
+			</staticText>
+			<textField>
+				<reportElement key="Umsätze" mode="Opaque" x="80" y="48" width="160" height="12" forecolor="#000000" backcolor="#CCCCCC" uuid="6678b163-16d1-4f4d-852f-a5edb463d2b7"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Umsätze netto"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Monat" mode="Opaque" x="0" y="72" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="18346273-0543-4d33-a9b2-5c6228510c83"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Monat]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Erlöse" mode="Opaque" x="80" y="60" width="80" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="a4b4859c-7ab5-48a4-bffd-6e5aeed45e0f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Ausgangsrech-
+nungen / Erlöse]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Aufwand" mode="Opaque" x="160" y="60" width="70" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="d6babd09-051b-47c1-82c2-c73ef4ba9eb2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Eingangs-
+rechnungen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Zusatzkosten" mode="Opaque" x="230" y="60" width="70" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="89802f7f-095b-4865-901f-bfad5e4e2397"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Zusatz-
+kosten]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Rohertrag" mode="Opaque" x="305" y="60" width="60" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="f93364da-b00e-403e-bfab-ed5356a09392"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Rohertrag
+pro Monat]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Personalkosten" mode="Opaque" x="380" y="60" width="60" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="6af79faa-7381-4c38-b316-84a80f7d151f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Personal-
+kosten]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Ertrag" mode="Opaque" x="530" y="60" width="65" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="14499cf9-2eba-4e5a-820e-046b059fb2e7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Ertrag
+pro Monat]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Lagerwert" mode="Opaque" x="640" y="60" width="60" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="a2020893-f013-4a26-836b-6d31c833f175">
+					<printWhenExpression><![CDATA[$P{P_MIT_LAGERWERT}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Lagerwert]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Halbfertig Material" mode="Opaque" x="700" y="60" width="50" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="920ede97-dd93-4ada-9248-f0ce16767b2e">
+					<printWhenExpression><![CDATA[$P{P_MIT_HFLAGER}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Halbfertig
+Material]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Hablfertig AZ" mode="Opaque" x="750" y="60" width="50" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="6a12d142-bd05-4c75-a62f-374325744cc6">
+					<printWhenExpression><![CDATA[$P{P_MIT_HFLAGER}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Halbfertig
+Arbeitszeit]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="0" y="84" width="804" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="19613879-5383-4bab-8d69-967868e1cbfd"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="Ertrag" mode="Opaque" x="595" y="60" width="40" height="24" forecolor="#000000" backcolor="#FFFFFF" uuid="4b1e24ea-d63e-4d94-94fc-404658bea154"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Ertr%
+/ Mon]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Stundenerlös" mode="Opaque" x="440" y="48" width="40" height="36" forecolor="#000000" backcolor="#FFFFFF" uuid="83266bdb-7ca1-41b5-875f-ecd07f4135ae">
+					<printWhenExpression><![CDATA[$P{P_MIT_PERSONALSTUNDEN}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Umsatz
+pro
+MA Std]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="GESCHAEFTSJAHR" mode="Opaque" x="0" y="58" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1fe00085-d5f5-4424-9788-f53fa52c1b1e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{P_GESCHAEFTSJAHR}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Stundenerlös" mode="Opaque" x="480" y="48" width="45" height="36" forecolor="#000000" backcolor="#FFFFFF" uuid="9b53ef5a-3eef-4243-8837-dd409e329e7c">
+					<printWhenExpression><![CDATA[$P{P_MIT_PERSONALSTUNDEN}]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[MA Std]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="13" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="MONAT" mode="Opaque" x="0" y="0" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="6b81228f-974e-4833-87d4-7c4f72a26fb0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_MONAT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00">
+				<reportElement key="RE-Umsatz" x="80" y="0" width="80" height="13" uuid="e9d61d0f-a89f-499e-ad22-cd4c6e2ece96">
+					<printWhenExpression><![CDATA[$F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_NETTOUMSATZ_RE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="ER-Umsatz" mode="Transparent" x="160" y="0" width="70" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="e5fcf14c-d5a6-4147-90dd-3424e257b2cc">
+					<printWhenExpression><![CDATA[$F{F_NETTOUMSATZ_ER}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_NETTOUMSATZ_ER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement key="ZK-Umsatz" mode="Transparent" x="230" y="0" width="70" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="124cb626-8737-4b58-9a40-286fbd491921">
+					<printWhenExpression><![CDATA[$F{F_NETTOUMSATZ_ZK}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_NETTOUMSATZ_ZK}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="380" y="0" width="60" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="e4336671-0c9e-42d5-8ae4-bd69c8cc9cd9">
+					<printWhenExpression><![CDATA[$F{F_PERSONALKOSTEN}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_PERSONALKOSTEN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="640" y="0" width="60" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="02c6670b-cd93-478e-a9ff-bf859ea53c42">
+					<printWhenExpression><![CDATA[$P{P_MIT_LAGERWERT}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_LAGER_GESTEHUNGSWERT_ZUM_MONATSLETZTEN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="700" y="0" width="50" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="6597f471-edea-4612-b8cf-b1c109581c60">
+					<printWhenExpression><![CDATA[$P{P_MIT_HFLAGER}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_HF_GESTEHUNGSWERT_MATERIAL_ZUM_MONATSLETZTEN}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="750" y="0" width="50" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="db5675f4-74e6-4ddf-a860-9d8128adda5c">
+					<printWhenExpression><![CDATA[$P{P_MIT_HFLAGER}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_HF_GESTEHUNGSWERT_ARBEIT_ZUM_MONATSLETZTEN}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="305" y="0" width="60" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="a68582db-fcdf-4253-bb66-e98f0b7c9fd7">
+					<printWhenExpression><![CDATA[$F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ||
+$F{F_NETTOUMSATZ_ER}.compareTo(BigDecimal.ZERO) != 0
+/* die ZK nicht mit in die Entscheidung für die Anzeige aufnehmen da meist auch für die Zukunft
+$F{F_NETTOUMSATZ_ZK}.compareTo(BigDecimal.ZERO) != 0
+*/]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Rohertrag}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Ertrag" style="DB" mode="Transparent" x="530" y="0" width="65" height="13" uuid="be81e7eb-d3f2-47fc-9853-4ae98c344fe3">
+					<printWhenExpression><![CDATA[$F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ||
+$F{F_NETTOUMSATZ_ER}.compareTo(BigDecimal.ZERO) != 0
+/* die ZK nicht mit in die Entscheidung für die Anzeige aufnehmen da meist auch für die Zukunft
+$F{F_NETTOUMSATZ_ZK}.compareTo(BigDecimal.ZERO) != 0
+*/]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Ertrag}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
+				<reportElement key="Ertrag" style="DB" mode="Transparent" x="595" y="0" width="40" height="13" uuid="de79c6bd-2289-4468-9a36-6946310a3860">
+					<printWhenExpression><![CDATA[$F{F_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ||
+$F{F_NETTOUMSATZ_ER}.compareTo(BigDecimal.ZERO) != 0
+/* die ZK nicht mit in die Entscheidung für die Anzeige aufnehmen da meist auch für die Zukunft
+$F{F_NETTOUMSATZ_ZK}.compareTo(BigDecimal.ZERO) != 0
+*/]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ErtragProz}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="440" y="0" width="40" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="f40b4cb0-a6a4-4059-b7f1-6979729430b6">
+					<printWhenExpression><![CDATA[$P{P_MIT_PERSONALSTUNDEN} &&
+$V{UmsatzproPersonalStunde}.doubleValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{UmsatzproPersonalStunde}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="480" y="0" width="45" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="63e5fa72-3c67-4217-86b6-61fa868c2bfb">
+					<printWhenExpression><![CDATA[$F{F_PERSONALSTUNDEN}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_PERSONALSTUNDEN}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="315" splitType="Stretch">
+			<line>
+				<reportElement key="line-4" mode="Opaque" x="0" y="0" width="804" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="d17a96ef-1b84-4446-b27e-f4dd3b10741d"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="Gesamtsumme in WAEHRUNG" mode="Opaque" x="0" y="2" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="16f3d2b6-6179-47e8-b314-aa76a7718aa0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Gesamt in "+$P{P_WAEHRUNG}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="RE" mode="Transparent" x="80" y="2" width="80" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="936213a4-90ea-4dc0-b388-2dc59d2c1e82"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_NETTOUMSATZ_RE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="ER" mode="Transparent" x="160" y="2" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="95f188f2-22b5-4699-8ab3-8d53072718fe"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_NETTOUMSATZ_ER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Zusatzkosten" mode="Transparent" x="230" y="2" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="105d4e70-d461-4d5f-9655-fda6733c2eaa"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_NETTOUMSATZ_ZK}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Rohertrag" mode="Transparent" x="305" y="2" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="aee22435-7be0-45f7-b55c-0b2a1327d84a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_NETTOUMSATZ_RE}
+.subtract($V{V_NETTOUMSATZ_ER})
+.subtract($V{V_NETTOUMSATZ_ZK})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Personalkosten" mode="Transparent" x="380" y="2" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c37b75bb-4a2d-4a77-ba3e-7f25b8d74438"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_NETTOUMSATZ_PK}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="Ertrag" style="DB_gesamt" mode="Transparent" x="530" y="2" width="65" height="12" uuid="86583c82-5147-4420-9558-1565808edd96"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{V_NETTOUMSATZ_RE}.doubleValue()
+ -$V{V_NETTOUMSATZ_ER}.doubleValue()
+ -$V{V_NETTOUMSATZ_ZK}.doubleValue()
+ -$V{V_NETTOUMSATZ_PK}.doubleValue())]]></textFieldExpression>
+			</textField>
+			<bar3DChart>
+				<chart renderType="image">
+					<reportElement key="Balken" x="0" y="15" width="782" height="200" uuid="b71b7924-00fe-4f16-8455-6e7e1d937f1e"/>
+					<chartTitle>
+						<titleExpression><![CDATA["Entwicklung"]]></titleExpression>
+					</chartTitle>
+					<chartSubtitle/>
+					<chartLegend position="Right">
+						<font fontName="Arial" size="8"/>
+					</chartLegend>
+				</chart>
+				<categoryDataset>
+					<categorySeries>
+						<seriesExpression><![CDATA["Erlöse"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{F_MONAT}]]></categoryExpression>
+						<valueExpression><![CDATA[$F{F_NETTOUMSATZ_RE}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA["ER"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{F_MONAT}]]></categoryExpression>
+						<valueExpression><![CDATA[$F{F_NETTOUMSATZ_ER}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA["ZK"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{F_MONAT}]]></categoryExpression>
+						<valueExpression><![CDATA[$F{F_NETTOUMSATZ_ZK}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA["Personal"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{F_MONAT}]]></categoryExpression>
+						<valueExpression><![CDATA[$F{F_PERSONALKOSTEN}]]></valueExpression>
+					</categorySeries>
+				</categoryDataset>
+				<bar3DPlot>
+					<plot labelRotation="45.0">
+						<seriesColor seriesOrder="0" color="#00FF00"/>
+						<seriesColor seriesOrder="1" color="#FF8B00"/>
+						<seriesColor seriesOrder="2" color="#FFB865"/>
+						<seriesColor seriesOrder="3" color="#00B1D0"/>
+					</plot>
+					<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+					<categoryAxisLabelExpression><![CDATA[]]></categoryAxisLabelExpression>
+					<categoryAxisFormat labelRotation="45.0">
+						<axisFormat>
+							<labelFont>
+								<font fontName="Arial" size="6"/>
+							</labelFont>
+						</axisFormat>
+					</categoryAxisFormat>
+					<valueAxisLabelExpression><![CDATA["EUR"]]></valueAxisLabelExpression>
+					<valueAxisFormat>
+						<axisFormat>
+							<labelFont>
+								<font fontName="Arial" size="6"/>
+							</labelFont>
+						</axisFormat>
+					</valueAxisFormat>
+				</bar3DPlot>
+			</bar3DChart>
+			<lineChart>
+				<chart renderType="image">
+					<reportElement key="Ertraege" x="5" y="215" width="802" height="100" uuid="f80f61ce-0736-4f73-ab07-928630cbfd93"/>
+					<chartTitle/>
+					<chartSubtitle/>
+					<chartLegend position="Right">
+						<font fontName="Arial" size="8"/>
+					</chartLegend>
+				</chart>
+				<categoryDataset>
+					<categorySeries>
+						<seriesExpression><![CDATA["Rohertrag"]]></seriesExpression>
+						<categoryExpression><![CDATA[$V{LetzterMonatMitUmsatz}]]></categoryExpression>
+						<valueExpression><![CDATA[$V{Rohertrag_Chart}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA["Ertrag"]]></seriesExpression>
+						<categoryExpression><![CDATA[$V{LetzterMonatMitUmsatz}]]></categoryExpression>
+						<valueExpression><![CDATA[$V{Ertrag_Chart}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA["Ertrag kumuliert"]]></seriesExpression>
+						<categoryExpression><![CDATA[$V{LetzterMonatMitUmsatz}]]></categoryExpression>
+						<valueExpression><![CDATA[$V{Ertrag_kumuliert}]]></valueExpression>
+					</categorySeries>
+					<categorySeries>
+						<seriesExpression><![CDATA["Null"]]></seriesExpression>
+						<categoryExpression><![CDATA[$F{F_MONAT}]]></categoryExpression>
+						<valueExpression><![CDATA[BigDecimal.ZERO]]></valueExpression>
+					</categorySeries>
+				</categoryDataset>
+				<linePlot isShowLines="true" isShowShapes="false">
+					<plot labelRotation="45.0">
+						<seriesColor seriesOrder="0" color="#00B1D0"/>
+						<seriesColor seriesOrder="1" color="#FF8B00"/>
+						<seriesColor seriesOrder="2" color="#00FF00"/>
+						<seriesColor seriesOrder="3" color="#FF0000"/>
+					</plot>
+					<categoryAxisFormat labelRotation="45.0">
+						<axisFormat>
+							<labelFont>
+								<font fontName="Arial" size="6"/>
+							</labelFont>
+							<tickLabelFont>
+								<font fontName="Arial" size="6"/>
+							</tickLabelFont>
+						</axisFormat>
+					</categoryAxisFormat>
+					<valueAxisFormat>
+						<axisFormat/>
+					</valueAxisFormat>
+				</linePlot>
+			</lineChart>
+			<textField pattern="#,##0.0 %" isBlankWhenNull="true">
+				<reportElement key="Ertrag" style="DB_gesamt" mode="Transparent" x="595" y="2" width="40" height="13" uuid="8b79c3f7-2306-460f-9e0c-7dda8e8e080e"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{ErtragGesamtProz}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="440" y="2" width="40" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="47190b70-7a34-4e64-af25-42eb097601d9">
+					<printWhenExpression><![CDATA[$P{P_MIT_PERSONALSTUNDEN}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Personalstunden}.compareTo(BigDecimal.ZERO) != 0 &&
+$V{V_NETTOUMSATZ_RE}.compareTo(BigDecimal.ZERO) != 0 ?
+$V{V_NETTOUMSATZ_RE}.doubleValue() / $V{Personalstunden}.doubleValue() :
+0.00]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0;-#,##0.0" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="480" y="2" width="45" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="efea6bb3-a020-43e0-b56d-40920979939f">
+					<printWhenExpression><![CDATA[$P{P_MIT_PERSONALSTUNDEN}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Personalstunden}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

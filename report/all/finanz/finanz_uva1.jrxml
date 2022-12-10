@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_uva" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="523" leftMargin="42" rightMargin="30" topMargin="20" bottomMargin="20" uuid="7e3271a5-f665-4d8c-a856-20f740ba1997">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finanz_uva1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="523" leftMargin="42" rightMargin="30" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="7e3271a5-f665-4d8c-a856-20f740ba1997">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.zoom" value="1.6500000000000001"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="221"/>
+	<property name="ireport.y" value="653"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Anzahlung">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$F{UvaartCnr}.contains("Anzahlung")]]></conditionExpression>
+			<style mode="Opaque" forecolor="#999999" backcolor="#FFFFFF" fontName="Arial"/>
+		</conditionalStyle>
+	</style>
 	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
 		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
 	</parameter>
@@ -39,7 +45,6 @@
 	<parameter name="P_EU_AUSLAND_MIT_UID" class="com.lp.util.report.UvaRpt"/>
 	<parameter name="P_EXPORT_DRITTLAND" class="com.lp.util.report.UvaRpt"/>
 	<parameter name="P_UMSATZ_REVERSE_CHARGE" class="com.lp.util.report.UvaRpt"/>
-	<parameter name="P_REVERSE_CHARGE" class="com.lp.util.report.UvaRpt"/>
 	<parameter name="P_IG_ERWERB_RED.STEUER" class="com.lp.util.report.UvaRpt"/>
 	<parameter name="P_IG_ERWERB_NORMALSTEUER" class="com.lp.util.report.UvaRpt"/>
 	<parameter name="P_IMPORT_DRITTLAND" class="com.lp.util.report.UvaRpt"/>
@@ -52,11 +57,1029 @@
 	<parameter name="P_UMSATZRUNDEN" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[der Umsatz ist gerundet auf Ganze]]></parameterDescription>
 	</parameter>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
-	<title>
-		<band height="445" splitType="Stretch">
+	<parameter name="P_VORSTEUER_BETR_KFZ" class="com.lp.util.report.UvaRpt"/>
+	<parameter name="P_VORSTEUER_BETR_GEBAEUDE" class="com.lp.util.report.UvaRpt"/>
+	<parameter name="P_WERBEABGABE" class="com.lp.util.report.UvaRpt"/>
+	<parameter name="P_REVERSE_CHARGE_LEISTUNG" class="com.lp.util.report.UvaRpt"/>
+	<parameter name="P_REVERSE_CHARGE_BAULEISTUNG" class="com.lp.util.report.UvaRpt"/>
+	<parameter name="P_REVERSE_CHARGE_SCHROTT" class="com.lp.util.report.UvaRpt"/>
+	<parameter name="P_ANZAHLUNG_EU_AUSLAND_MIT_UID" class="com.lp.util.report.UvaRpt"/>
+	<parameter name="P_ANZAHLUNG_DRITTLAND" class="com.lp.util.report.UvaRpt"/>
+	<parameter name="P_USTVBetrag_USTSTEUERFREI" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[Über UStverprobung ermittelter Saldo dieses Steuersatzes (kann 0 sein)]]></parameterDescription>
+	</parameter>
+	<parameter name="P_USTVBetrag_USTREDSTEUERSATZ" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[Über UStverprobung ermittelter Saldo dieses Steuersatzes (kann 0 sein)]]></parameterDescription>
+	</parameter>
+	<parameter name="P_USTVBetrag_USTNORMALSTEUERSATZ" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[Über UStverprobung ermittelter Saldo dieses Steuersatzes (kann 0 sein)]]></parameterDescription>
+	</parameter>
+	<parameter name="P_USTVBetrag_USTREDSTEUERSATZII" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[Über UStverprobung ermittelter Saldo dieses Steuersatzes (kann 0 sein)]]></parameterDescription>
+	</parameter>
+	<parameter name="P_BELEGFEHLER" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Sind Belegfehler vorhanden (nIcht kontiert, nicht in fibu, ...)]]></parameterDescription>
+	</parameter>
+	<parameter name="P_BELEGFEHLER_SUBREPORT" class="com.lp.util.LPFibuFehlerSubreport">
+		<parameterDescription><![CDATA[Subreport FibuFehler]]></parameterDescription>
+	</parameter>
+	<field name="UvaRpt" class="com.lp.util.report.UvaRpt">
+		<fieldDescription><![CDATA[UVA Datenstruktur]]></fieldDescription>
+	</field>
+	<field name="UvaartCnr" class="java.lang.String">
+		<fieldDescription><![CDATA[Cnr der Uvaart ("EU Ausland mit UiD")]]></fieldDescription>
+	</field>
+	<field name="Kennzahl" class="java.lang.String">
+		<fieldDescription><![CDATA[Die Kennzahl des Formulars (direkt aus Formular, sonst aus UVAArt)]]></fieldDescription>
+	</field>
+	<field name="Umsatz" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[Der Saldo dieser Uvaart]]></fieldDescription>
+	</field>
+	<field name="Umsatzgerundet" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[Der gerundete Saldo der Uvaart]]></fieldDescription>
+	</field>
+	<field name="Satz" class="java.lang.Double">
+		<fieldDescription><![CDATA[Der Steuersatz (16, 19, 7.7, ...)]]></fieldDescription>
+	</field>
+	<field name="Gruppe" class="java.lang.Integer">
+		<fieldDescription><![CDATA[Die Formulargruppe (1 ... n)]]></fieldDescription>
+	</field>
+	<field name="Sortierung" class="java.lang.Integer">
+		<fieldDescription><![CDATA[1 ... n. Innerhalb der gleichen "Gruppe" die Uvaart nach der Sortierung sortieren. 0 bedeutet, dass es im UvaFormular keine Sortierung gibt (kein Satz)?]]></fieldDescription>
+	</field>
+	<field name="Alternative" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[true wenn es sich um "alte" (vorherigen) Steuersatz handelt (Schweiz)]]></fieldDescription>
+	</field>
+	<field name="Kontouvavariante" class="java.lang.Integer">
+		<fieldDescription><![CDATA[Durch Konto definiert, Erlöskonto 19% (0), 16% (1)]]></fieldDescription>
+	</field>
+	<field name="MwstsatzDto" class="com.lp.server.system.service.MwstsatzDto">
+		<fieldDescription><![CDATA[Die Datenstruktur mit satzbezId, gueltigAb, ..]]></fieldDescription>
+	</field>
+	<field name="AnzahlungUmsatz" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[Der Saldo der zugehörigen Anzahlungs-Uvaart]]></fieldDescription>
+	</field>
+	<field name="AnzahlungUmsatzgerundet" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[Der gerundete Saldo der zugehörigen Anzahlungs-Uvaart]]></fieldDescription>
+	</field>
+	<variable name="Debug" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[false]]></variableExpression>
+	</variable>
+	<variable name="Vorsteuer" class="java.lang.Integer" resetType="None">
+		<variableExpression><![CDATA[new Integer(8)
+/* Das ist die Gruppe die für dieses Finanzamt die Vorsteuer darstellt */]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(8)
+/* Das ist die Gruppe die für dieses Finanzamt die Vorsteuer darstellt */]]></initialValueExpression>
+	</variable>
+	<variable name="IG_Erwerb" class="java.lang.Integer" resetType="None">
+		<variableExpression><![CDATA[new Integer(5)
+/* Das ist die Gruppe die für dieses Finanzamt die IG-Erwerb darstellt */]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(5)
+/* Das ist die Gruppe die für dieses Finanzamt die IG-Erwerb darstellt */]]></initialValueExpression>
+	</variable>
+	<variable name="Umsatzsumme" class="java.lang.Double" resetType="Group" resetGroup="Gruppe" calculation="Sum">
+		<variableExpression><![CDATA[$F{Satz}==null || $F{Umsatzgerundet} == null ?
+new Double(0.00) :
+(
+ $F{Gruppe}.intValue() >= 3 && $F{Gruppe}.intValue() <= 5 ?
+ $F{Umsatzgerundet}.doubleValue() :
+ new Double(0.00)
+)
+/* Ist ganz speziell um die Umsatzsummen anzudrucken für div. Kontrollen */]]></variableExpression>
+	</variable>
+	<variable name="UMS_Gruppe" class="java.lang.Double" resetType="Group" resetGroup="Gruppe" calculation="Sum">
+		<variableExpression><![CDATA[$F{Satz}==null || $F{Umsatzgerundet} == null ?
+new Double(0.00) :
+(
+ $F{Gruppe}.intValue() != $V{Vorsteuer}.intValue() ?
+ $F{Umsatzgerundet}.doubleValue() * $F{Satz}.doubleValue() / 100 :
+ $F{Umsatz}.doubleValue() /* * -1 da nur Gruppen Summe für VST nicht invertieren */
+)]]></variableExpression>
+	</variable>
+	<variable name="SteuerSumme" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{Satz}==null || $F{Umsatzgerundet} == null ?
+new Double(0.00) :
+(
+ $F{Gruppe}.intValue() != $V{Vorsteuer}.intValue() ?
+ $F{Umsatzgerundet}.doubleValue() * $F{Satz}.doubleValue() / 100.00 :
+ $F{Umsatz}.negate().doubleValue()
+)]]></variableExpression>
+	</variable>
+	<variable name="IG_Erwerb_Steuern" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{Satz}==null || $F{Umsatzgerundet} == null ?
+new Double(0.00) :
+(
+ $F{Gruppe}.intValue() == $V{IG_Erwerb}.intValue() ?
+ $F{Umsatzgerundet}.doubleValue() * $F{Satz}.doubleValue() / 100.00 :
+ new Double(0.00)
+)]]></variableExpression>
+	</variable>
+	<group name="Dummy">
+		<groupExpression><![CDATA[false]]></groupExpression>
+		<groupHeader>
+			<band height="411">
+				<printWhenExpression><![CDATA[$V{Debug}]]></printWhenExpression>
+				<staticText>
+					<reportElement x="0" y="337" width="523" height="15" uuid="9832e556-1be5-4fc3-95ae-23441557cd16"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[abziehbare Vorsteuer  - Formular 8]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="357" width="150" height="10" uuid="60bce079-19db-4a51-88a6-005f174e783f"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Bezeichnung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="150" y="357" width="50" height="10" uuid="9f9baf89-8198-4b2b-b0c0-38b715b6ded2"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Kennzahl]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="200" y="357" width="70" height="10" uuid="66747fef-cb36-4129-a67d-a50b7ab859fd"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Umsatz]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="270" y="357" width="70" height="10" uuid="24267019-cc49-4e4d-9f9c-ffcbd3c0ba2d"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Steuer]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="367" width="150" height="10" uuid="0d105b8b-b9f2-49ad-a3c5-20b072aabaac"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Vorsteuerkonto]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_VORSTEUERKONTO Kennz" x="150" y="367" width="50" height="10" uuid="d07a92cc-8061-4ff0-9fb9-d91853cae309"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["66"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement key="P_VORSTEUERKONTO" x="270" y="367" width="70" height="10" uuid="affc891c-2fc0-4ee0-8113-1b9505a583a6"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_VORSTEUERKONTO}.getSaldo()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="377" width="150" height="10" uuid="766ec486-ebec-4e3d-90c9-7027d44e7a4a"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Import Drittland:]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_IMPORT_DRITTLAND Kennz" x="150" y="377" width="50" height="10" uuid="0e2cc589-0ca2-41a9-ae5f-6b807dc4a23d"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["62"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_IMPORT_DRITTLAND" x="270" y="377" width="70" height="10" uuid="92052aa7-3976-4390-86cf-e565decb311b"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_IMPORT_DRITTLAND}.getSaldo()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="387" width="150" height="10" uuid="b6a530e2-e67c-49d4-ad78-9cd36657bf02"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[IG-Erwerb Lieferungen (zu 89)]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="150" y="387" width="50" height="10" uuid="bcb8a2da-9caa-425b-9148-3016de46f4a3"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["61"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_IG_ERWERB_RED.STEUER" x="270" y="387" width="70" height="10" uuid="a18a0ba0-9f83-457a-8f83-60b7d4cb71eb"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet()
+.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
+.multiply(new BigDecimal(0.0100))
+.add($P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet()
+    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
+    .multiply(new BigDecimal(0.0100)))]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="150" y="397" width="50" height="10" uuid="38abc6bf-2662-403a-b0c6-118a13c6ca2c"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["67"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="397" width="150" height="10" uuid="13e22d0d-dd5e-48ce-a542-357a68c5726d"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[IG-Erwerb Leistungen (zu 46)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="287" width="150" height="10" uuid="599752b9-1700-427f-83cc-7845041e80a8"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[IG Erwerb Normalsteuer Leistungen]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_IG_ERWERB_NORMALSTEUER Kennz" x="150" y="287" width="50" height="10" uuid="786283b7-3db3-4217-aac9-1a26c1c7a423"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["46"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="268" width="523" height="15" uuid="e3babea7-738c-48c7-813c-ee18625e05ae"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge) - Formular 7]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_REVERSE_CHARGE_Schrott_KZ" x="150" y="317" width="50" height="10" uuid="7494e360-3400-4090-8005-1dcbc0c120b4"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_REVERSE_CHARGE_SCHROTT}.getKennzeichen()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="317" width="150" height="10" uuid="66b361dc-04ae-4d7d-9cac-50b38cd0552a"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Reverse Charge Schrott, Telekom:]]></text>
+				</staticText>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_REVERSE_CHARGE" x="270" y="317" width="70" height="10" uuid="ec99ce6f-e8ec-4305-9287-9884ea7fb7a2"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_REVERSE_CHARGE_SCHROTT}.getSaldo()]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_REVERSE_CHARGE_Leistung_Steuer" x="270" y="297" width="70" height="10" uuid="5a461e3d-58b5-463d-9c41-10b628d39725"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_REVERSE_CHARGE_LEISTUNG}.getSaldo()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="P_REVERSE_CHARGE_Bauleitung_KZ" x="150" y="307" width="50" height="10" uuid="b395e277-21ea-45da-8792-d36957d1c0ed"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_REVERSE_CHARGE_BAULEISTUNG}.getKennzeichen()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="297" width="150" height="10" uuid="23a7425a-a898-461a-9229-b5003ce3437f"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Reverse Charge Leistung:]]></text>
+				</staticText>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_REVERSE_CHARGE" x="270" y="307" width="70" height="10" uuid="5e8689a1-cb14-4769-8b2f-3720ed52babc"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_REVERSE_CHARGE_BAULEISTUNG}.getSaldo()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="307" width="150" height="10" uuid="14a7c453-dc01-40f6-9d7e-01ae356e07ae"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Reverse Charge Bauleistung:]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_REVERSE_CHARGE_Leistung_KZ" x="150" y="297" width="50" height="10" uuid="7676f24a-b099-44f3-8814-f00cf59b8325"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_REVERSE_CHARGE_LEISTUNG}.getKennzeichen()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="196" width="523" height="15" uuid="a8e40f66-7b32-46e3-8c97-223443526eec"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Innergemeinschaftliche Erwerbe Gegenstände - Formular 5]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="216" width="150" height="10" uuid="3a086613-5cd3-4e3e-a9e4-08fdff693f71"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Bezeichnung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="150" y="216" width="50" height="10" uuid="6a6414ab-09c9-4f63-a846-1e387e0cc6a2"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Kennzahl]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="200" y="216" width="70" height="10" uuid="182fb7a1-4191-45d3-9935-9a0ac5c17a3d"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Umsatz]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="270" y="216" width="70" height="10" uuid="b4490ef4-cbf2-43e9-a7d7-363d0e1ff036"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Steuer]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="350" y="216" width="30" height="10" uuid="4d10c6dd-5d10-4019-8507-81194b275a5e"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Satz]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="226" width="150" height="10" uuid="2b4b5c86-b127-4a50-aa7a-6597a31d66e6"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[IG Erwerb red.Steuer]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_IG_ERWERB_RED.STEUER Kennz" x="150" y="226" width="50" height="10" uuid="cb84e1dc-12c0-4864-ae63-6bf70c0b8907"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["93"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_IG_ERWERB_RED.STEUER" x="200" y="226" width="70" height="10" uuid="e42f02c2-37ae-4dc5-8d15-5b77c240768e"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_IG_ERWERB_RED.STEUER" x="270" y="226" width="70" height="10" uuid="2e5ac81e-6f1c-46e7-8811-28fb63fac608"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet()
+.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
+.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement key="P_USTREDSTEUERSATZ" x="350" y="226" width="30" height="10" uuid="2491b9ec-5cc7-4b90-8443-e5597f1611ec"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_USTREDSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="236" width="150" height="10" uuid="f35c1273-ad62-4d35-bb5d-8fa3a618defe"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[IG Erwerb Normalsteuer Lieferungen]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_IG_ERWERB_NORMALSTEUER Kennz" x="150" y="236" width="50" height="10" uuid="2aced4d7-35f7-4817-9950-817e862768d6"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["89"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_IG_ERWERB_NORMALSTEUER" x="200" y="236" width="70" height="10" uuid="d427ea8f-f5a6-4d1b-9094-5c262a6bcb7e"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_IG_ERWERB_NORMALSTEUER" x="270" y="236" width="70" height="10" uuid="4a65dfd0-76d2-4fd7-a64f-5071136be66f"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet()
+.multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
+.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement key="P_USTNORMALSTEUERSATZ" x="350" y="236" width="30" height="10" uuid="05de26db-01dc-475e-a126-048331dee937"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_USTNORMALSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="200" y="247" width="140" height="1" uuid="ca505346-fa04-4f8b-9c03-33b8b3bb3b3a"/>
+				</line>
+				<staticText>
+					<reportElement x="0" y="248" width="150" height="10" uuid="3c7facdf-0b4f-4d69-b908-b1448dc1e34b"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Gesamtbetrag der Bemessungsgrundlage]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="150" y="248" width="50" height="10" uuid="8693f11f-4b60-4716-ba0a-3bfff3a0042c"/>
+					<textElement textAlignment="Center">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["47"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="Summe IG" x="200" y="248" width="70" height="10" uuid="d255ccdd-bea1-4e67-84ab-b9b2e15ff454"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet().
+add($P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet())]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#,##0.00;-#,##0.00">
+					<reportElement key="Steuern IG Erwerb" x="270" y="248" width="70" height="10" uuid="780e062a-6cfe-477b-aa00-ab70a7c55383"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet()
+.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
+.multiply(new BigDecimal(0.0100))
+.add($P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet()
+    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
+    .multiply(new BigDecimal(0.0100)))]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="165" width="150" height="10" uuid="841c95e8-d00f-46e3-b371-171a70eff837"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Umsatz Rev. Charge:]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_UMSATZ_REVERSE_CHARGE Kennz" x="150" y="165" width="50" height="10" uuid="eca33d70-371c-4cd6-952a-568e6ab94bc3"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["60"
+/* §13b Abs. 5 Satz 1 ????*/]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_UMSATZ_REVERSE_CHARGE" x="200" y="165" width="70" height="10" uuid="032d930b-10bc-4d2a-9eee-959363154cd3"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_UMSATZ_REVERSE_CHARGE}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="200" y="175" width="140" height="1" uuid="caf883d2-52f8-4e58-ba32-d6622f5d19ec"/>
+				</line>
+				<staticText>
+					<reportElement x="0" y="176" width="150" height="10" uuid="0e4d44bb-5557-4019-a68e-79e3006138ea"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Gesamtbetrag Umsätze]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="150" y="176" width="50" height="10" uuid="ef0f088b-a73a-4256-953f-f4228c430678"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="Summe" x="200" y="176" width="70" height="10" uuid="b0fcfbea-430c-4080-9070-a06f955fadd1"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet().
+add($P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()).
+add($P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()).
+add($P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()).
+add($P{P_EU_AUSLAND_MIT_UID}.getSaldogerundet()).
+add($P{P_EXPORT_DRITTLAND}.getSaldogerundet()).
+add($P{P_ANZAHLUNG_EU_AUSLAND_MIT_UID}.getSaldogerundet()).
+add($P{P_ANZAHLUNG_DRITTLAND}.getSaldogerundet()).
+add($P{P_UMSATZ_REVERSE_CHARGE}.getSaldogerundet())]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report" pattern="#,##0.00;-#,##0.00">
+					<reportElement key="Umsatzsteuern Gesamt" x="270" y="176" width="70" height="10" uuid="47459153-86af-4eae-b843-3253c221497d"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet()
+    .multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
+    .multiply(new BigDecimal(0.0100))
+.add($P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()
+    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
+    .multiply(new BigDecimal(0.0100)))
+.add($P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()
+    .multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
+    .multiply(new BigDecimal(0.0100)))
+.add($P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()
+    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
+    .multiply(new BigDecimal(0.0100)))]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="150" width="523" height="15" uuid="4a2c8c93-47fa-469c-99c2-3d9b966d798a"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Ergänzende Angaben zu Umsätzen  - Formular 6]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="85" width="523" height="15" uuid="42a4ca41-74fe-452b-859a-173e9106a391"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Lieferungen, sonstige Leistungen (steuerpflichtige Umsätze)  - Formular 4]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="100" width="150" height="10" uuid="6a946c3f-e33c-476d-a469-047b8c9ac874"/>
+					<textElement markup="none">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Inland red. Steuer]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_UMSATZ_INLAND_RED.STEUER KEnnz" x="150" y="100" width="50" height="10" uuid="ad627be8-eace-4318-a30b-60f404adbd27"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["86"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_UMSATZ_INLAND_RED.STEUER" x="200" y="100" width="70" height="10" uuid="6311cb28-a8f4-4ad6-947e-cb55053fe3bc"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_UMSATZ_INLAND_RED.STEUER" x="270" y="100" width="70" height="10" uuid="b8f4e1f2-4304-4b27-bb5f-0e83a04a365c"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet()
+.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
+.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement key="P_USTREDSTEUERSATZ" x="350" y="100" width="30" height="10" uuid="27432250-fb66-47d6-ae67-3c7f4c835c98"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_USTREDSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="110" width="150" height="10" uuid="98c9f0a9-d925-4442-b2e5-32d5b148f704"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Inland Normalsteuer]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_UMSATZ_INLAND_NORMALSTEUER Kennz" x="150" y="110" width="50" height="10" uuid="ed25de0e-ea89-4cbf-a217-74fa92ac4372"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["81"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_UMSATZ_INLAND_NORMALSTEUER" x="200" y="110" width="70" height="10" uuid="293d1380-d6d3-4613-9d98-68a3d1abe050"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_UMSATZ_INLAND_NORMALSTEUER" x="270" y="110" width="70" height="10" uuid="a07ef196-e208-417d-a727-b4fddc05927b"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()
+.multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
+.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement key="P_USTNORMALSTEUERSATZ" x="350" y="110" width="30" height="10" uuid="bd9389db-138b-4439-a742-0fa0bfa7574f"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_USTNORMALSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="120" width="150" height="10" uuid="85baafeb-2a1c-48ac-a182-4adef49fee6e"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Anzahlung red.Steuer]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_ANZAHLUNG_RED.STEUER Kennz" x="150" y="120" width="50" height="10" uuid="332bb22f-6cc0-4e9d-84a2-561d0309bd11"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["86"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_ANZAHLUNG_RED.STEUER" x="200" y="120" width="70" height="10" uuid="4405d8ff-e993-41a2-ad1e-9c4cb7d65d76"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_ANZAHLUNG_RED.STEUER" x="270" y="120" width="70" height="10" uuid="67155168-cdb8-4b63-b101-005621ebeea8"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()
+.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
+.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement key="P_USTREDSTEUERSATZ" x="350" y="120" width="30" height="10" uuid="f2116935-03ff-4111-9778-2b1dc5c9e976"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_USTREDSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="130" width="150" height="10" uuid="762adaf6-fa24-49a8-9f78-13c601e16356"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Anzahlung Normalsteuer]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_ANZAHLUNG_NORMALSTEUER Kennz" x="150" y="130" width="50" height="10" uuid="c993c397-b1e6-4484-bd03-4732bc11d50a"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["81"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_ANZAHLUNG_NORMALSTEUER" x="200" y="130" width="70" height="10" uuid="5029b353-6b4d-4a7f-a264-650308f8ce68"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_ANZAHLUNG_NORMALSTEUER" x="270" y="130" width="70" height="10" uuid="1fe91e01-b2ed-4505-b35b-080c6ebf0873"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()
+.multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
+.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement key="P_USTNORMALSTEUERSATZ" x="350" y="130" width="30" height="10" uuid="3af82749-9824-41a8-8119-d7fa13049f93"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_USTNORMALSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="25" width="150" height="10" uuid="c1a95eb4-b8e9-4473-856d-1084cd09106a"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Bezeichnung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="150" y="25" width="50" height="10" uuid="9687e103-8bb2-438f-adbd-21acc333977f"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Kennzahl]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="200" y="25" width="70" height="10" uuid="e00224fe-6009-4419-b65d-c59f4ca48a78"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Umsatz]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="270" y="25" width="70" height="10" uuid="8cfaef6a-3ec7-432b-867d-023c8277cd07"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Steuer]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="350" y="25" width="30" height="10" uuid="9b42cf8a-c408-4ae8-8362-8cad948ba26f"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Satz]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="35" width="150" height="10" uuid="bac3236d-ad4a-47b6-b0db-e2a28eadefd4"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[EU Ausland mit UID:]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_EU_AUSLAND_MIT_UID Kennz" x="150" y="35" width="50" height="10" uuid="4bc38b39-0156-41cc-9e46-039bf05be50f"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["41"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_EU_AUSLAND_MIT_UID" x="200" y="35" width="70" height="10" uuid="7dac170c-f85c-4f89-93c9-48d41a3628aa"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_EU_AUSLAND_MIT_UID}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="45" width="150" height="10" uuid="bb46a5be-a30a-44b5-8557-902f4021f5aa"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Export Drittland:]]></text>
+				</staticText>
+				<textField>
+					<reportElement key="P_EXPORT_DRITTLAND Kennz" x="150" y="45" width="50" height="10" uuid="0c97e0a7-350d-4e19-8b2b-708c2409d759"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["43"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_EXPORT_DRITTLAND" x="200" y="45" width="70" height="10" uuid="2f914ab7-6e9e-4064-ad1b-ce79d051a0b9"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_EXPORT_DRITTLAND}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="10" width="523" height="15" uuid="046a0064-a4dd-47d6-a2f3-b2c2233d2afc"/>
+					<textElement>
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Lieferungen, sonstige Leistungen (steuerfreie Umsätze) - Formular 3]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="55" width="150" height="10" uuid="ec6123b1-f3f5-46fa-b9a5-ac761a8d70ab"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Anzahlung EU Ausland mit UID:]]></text>
+				</staticText>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_EU_AUSLAND_MIT_UID" x="200" y="55" width="70" height="10" uuid="032bf182-991a-4fcc-9983-148bd9d1e0bc"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_EU_AUSLAND_MIT_UID}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="P_EU_AUSLAND_MIT_UID Kennz" x="150" y="55" width="50" height="10" uuid="666edfac-413e-450e-9629-ce477fd22d48"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["41a"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="P_EXPORT_DRITTLAND Kennz" x="150" y="65" width="50" height="10" uuid="b0a812d2-ff73-49a3-a64e-c4a8e7484ac8"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA["43a"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;-#,##0.00">
+					<reportElement key="P_EXPORT_DRITTLAND" x="200" y="65" width="70" height="10" uuid="8dd6ffff-671b-4876-b1a5-13cb313db0f5"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_DRITTLAND}.getSaldogerundet()]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="65" width="150" height="10" uuid="31ed86fd-5fe7-4e67-a139-4f6338c2eead"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Anzahlung Export Drittland:]]></text>
+				</staticText>
+				<line>
+					<reportElement x="0" y="410" width="523" height="1" uuid="7488b2a4-77eb-4347-875b-36f8b71bf05c"/>
+					<graphicElement>
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Gruppe">
+		<groupExpression><![CDATA[$F{Gruppe}]]></groupExpression>
+		<groupHeader>
+			<band height="28">
+				<printWhenExpression><![CDATA[$F{Gruppe}!=null
+/* Die Gruppe ist dann null, wenn keine Übersetzung eingetragen ist.
+D.h. wenn Gruppe == null UND Umsatz, kommen trotzdem dann die Detailzeilen und
+man würde damit darüber fallen */]]></printWhenExpression>
+				<staticText>
+					<reportElement x="200" y="18" width="70" height="10" uuid="8032881d-fd38-4665-9b5e-94244fab5f70">
+						<printWhenExpression><![CDATA[$F{Gruppe}.intValue() != $V{Vorsteuer}.intValue()]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Umsatz]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="493" y="18" width="15" height="10" uuid="92afe661-11fc-4e2e-94a3-5f1774a7eb17"/>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Var]]></text>
+				</staticText>
+				<textField pattern="#,##0.##" isBlankWhenNull="false">
+					<reportElement mode="Transparent" x="465" y="6" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e60fa559-80b7-4612-aeb5-7e7d32ece555"/>
+					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Gruppe}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="150" y="18" width="50" height="10" uuid="cd2ff6e8-d5c7-4cc3-8730-d4338708a7bb"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Kennzahl]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="350" y="18" width="30" height="10" uuid="516a1cf4-f729-43aa-b19e-770153cc0504">
+						<printWhenExpression><![CDATA[$F{Gruppe} == null ||
+$F{Gruppe}.intValue() != 3]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Satz]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="18" width="150" height="10" uuid="014cf183-e8b5-482a-81f1-2b89b4268cac"/>
+					<textElement>
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Bezeichnung]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="465" y="18" width="25" height="10" uuid="c7485c46-fc8f-4e83-a4d6-d3ecf7f4b638"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[G/S]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="270" y="18" width="70" height="10" uuid="9b6c7f35-b583-4138-b715-683c55801834"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Steuer]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="0" y="0" width="465" height="16" uuid="d0705605-d4f4-4f0e-832f-c61ea79342f6"/>
+					<textElement verticalAlignment="Bottom" markup="none">
+						<font fontName="Arial" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{Gruppe}.intValue() == 3 ?
+"Lieferungen, sonstige Leistungen (steuerfreie Umsätze) - Formular 3" :
+($F{Gruppe}.intValue() == 4 ?
+"Lieferungen, sonstige Leistungen (steuerpflichtige Umsätze)  - Formular 4" :
+($F{Gruppe}.intValue() == 6 ?
+"Ergänzende Angaben zu Umsätzen  - Formular 6" :
+($F{Gruppe}.intValue() == 5 ?
+"Innergemeinschaftliche Erwerbe Gegenstände - Formular 5" :
+($F{Gruppe}.intValue() == 7 ?
+"Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge) - Formular 7" :
+($F{Gruppe}.intValue() == $V{Vorsteuer}.intValue() ?
+"abziehbare Vorsteuer  - Formular 8" :
+($F{Gruppe}.intValue() == 9 ?
+"Berechnung, andere Steuerbeträge, Sondervorauszahlung - Formular 9" :
+"unbekannt"
+)
+)
+)
+)
+)
+)]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="380" y="18" width="70" height="10" uuid="be59db83-cbfa-42c8-9718-9e84563651d7"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[Steuer mitlaufend]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="25">
+				<printWhenExpression><![CDATA[$F{Gruppe}!=null
+/* Die Gruppe ist dann null, wenn keine Übersetzung eingetragen ist.
+D.h. wenn Gruppe == null UND Umsatz, kommen trotzdem dann die Detailzeilen und
+man würde damit darüber fallen */]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement mode="Transparent" x="0" y="0" width="150" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="983da746-a22d-4d00-aaec-48f08f7afb29">
+						<printWhenExpression><![CDATA[$F{Gruppe}.intValue() == $V{Vorsteuer}.intValue()
+/* Ich muss im Feld Vorsteuer auch den IG Erwerb mitrechnen */]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["IG-Erwerb Lieferungen"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" evaluationTime="Band" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement key="IG Erwerb Steuern" x="270" y="0" width="70" height="10" isRemoveLineWhenBlank="true" uuid="52d165d3-e3d1-4660-b130-3a1f602c3699">
+						<printWhenExpression><![CDATA[$F{Gruppe}.intValue() == $V{Vorsteuer}.intValue()]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{IG_Erwerb_Steuern}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement positionType="Float" x="0" y="10" width="523" height="1" uuid="17397c35-39a9-4a98-ae75-97418a32fcc3"/>
+					<graphicElement>
+						<pen lineColor="#CCCCCC"/>
+					</graphicElement>
+				</line>
+				<textField evaluationTime="Band" pattern="#,##0.00;-#,##0.00">
+					<reportElement key="Summe Steuer" positionType="Float" x="380" y="11" width="70" height="10" uuid="0b289a95-8e13-40af-a9b3-db0f367be1cc"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{SteuerSumme}.doubleValue() -
+($F{Gruppe}.intValue() >= $V{Vorsteuer}.intValue() ? $V{IG_Erwerb_Steuern}.doubleValue() : new Double(0.00))]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Band" pattern="#,##0.00;-#,##0.00">
+					<reportElement key="Summe Steuer" positionType="Float" x="270" y="11" width="70" height="10" uuid="7e2a9567-f51a-4533-a229-5736b58265d0"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{UMS_Gruppe}.doubleValue() +
+($F{Gruppe}.intValue() == $V{Vorsteuer}.intValue() ? $V{IG_Erwerb_Steuern}.doubleValue() : new Double(0.00))]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" evaluationTime="Band" pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+					<reportElement key="Summe Umsatz" positionType="Float" x="200" y="11" width="70" height="10" uuid="f19400f6-17a9-459d-85f9-388fba41b9fc">
+						<printWhenExpression><![CDATA[$F{Gruppe}.intValue() >= 3 && $F{Gruppe}.intValue() <= 5]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Umsatzsumme}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="150" y="0" width="50" height="10" uuid="30ca3464-9b2b-417e-82f9-e0dc66f3b701">
+						<printWhenExpression><![CDATA[$F{Gruppe}.intValue() == $V{Vorsteuer}.intValue()
+/* Ich muss im Feld Vorsteuer auch den IG Erwerb mitrechnen */]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="7"/>
+					</textElement>
+					<text><![CDATA[61]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="150" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="REPORT_INFORMATION" mode="Transparent" x="0" y="0" width="415" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6b1d306c-87fd-4680-bfc9-de67beffeb74"/>
 				<box>
@@ -262,695 +1285,265 @@
 				<text><![CDATA[Abgabenpflichtiger:]]></text>
 			</staticText>
 			<textField>
-				<reportElement key="P_MANDANT_ANREDE_UND_NAME" x="0" y="108" width="523" height="12" uuid="d599bd3c-adb4-4d25-9a69-daff385c53ad"/>
+				<reportElement key="P_MANDANT_ANREDE_UND_NAME" x="0" y="108" width="260" height="12" uuid="d599bd3c-adb4-4d25-9a69-daff385c53ad"/>
 				<textElement>
 					<font fontName="Arial"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_MANDANT_ANREDE_UND_NAME}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="P_MANDANTADRESSE" x="0" y="120" width="523" height="29" uuid="21cf35ae-6e7d-4ef5-baa4-86f8a93cb798"/>
+				<reportElement key="P_MANDANTADRESSE" x="0" y="120" width="260" height="29" uuid="21cf35ae-6e7d-4ef5-baa4-86f8a93cb798"/>
 				<textElement markup="none"/>
 				<textFieldExpression><![CDATA[$P{P_MANDANTADRESSE}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="0" y="160" width="400" height="15" uuid="42a4ca41-74fe-452b-859a-173e9106a391"/>
-				<textElement>
-					<font fontName="Arial" size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Lieferungen, sonstige Leistungen und Eigenverbrauch  - Formular 4]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="180" width="150" height="10" uuid="c1a95eb4-b8e9-4473-856d-1084cd09106a"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Bezeichnung]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="150" y="180" width="50" height="10" uuid="9687e103-8bb2-438f-adbd-21acc333977f"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Kennzahl]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="200" y="180" width="70" height="10" uuid="e00224fe-6009-4419-b65d-c59f4ca48a78"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Umsatz]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="270" y="180" width="70" height="10" uuid="8cfaef6a-3ec7-432b-867d-023c8277cd07"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Steuer]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="350" y="180" width="30" height="10" uuid="9b42cf8a-c408-4ae8-8362-8cad948ba26f"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Satz]]></text>
-			</staticText>
 			<textField>
-				<reportElement x="0" y="190" width="150" height="10" uuid="da9fa93a-a265-4ee5-8a1c-63cac48e9760"/>
+				<reportElement key="Belegfehler" mode="Opaque" x="260" y="105" width="244" height="24" backcolor="#FF3333" uuid="661a6ecf-daa1-41ce-9de8-3b020da89e37">
+					<printWhenExpression><![CDATA[$P{P_BELEGFEHLER}]]></printWhenExpression>
+				</reportElement>
 				<textElement markup="none">
-					<font fontName="Arial" size="7"/>
+					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Inland red. Steuer"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="P_UMSATZ_INLAND_RED.STEUER KEnnz" x="150" y="190" width="50" height="10" uuid="ad627be8-eace-4318-a30b-60f404adbd27"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["86"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_UMSATZ_INLAND_RED.STEUER" x="200" y="190" width="70" height="10" uuid="6311cb28-a8f4-4ad6-947e-cb55053fe3bc"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_UMSATZ_INLAND_RED.STEUER" x="270" y="190" width="70" height="10" uuid="b8f4e1f2-4304-4b27-bb5f-0e83a04a365c"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet()
-.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.0 %">
-				<reportElement key="P_USTREDSTEUERSATZ" x="350" y="190" width="30" height="10" uuid="27432250-fb66-47d6-ae67-3c7f4c835c98"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_USTREDSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="200" width="150" height="10" uuid="98c9f0a9-d925-4442-b2e5-32d5b148f704"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Inland Normalsteuer]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_UMSATZ_INLAND_NORMALSTEUER Kennz" x="150" y="200" width="50" height="10" uuid="ed25de0e-ea89-4cbf-a217-74fa92ac4372"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["81"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_UMSATZ_INLAND_NORMALSTEUER" x="200" y="200" width="70" height="10" uuid="293d1380-d6d3-4613-9d98-68a3d1abe050"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_UMSATZ_INLAND_NORMALSTEUER" x="270" y="200" width="70" height="10" uuid="a07ef196-e208-417d-a727-b4fddc05927b"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()
-.multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.0 %">
-				<reportElement key="P_USTNORMALSTEUERSATZ" x="350" y="200" width="30" height="10" uuid="bd9389db-138b-4439-a742-0fa0bfa7574f"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_USTNORMALSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="210" width="150" height="10" uuid="85baafeb-2a1c-48ac-a182-4adef49fee6e"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Anzahlung red.Steuer]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_ANZAHLUNG_RED.STEUER Kennz" x="150" y="210" width="50" height="10" uuid="332bb22f-6cc0-4e9d-84a2-561d0309bd11"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["86"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_ANZAHLUNG_RED.STEUER" x="200" y="210" width="70" height="10" uuid="4405d8ff-e993-41a2-ad1e-9c4cb7d65d76"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_ANZAHLUNG_RED.STEUER" x="270" y="210" width="70" height="10" uuid="67155168-cdb8-4b63-b101-005621ebeea8"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()
-.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.0 %">
-				<reportElement key="P_USTREDSTEUERSATZ" x="350" y="210" width="30" height="10" uuid="f2116935-03ff-4111-9778-2b1dc5c9e976"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_USTREDSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="220" width="150" height="10" uuid="762adaf6-fa24-49a8-9f78-13c601e16356"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Anzahlung Normalsteuer]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_ANZAHLUNG_NORMALSTEUER Kennz" x="150" y="220" width="50" height="10" uuid="c993c397-b1e6-4484-bd03-4732bc11d50a"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["81"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_ANZAHLUNG_NORMALSTEUER" x="200" y="220" width="70" height="10" uuid="5029b353-6b4d-4a7f-a264-650308f8ce68"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_ANZAHLUNG_NORMALSTEUER" x="270" y="220" width="70" height="10" uuid="1fe91e01-b2ed-4505-b35b-080c6ebf0873"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()
-.multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.0 %">
-				<reportElement key="P_USTNORMALSTEUERSATZ" x="350" y="220" width="30" height="10" uuid="3af82749-9824-41a8-8119-d7fa13049f93"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_USTNORMALSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="230" width="150" height="10" uuid="bac3236d-ad4a-47b6-b0db-e2a28eadefd4"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[EU Ausland mit UID:]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_EU_AUSLAND_MIT_UID Kennz" x="150" y="230" width="50" height="10" uuid="4bc38b39-0156-41cc-9e46-039bf05be50f"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["41"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_EU_AUSLAND_MIT_UID" x="200" y="230" width="70" height="10" uuid="7dac170c-f85c-4f89-93c9-48d41a3628aa"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_EU_AUSLAND_MIT_UID}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="240" width="150" height="10" uuid="bb46a5be-a30a-44b5-8557-902f4021f5aa"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Export Drittland:]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_EXPORT_DRITTLAND Kennz" x="150" y="240" width="50" height="10" uuid="0c97e0a7-350d-4e19-8b2b-708c2409d759"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["43/48"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_EXPORT_DRITTLAND" x="200" y="240" width="70" height="10" uuid="2f914ab7-6e9e-4064-ad1b-ce79d051a0b9"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_EXPORT_DRITTLAND}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="280" width="150" height="10" uuid="841c95e8-d00f-46e3-b371-171a70eff837"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Umsatz Rev. Charge:]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_UMSATZ_REVERSE_CHARGE Kennz" x="150" y="280" width="50" height="10" uuid="eca33d70-371c-4cd6-952a-568e6ab94bc3"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["60"
-/* §13b Abs. 5 Satz 1 ????*/]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_UMSATZ_REVERSE_CHARGE" x="200" y="280" width="70" height="10" uuid="032d930b-10bc-4d2a-9eee-959363154cd3"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_UMSATZ_REVERSE_CHARGE}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="250" width="150" height="10" uuid="5c765228-a9b1-49ac-98f1-bd9d1993bb12"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Reverse Charge:]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_REVERSE_CHARGE Kennz" x="150" y="250" width="50" height="10" uuid="264f7b45-81c1-4e8f-b21a-916e0292626e"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["39"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_REVERSE_CHARGE" x="200" y="250" width="70" height="10" uuid="4b45d8b8-7141-4850-94e8-9c1d40da22c2"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_REVERSE_CHARGE}.getSaldogerundet()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Unvollständige Kontierung von ER/RE im Zeitraum\n"+
+"Details siehe Beilage"]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="200" y="290" width="140" height="1" uuid="caf883d2-52f8-4e58-ba32-d6622f5d19ec"/>
+				<reportElement x="0" y="149" width="523" height="1" uuid="580e387c-2f16-423c-9faa-ec87e4707758"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineColor="#CCCCCC"/>
+				</graphicElement>
 			</line>
-			<staticText>
-				<reportElement x="0" y="291" width="150" height="10" uuid="0e4d44bb-5557-4019-a68e-79e3006138ea"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Gesamtbetrag]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="150" y="291" width="50" height="10" uuid="ef0f088b-a73a-4256-953f-f4228c430678"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[""]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="Summe" x="200" y="291" width="70" height="10" uuid="b0fcfbea-430c-4080-9070-a06f955fadd1"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet().
-add($P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()).
-add($P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()).
-add($P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()).
-add($P{P_EU_AUSLAND_MIT_UID}.getSaldogerundet()).
-add($P{P_EXPORT_DRITTLAND}.getSaldogerundet()).
-add($P{P_UMSATZ_REVERSE_CHARGE}.getSaldogerundet()).
-add($P{P_REVERSE_CHARGE}.getSaldogerundet())]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00;-#,##0.00">
-				<reportElement key="Umsatzsteuern Gesamt" x="270" y="291" width="70" height="10" uuid="47459153-86af-4eae-b843-3253c221497d"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100))
-.add($P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))
-.add($P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))
-.add($P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="315" width="340" height="15" uuid="a8e40f66-7b32-46e3-8c97-223443526eec"/>
-				<textElement>
-					<font fontName="Arial" size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Innergemeinschaftliche Erwerbe - Formular 5]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="335" width="150" height="10" uuid="3a086613-5cd3-4e3e-a9e4-08fdff693f71"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Bezeichnung]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="150" y="335" width="50" height="10" uuid="6a6414ab-09c9-4f63-a846-1e387e0cc6a2"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Kennzahl]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="200" y="335" width="70" height="10" uuid="182fb7a1-4191-45d3-9935-9a0ac5c17a3d"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Umsatz]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="270" y="335" width="70" height="10" uuid="b4490ef4-cbf2-43e9-a7d7-363d0e1ff036"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Steuer]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="350" y="335" width="30" height="10" uuid="4d10c6dd-5d10-4019-8507-81194b275a5e"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Satz]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="345" width="150" height="10" uuid="2b4b5c86-b127-4a50-aa7a-6597a31d66e6"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[IG Erwerb red.Steuer]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_IG_ERWERB_RED.STEUER Kennz" x="150" y="345" width="50" height="10" uuid="cb84e1dc-12c0-4864-ae63-6bf70c0b8907"/>
-				<textElement textAlignment="Center">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["93"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_IG_ERWERB_RED.STEUER" x="200" y="345" width="70" height="10" uuid="e42f02c2-37ae-4dc5-8d15-5b77c240768e"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_IG_ERWERB_RED.STEUER" x="270" y="345" width="70" height="10" uuid="2e5ac81e-6f1c-46e7-8811-28fb63fac608"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet()
-.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.0 %">
-				<reportElement key="P_USTREDSTEUERSATZ" x="350" y="345" width="30" height="10" uuid="2491b9ec-5cc7-4b90-8443-e5597f1611ec"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_USTREDSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="355" width="150" height="10" uuid="f35c1273-ad62-4d35-bb5d-8fa3a618defe"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[IG Erwerb Normalsteuer]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_IG_ERWERB_NORMALSTEUER Kennz" x="150" y="355" width="50" height="10" uuid="2aced4d7-35f7-4817-9950-817e862768d6"/>
-				<textElement textAlignment="Center">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["89"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_IG_ERWERB_NORMALSTEUER" x="200" y="355" width="70" height="10" uuid="d427ea8f-f5a6-4d1b-9094-5c262a6bcb7e"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet()]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_IG_ERWERB_NORMALSTEUER" x="270" y="355" width="70" height="10" uuid="4a65dfd0-76d2-4fd7-a64f-5071136be66f"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet()
-.multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-.multiply(new BigDecimal(0.0100))]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.0 %">
-				<reportElement key="P_USTNORMALSTEUERSATZ" x="350" y="355" width="30" height="10" uuid="05de26db-01dc-475e-a126-048331dee937"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_USTNORMALSTEUERSATZ}.doubleValue() * 0.01]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement x="200" y="366" width="140" height="1" uuid="ca505346-fa04-4f8b-9c03-33b8b3bb3b3a"/>
-			</line>
-			<staticText>
-				<reportElement x="0" y="366" width="150" height="10" uuid="3c7facdf-0b4f-4d69-b908-b1448dc1e34b"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Gesamtbetrag der Bemessungsgrundlage]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="150" y="366" width="50" height="10" uuid="8693f11f-4b60-4716-ba0a-3bfff3a0042c"/>
-				<textElement textAlignment="Center">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["47"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="Summe IG" x="200" y="366" width="70" height="10" uuid="d255ccdd-bea1-4e67-84ab-b9b2e15ff454"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet().
-add($P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet())]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00;-#,##0.00">
-				<reportElement key="Steuern IG Erwerb" x="270" y="366" width="70" height="10" uuid="780e062a-6cfe-477b-aa00-ab70a7c55383"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet()
-.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-.multiply(new BigDecimal(0.0100))
-.add($P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="385" width="340" height="15" uuid="9832e556-1be5-4fc3-95ae-23441557cd16"/>
-				<textElement>
-					<font fontName="Arial" size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Vorsteuer  - Formular 9]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="405" width="150" height="10" uuid="60bce079-19db-4a51-88a6-005f174e783f"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Bezeichnung]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="150" y="405" width="50" height="10" uuid="9f9baf89-8198-4b2b-b0c0-38b715b6ded2"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Kennzahl]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="200" y="405" width="70" height="10" uuid="66747fef-cb36-4129-a67d-a50b7ab859fd"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Umsatz]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="270" y="405" width="70" height="10" uuid="24267019-cc49-4e4d-9f9c-ffcbd3c0ba2d"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Steuer]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="0" y="415" width="150" height="10" uuid="0d105b8b-b9f2-49ad-a3c5-20b072aabaac"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Vorsteuerkonto]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_VORSTEUERKONTO Kennz" x="150" y="415" width="50" height="10" uuid="d07a92cc-8061-4ff0-9fb9-d91853cae309"/>
-				<textElement textAlignment="Center">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["66"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00">
-				<reportElement key="P_VORSTEUERKONTO" x="270" y="415" width="70" height="10" uuid="affc891c-2fc0-4ee0-8113-1b9505a583a6"/>
-				<textElement textAlignment="Right">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_VORSTEUERKONTO}.getSaldo()]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="425" width="150" height="10" uuid="766ec486-ebec-4e3d-90c9-7027d44e7a4a"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[Import Drittland:]]></text>
-			</staticText>
-			<textField>
-				<reportElement key="P_IMPORT_DRITTLAND Kennz" x="150" y="425" width="50" height="10" uuid="0e2cc589-0ca2-41a9-ae5f-6b807dc4a23d"/>
-				<textElement textAlignment="Center">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["62"]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_IMPORT_DRITTLAND" x="270" y="425" width="70" height="10" uuid="92052aa7-3976-4390-86cf-e565decb311b"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_IMPORT_DRITTLAND}.getSaldo()]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="435" width="150" height="10" uuid="b6a530e2-e67c-49d4-ad78-9cd36657bf02"/>
-				<textElement>
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<text><![CDATA[IG-Erwerb]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="150" y="435" width="50" height="10" uuid="bcb8a2da-9caa-425b-9148-3016de46f4a3"/>
-				<textElement textAlignment="Center">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA["67"]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00;-#,##0.00">
-				<reportElement key="P_IG_ERWERB_RED.STEUER" x="270" y="435" width="70" height="10" uuid="a18a0ba0-9f83-457a-8f83-60b7d4cb71eb"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{P_IG_ERWERB_RED.STEUER}.getSaldogerundet()
-.multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-.multiply(new BigDecimal(0.0100))
-.add($P{P_IG_ERWERB_NORMALSTEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="265" width="400" height="15" uuid="4a2c8c93-47fa-469c-99c2-3d9b966d798a"/>
-				<textElement>
-					<font fontName="Arial" size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Ergänzende Angaben zu Umsätzen  - Formular 6]]></text>
-			</staticText>
 		</band>
-	</title>
-	<pageHeader>
-		<band splitType="Stretch"/>
 	</pageHeader>
 	<detail>
 		<band height="10" splitType="Stretch">
-			<staticText>
-				<reportElement x="0" y="0" width="100" height="10" uuid="747117fa-b65b-4dc0-b152-d29c9916837e"/>
-				<textElement>
-					<font size="8"/>
+			<printWhenExpression><![CDATA[$F{Gruppe}.intValue() != $V{Vorsteuer}.intValue()]]></printWhenExpression>
+			<rectangle>
+				<reportElement x="0" y="0" width="523" height="10" forecolor="#FFA132" backcolor="#FFA132" uuid="8112f08c-3219-4606-9002-77580e8497c2">
+					<printWhenExpression><![CDATA[($F{Kontouvavariante}==null || $F{Kontouvavariante}.intValue()==0) &&
+$F{Umsatz}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement style="Anzahlung" mode="Transparent" x="0" y="0" width="150" height="10" uuid="e2f6eed2-a172-4de7-93c1-a4e4e6b7a2bc"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[ ]]></text>
+				<textFieldExpression><![CDATA[($F{UvaartCnr}.contains("Anzahlung") ? "   " : "")+
+$F{UvaartCnr}.trim()+
+($F{UvaartCnr}.contains("Anzahlung") ? " enthalten" : "")]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement style="Anzahlung" mode="Transparent" x="150" y="0" width="50" height="10" uuid="9890d7fd-a5da-48d4-a99a-879242afc7c0"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Kennzahl}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement style="Anzahlung" mode="Transparent" x="200" y="0" width="70" height="10" uuid="c0488860-ddd7-4eca-a5cc-ba6d283a9fb8"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Umsatzgerundet}.add(
+$F{AnzahlungUmsatzgerundet}==null?BigDecimal.ZERO:$F{AnzahlungUmsatzgerundet}
+)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##" isBlankWhenNull="false">
+				<reportElement style="Anzahlung" mode="Transparent" x="465" y="0" width="25" height="10" uuid="085b2c4b-e64c-4e30-a471-47f1ab23b0ec"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Gruppe}.toString()+"."+$F{Sortierung}.toString()]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement style="Anzahlung" mode="Transparent" x="350" y="0" width="30" height="10" uuid="5a581f25-dd2c-47da-9a9c-ccfc04c7fe8d">
+					<printWhenExpression><![CDATA[true ||
+$F{Satz}.doubleValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Satz}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="MwStSatz null und Umsatz" mode="Transparent" x="350" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="200fbd19-040d-4a1f-aa36-9e23a4765198">
+					<printWhenExpression><![CDATA[$F{Satz} == null && $F{Umsatz}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["???"]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement style="Anzahlung" mode="Transparent" x="493" y="0" width="15" height="10" uuid="a5a54424-7474-432f-ab5f-ae41e12d807c">
+					<printWhenExpression><![CDATA[$F{Kontouvavariante}.intValue()!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Kontouvavariante}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement style="Anzahlung" mode="Transparent" x="270" y="0" width="70" height="10" uuid="ddffaf59-25d3-4e00-9405-00094dd794c8">
+					<printWhenExpression><![CDATA[$F{Satz}.doubleValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{Umsatzgerundet}.doubleValue()  +
+    ($F{AnzahlungUmsatzgerundet}==null?0.00 : $F{AnzahlungUmsatzgerundet}.doubleValue()
+)) * $F{Satz}.doubleValue() / 100]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="508" y="0" width="15" height="10" uuid="d3f0701e-5064-4b44-a915-b5fdea5da808">
+					<printWhenExpression><![CDATA[$F{Alternative}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Alt.]]></text>
 			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="MwStSatz aus Variante" mode="Transparent" x="400" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="ce70beb6-e548-4094-ba68-81ae4eaa734a">
+					<printWhenExpression><![CDATA[$V{Debug}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{MwstsatzDto}.getFMwstsatz()]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$F{Gruppe}.intValue() == $V{Vorsteuer}.intValue()]]></printWhenExpression>
+			<rectangle>
+				<reportElement x="0" y="0" width="523" height="10" forecolor="#FFA132" backcolor="#FFA132" uuid="49e3c04d-6989-452c-ab23-abd8a60d1666">
+					<printWhenExpression><![CDATA[false
+/* Auf der Vorsteuer habe ich nicht nochmal steuersätze, also gar nicht andrucken
+($F{Kontouvavariante}==null || $F{Kontouvavariante}.intValue()==0) &&
+$F{Umsatz}.compareTo(BigDecimal.ZERO) != 0
+*/]]></printWhenExpression>
+				</reportElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="0" y="0" width="150" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2e7e35a5-8c75-4334-8428-2865c09db47a"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{UvaartCnr}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="150" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="42cb0741-8f9b-4004-9142-1c9ce4556c1c"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Kennzahl}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="465" y="0" width="25" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6cdd3439-989e-42f9-86eb-7565e905da19"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Gruppe}.toString()+"."+$F{Sortierung}.toString()]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="493" y="0" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e50a2df8-7d8c-4baa-9164-a7f173f87a20">
+					<printWhenExpression><![CDATA[$F{Kontouvavariante}.intValue()!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Kontouvavariante}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="270" y="0" width="70" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d25d2f4c-5ea3-4a17-835a-0d8640be7949"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Umsatz}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="508" y="0" width="15" height="10" uuid="834b9321-5765-4819-82ee-90c44f0f1aa1">
+					<printWhenExpression><![CDATA[$F{Alternative}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Alt.]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="350" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="864e08da-bad1-4920-af2a-8d0e6823fffd">
+					<printWhenExpression><![CDATA[true ||
+$F{Satz}.doubleValue() != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{Satz}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="MwStSatz null und Umsatz" mode="Transparent" x="350" y="0" width="30" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="02f3cac9-2460-4198-adcf-f9c795492020">
+					<printWhenExpression><![CDATA[$F{Satz} == null && $F{Umsatz}.compareTo(BigDecimal.ZERO) != 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["???"]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
 	<pageFooter>
 		<band splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band height="100" splitType="Stretch">
-			<staticText>
-				<reportElement x="0" y="0" width="340" height="15" uuid="e1e124a5-eb64-441f-9930-49809eba1042"/>
-				<textElement>
-					<font fontName="Arial" size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Zahllast  - Formular 10]]></text>
-			</staticText>
+		<band height="130" splitType="Stretch">
 			<textField>
-				<reportElement key="Summe" x="0" y="20" width="200" height="10" uuid="b1253c3b-3c1c-4ae9-9308-6bfe32cbee77"/>
+				<reportElement key="Summe" x="0" y="0" width="200" height="16" uuid="b1253c3b-3c1c-4ae9-9308-6bfe32cbee77"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="7"/>
+					<font fontName="Arial" size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($P{P_UMSATZ_INLAND_RED.STEUER}.getSaldo()
-    .multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100))
- .add($P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldo()
-    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))
- .add($P{P_ANZAHLUNG_RED.STEUER}.getSaldo()
-    .multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))
- .add($P{P_ANZAHLUNG_NORMALSTEUER}.getSaldo()
-    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))
- .subtract($P{P_VORSTEUERKONTO}.getSaldo())
- .subtract($P{P_IMPORT_DRITTLAND}.getSaldo())).compareTo(new BigDecimal(0.00)) >= 0 ?
+				<textFieldExpression><![CDATA[($V{SteuerSumme}.doubleValue() -
+ $V{IG_Erwerb_Steuern}.doubleValue() ) >= 0 ?
 "Steuerschuld errechnet" :
 "Guthaben errechnet"]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="#,##0.00;-#,##0.00">
-				<reportElement key="Summe Steuer" x="270" y="20" width="70" height="10" uuid="26809c93-312c-41e6-9924-ca5b381e29d6"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[($P{P_UMSATZ_INLAND_RED.STEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100))
-.add($P{P_UMSATZ_INLAND_NORMALSTEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))
-.add($P{P_ANZAHLUNG_RED.STEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTREDSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))
-.add($P{P_ANZAHLUNG_NORMALSTEUER}.getSaldogerundet()
-    .multiply(new BigDecimal($P{P_USTNORMALSTEUERSATZ}))
-    .multiply(new BigDecimal(0.0100)))
-.subtract($P{P_VORSTEUERKONTO}.getSaldo())
-.subtract($P{P_IMPORT_DRITTLAND}.getSaldo())).abs()]]></textFieldExpression>
-			</textField>
 			<textField>
-				<reportElement key="P_WAEHRUNG" x="350" y="20" width="30" height="10" uuid="2a83cf91-5e95-482f-8512-1a806da8fd02"/>
+				<reportElement key="P_WAEHRUNG" x="460" y="0" width="40" height="16" uuid="2a83cf91-5e95-482f-8512-1a806da8fd02"/>
 				<textElement>
-					<font size="7"/>
+					<font size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_WAEHRUNG}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="30" width="150" height="10" uuid="42db0dcf-5283-4bcd-a035-45b761899675"/>
+				<reportElement x="0" y="16" width="150" height="16" uuid="42db0dcf-5283-4bcd-a035-45b761899675">
+					<printWhenExpression><![CDATA[$P{P_ZAHLLASTKONTO}.getSaldo()!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement>
-					<font fontName="Arial" size="7"/>
+					<font fontName="Arial" size="12"/>
 				</textElement>
 				<text><![CDATA[Laut Zahllastkonto]]></text>
 			</staticText>
 			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement key="Saldo Zahllastkonto" x="270" y="30" width="70" height="10" uuid="d54928ac-674d-4924-9a85-f9fad34d3576"/>
+				<reportElement key="Saldo Zahllastkonto" x="360" y="16" width="90" height="16" uuid="d54928ac-674d-4924-9a85-f9fad34d3576">
+					<printWhenExpression><![CDATA[$P{P_ZAHLLASTKONTO}.getSaldo()!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7"/>
+					<font fontName="Arial" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{P_ZAHLLASTKONTO}.getSaldo()]]></textFieldExpression>
 			</textField>
@@ -969,8 +1562,79 @@ $P{P_MANDANTADRESSE}.substring(0,$P{P_MANDANTADRESSE}.indexOf("-")).trim()) == 0
 				<textElement>
 					<font fontName="Arial" size="7"/>
 				</textElement>
+				<text><![CDATA[Details aus welchen Konten sich Umsätze und Steuern zusammensetzen finden Sie im Journal, Saldenliste, Reportvariante Saldenliste Quer auf der letzten Seite.
+Die angegebenen Kennzahlen dienen Ihrer Orientierung. Für eine verbindliche Zuordnung informieren Sie sich bitte bei Ihrem Steuerberater.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="66" width="523" height="19" forecolor="#000000" backcolor="#FFFFFF" uuid="ba0adfc3-cecf-4152-9288-4d574ba66328">
+					<printWhenExpression><![CDATA[$P{P_ABRECHNUNGSZEITRAUM}.startsWith("Jährlich")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="7" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Bitte denken Sie nach Abschluss der Jahres-UVA daran, sofort das Geschäftsjahr zu sperren.
+Dies dient Ihrer eigenen Sicherheit, damit nach Freigabe der Jahres-UVA keine versehentlichen Buchungen im alten Geschäftsjahr gemacht werden.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="110" width="523" height="10" uuid="e47abbd0-6296-40ac-be28-a1745e53fb0c"/>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
 				<text><![CDATA[Die angegebenen Kennzahlen dienen Ihrer Orientierung. Für eine verbindliche Zuordnung informieren Sie sich bitte bei Ihrem Steuerberater.]]></text>
 			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="50" width="220" height="15" forecolor="#FFFFFF" backcolor="#000000" uuid="457eeb78-7c6c-468b-8079-7bfd0d79b973">
+					<printWhenExpression><![CDATA[$P{P_PERIODE}.intValue() == 2 ||
+$P{P_PERIODE}.intValue() == 5 ||
+$P{P_PERIODE}.intValue() == 8 ||
+$P{P_PERIODE}.intValue() == 11]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Körperschaftssteuer Vorauszahlung]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="280" y="50" width="200" height="15" forecolor="#FFFFFF" backcolor="#000000" uuid="b8985346-10c0-4b02-8a41-34d731ccdf48">
+					<printWhenExpression><![CDATA[$P{P_PERIODE}.intValue() == 1 ||
+$P{P_PERIODE}.intValue() == 4 ||
+$P{P_PERIODE}.intValue() == 7 ||
+$P{P_PERIODE}.intValue() == 10]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" markup="none">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Gewerbessteuer Vorauszahlung]]></text>
+			</staticText>
+			<subreport>
+				<reportElement key="Subreport_Fibufehler" positionType="Float" x="0" y="120" width="523" height="10" isRemoveLineWhenBlank="true" forecolor="#FF0000" uuid="3f8edba7-ccd1-4769-8285-2f666ef4631a">
+					<printWhenExpression><![CDATA[$P{P_BELEGFEHLER}]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="REPORT_INFORMATION">
+					<subreportParameterExpression><![CDATA[$P{REPORT_INFORMATION}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_GESCHAEFTSJAHR">
+					<subreportParameterExpression><![CDATA[$P{P_GESCHAEFTSJAHR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_PERIODE">
+					<subreportParameterExpression><![CDATA[$P{P_PERIODE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[$P{P_BELEGFEHLER_SUBREPORT}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{REPORT_DIRECTORY}+"finanz_uva_fibufehler.jasper").toURL()]]></subreportExpression>
+			</subreport>
+			<textField evaluationTime="Band" pattern="#,##0.00;-#,##0.00">
+				<reportElement key="Summe Steuer" x="360" y="0" width="90" height="16" uuid="1b772d2f-f805-49d5-9eb9-8e93a6bd35f3"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[Math.abs($V{SteuerSumme}.doubleValue() -
+    $V{IG_Erwerb_Steuern}.doubleValue())]]></textFieldExpression>
+			</textField>
 		</band>
 	</summary>
 </jasperReport>

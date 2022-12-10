@@ -1,0 +1,1075 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="part_beauskunftung" pageWidth="595" pageHeight="842" columnWidth="536" leftMargin="45" rightMargin="14" topMargin="0" bottomMargin="0" uuid="48f20a49-edb8-4149-806f-6926644fe479">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="12"/>
+	<property name="ireport.y" value="1214"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="REPORT_INFORMATION" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Informationen zum Report]]></parameterDescription>
+	</parameter>
+	<parameter name="P_MITLOGO" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[Logodruck:
+0 ... Ohne Logo
+1 ... Mit Logo]]></parameterDescription>
+	</parameter>
+	<parameter name="P_LOGO_SUBREPORT" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_LOGO_IMAGE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_FUSSZEILEN_SUBREPORT" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="REPORT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu diesem Report]]></parameterDescription>
+	</parameter>
+	<parameter name="REPORT_ROOT_DIRECTORY" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Pfad zu allen Reports]]></parameterDescription>
+	</parameter>
+	<parameter name="F_PARTNER_I_ID" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="F_C_NAME1" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="F_C_NAME2" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="F_ANREDE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="F_GEBURTSDATUM" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="F_STRASSE" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="F_LKZ" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="F_PLZ" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="F_ORT" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="F_BEAUSKUNFTUNG_ZEITPUNKT" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="F_BEAUSKUNFTUNG_KOSTENPFLICHTIG" class="java.lang.Boolean" isForPrompting="false"/>
+	<parameter name="F_BEAUSKUNFTUNG_PERSON" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="F_BEAUSKUNFTUNG_IDENTIFIKATION" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="P_SQLEXEC" class="com.lp.server.util.ReportSqlExecutor">
+		<parameterDescription><![CDATA[Ausführung von SQL Befehlen über die ReportConnectionUrl]]></parameterDescription>
+	</parameter>
+	<parameter name="P_SUBREPORT_KOPFTEXTE" class="java.lang.Object" isForPrompting="false"/>
+	<parameter name="P_SUBREPORT_FUSSTEXTE" class="java.lang.Object" isForPrompting="false"/>
+	<field name="F_TABELLE" class="java.lang.String"/>
+	<field name="F_SCHLUESSELSPALTE" class="java.lang.String"/>
+	<field name="F_C_NR" class="java.lang.String"/>
+	<field name="F_I_ID" class="java.lang.String"/>
+	<field name="F_T_AENDERN" class="java.util.Date"/>
+	<field name="F_T_ANLEGEN" class="java.util.Date"/>
+	<variable name="V_HEUTE" class="java.util.Date" resetType="None">
+		<variableExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></variableExpression>
+		<initialValueExpression><![CDATA[Calendar.getInstance(Locale.GERMAN).getTime()]]></initialValueExpression>
+	</variable>
+	<variable name="Rechte_Dritter_betroffen" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{F_SCHLUESSELSPALTE}.contains("PERSONAL_I_ID") &&
+!$F{F_TABELLE}.startsWith("PERS")
+/* In den Tabellen des Personals zeigt die Personal_I_ID auf die Person selbst
+   wie ist das aber, wenn die Lohnverrechnung die Daten anderer Personen ändert
+   Wie wird das erkannt ?
+*/]]></variableExpression>
+	</variable>
+	<variable name="BNR_aus_I_ID" class="java.lang.String">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT C_NR FROM BES_BESTELLUNG where I_ID=("+
+    "select BESTELLUNG_I_ID from BES_BESTELLPOSITION where I_ID="+$F{F_I_ID}+");"
+)]]></variableExpression>
+	</variable>
+	<variable name="BNR_anlegen_aus_I_ID" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT T_ANLEGEN FROM BES_BESTELLUNG where I_ID=("+
+    "select BESTELLUNG_I_ID from BES_BESTELLPOSITION where I_ID="+$F{F_I_ID}+");"
+)]]></variableExpression>
+	</variable>
+	<variable name="BNR_aendern_aus_I_ID" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT T_AENDERN FROM BES_BESTELLUNG where I_ID=("+
+    "select BESTELLUNG_I_ID from BES_BESTELLPOSITION where I_ID="+$F{F_I_ID}+");"
+)]]></variableExpression>
+	</variable>
+	<variable name="PJNr_aus_I_ID" class="java.lang.String">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+    "SELECT C_NR FROM PROJ_PROJEKT where I_ID=("+
+    "select PROJEKT_I_ID from PROJ_HISTORY where I_ID="+$F{F_I_ID}+");"
+)]]></variableExpression>
+	</variable>
+	<variable name="PJ_Bereich_aus_I_ID" class="java.lang.String">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select C_BEZ from PROJ_BEREICH where I_ID=("+
+    "SELECT BEREICH_I_ID FROM PROJ_PROJEKT where I_ID=("+
+        "select PROJEKT_I_ID from PROJ_HISTORY where I_ID="+$F{F_I_ID}+"));"
+)]]></variableExpression>
+	</variable>
+	<variable name="Anlegen" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$F{F_TABELLE}.startsWith("BES_BESTELLPOSITION") &&
+$F{F_SCHLUESSELSPALTE}.startsWith("KUNDE_I_ID") ?
+$V{BNR_anlegen_aus_I_ID} : $F{F_T_ANLEGEN}]]></variableExpression>
+	</variable>
+	<variable name="Aendern" class="java.sql.Timestamp">
+		<variableExpression><![CDATA[$F{F_TABELLE}.startsWith("BES_BESTELLPOSITION") &&
+$F{F_SCHLUESSELSPALTE}.startsWith("KUNDE_I_ID") ?
+$V{BNR_aendern_aus_I_ID} : $F{F_T_AENDERN}]]></variableExpression>
+	</variable>
+	<variable name="Modulbereich" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA[$F{F_TABELLE}.substring( 0, $F{F_TABELLE}.indexOf( "_" ) )]]></variableExpression>
+	</variable>
+	<variable name="Eintraege" class="java.lang.Integer" resetType="Group" resetGroup="Tabelle" calculation="Count">
+		<variableExpression><![CDATA[$F{F_TABELLE}]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Eintraege_Dritt" class="java.lang.Integer" resetType="Group" resetGroup="Tabelle" calculation="Count">
+		<variableExpression><![CDATA[$V{Rechte_Dritter_betroffen} ? $F{F_TABELLE} : null]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="AnzahlTabellen" class="java.lang.Integer" incrementType="Group" incrementGroup="Tabelle" calculation="Count">
+		<variableExpression><![CDATA[$V{Eintraege}.intValue() > 0 ?
+new Integer(1) :
+new Integer(0)]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Fruehest" class="java.util.Date" resetType="Group" resetGroup="Modulbereich">
+		<variableExpression><![CDATA[$V{Anlegen}==null ? $V{Fruehest} :
+($V{Fruehest}==null ? $V{Anlegen} :
+    ($V{Anlegen}.before($V{Fruehest}) ? $V{Anlegen} : $V{Fruehest})
+)]]></variableExpression>
+	</variable>
+	<variable name="Spaetest" class="java.util.Date" resetType="Group" resetGroup="Modulbereich">
+		<variableExpression><![CDATA[$V{Aendern} == null ? $V{Spaetest} :
+($V{Spaetest} == null ? $V{Aendern} :
+    ($V{Aendern}.after( $V{Spaetest} ) ? $V{Aendern} : $V{Spaetest})
+)]]></variableExpression>
+	</variable>
+	<variable name="Fruehest_Total" class="java.util.Date">
+		<variableExpression><![CDATA[$F{F_T_ANLEGEN}==null ? $V{Fruehest} :
+($V{Fruehest}==null ? $F{F_T_ANLEGEN} :
+    ($F{F_T_ANLEGEN}.before($V{Fruehest}) ? $F{F_T_ANLEGEN} : $V{Fruehest})
+)]]></variableExpression>
+	</variable>
+	<variable name="Spaetest_Total" class="java.util.Date">
+		<variableExpression><![CDATA[$F{F_T_AENDERN} == null ? $V{Spaetest} :
+($V{Spaetest} == null ? $F{F_T_AENDERN} :
+    ($F{F_T_AENDERN}.after( $V{Spaetest} ) ? $F{F_T_AENDERN} : $V{Spaetest})
+)]]></variableExpression>
+	</variable>
+	<variable name="Tabellen_ohne_Dritte" class="java.lang.Integer" incrementType="Group" incrementGroup="Tabelle" calculation="Count">
+		<variableExpression><![CDATA[$V{Eintraege}.intValue() > $V{Eintraege_Dritt}.intValue() ? true : null
+/* $V{Tabellen_ohne_Dritte}.intValue() +
+   ($V{Eintraege}.intValue() > $V{Eintraege_Dritt}.intValue() ? 1 : 0)
+*/]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(0)]]></initialValueExpression>
+	</variable>
+	<variable name="Pers_Kurzzeichen" class="java.lang.String">
+		<variableExpression><![CDATA[$P{P_SQLEXEC}.execute(
+"select C_KURZZEICHEN from PERS_PERSONAL where I_ID=("+
+"select PERSONAL_I_ID from PERS_TELEFONZEITEN where I_ID="+$F{F_I_ID}+");"
+)]]></variableExpression>
+	</variable>
+	<group name="Modulbereich">
+		<groupExpression><![CDATA[$V{Modulbereich}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField>
+					<reportElement x="0" y="0" width="100" height="20" uuid="dbfccfa9-3efb-4bda-bab4-9dec1aff6910"/>
+					<textElement>
+						<font fontName="Arial" size="12"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Modulbereich}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="15">
+				<textField pattern="dd.MM.yyyy">
+					<reportElement x="445" y="0" width="45" height="10" uuid="2cd740e8-7f31-44d3-843a-7beb2ebeadd3"/>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Fruehest}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd.MM.yyyy">
+					<reportElement x="490" y="0" width="45" height="10" uuid="06c20dd5-5351-444e-85e5-89924cd4eef2"/>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Spaetest}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Tabelle">
+		<groupExpression><![CDATA[$F{F_TABELLE}+$F{F_SCHLUESSELSPALTE}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="20">
+				<textField isStretchWithOverflow="true">
+					<reportElement x="0" y="0" width="180" height="10" uuid="6aa598f4-0b8a-4453-9e85-528235b1ee5d"/>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{F_TABELLE}]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement mode="Transparent" x="410" y="0" width="50" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2b1b1b42-254a-4545-a896-7a16b74bc7a8"/>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Eintraege}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="340" y="0" width="70" height="10" uuid="f618c57b-ed4d-461b-8e70-ead0368230c7"/>
+					<box rightPadding="2"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<text><![CDATA[Anzahl Datensätze]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="180" y="0" width="160" height="10" uuid="74160985-e850-4e49-a163-78d0400e08e8"/>
+					<textElement>
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{F_SCHLUESSELSPALTE}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="310" y="10" width="100" height="10" isRemoveLineWhenBlank="true" uuid="9a23a058-6e0b-461a-9d2c-7c7056996857">
+						<printWhenExpression><![CDATA[$V{Eintraege_Dritt}.intValue() != 0]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="2"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<text><![CDATA[davon Dritte betreffend]]></text>
+				</staticText>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement mode="Transparent" x="410" y="10" width="50" height="10" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="110b5773-5011-4701-8e01-56feed9ba227">
+						<printWhenExpression><![CDATA[$V{Eintraege_Dritt}.intValue() != 0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Eintraege_Dritt}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band height="842" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-7" mode="Opaque" x="-56" y="0" width="595" height="842" forecolor="#000000" backcolor="#FFFFFF" uuid="12a25458-4662-49c7-8bac-965555d4f927"/>
+				<subreportParameter name="REPORT_ROOT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_ROOT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LKZ">
+					<subreportParameterExpression><![CDATA[null]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_MITLOGO">
+					<subreportParameterExpression><![CDATA[$P{P_MITLOGO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_WAEHRUNG">
+					<subreportParameterExpression><![CDATA[null]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LOGO_SUBREPORT">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_SUBREPORT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LOGO">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_IMAGE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_FUSSZEILEN_SUBREPORT">
+					<subreportParameterExpression><![CDATA[$P{P_FUSSZEILEN_SUBREPORT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DIRECTORY">
+					<subreportParameterExpression><![CDATA[$P{REPORT_DIRECTORY}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="P_LOGO_IMAGE">
+					<subreportParameterExpression><![CDATA[$P{P_LOGO_IMAGE}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[new java.io.File($P{P_LOGO_SUBREPORT}.replaceFirst("logo.","background.")).toURL()]]></subreportExpression>
+			</subreport>
+		</band>
+	</background>
+	<title>
+		<band height="510" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="187" width="55" height="10" uuid="159861e4-b92d-4b34-a972-6fe4683f1971">
+					<printWhenExpression><![CDATA[$P{F_BEAUSKUNFTUNG_IDENTIFIKATION}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Identifiziert mit:]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy HH:mm">
+				<reportElement mode="Transparent" x="60" y="164" width="95" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="d12aafe6-3bae-47a6-be05-3e320f65d20f"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_HEUTE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="155" y="197" width="45" height="10" uuid="135dcb59-2396-4a6e-83bc-1a8288ed6fa8">
+					<printWhenExpression><![CDATA[$P{F_BEAUSKUNFTUNG_PERSON}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[erfasst von:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="200" y="197" width="160" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="57490f2d-8c89-43bf-841b-8f6f84f64f63"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_BEAUSKUNFTUNG_PERSON}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="155" y="174" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9f6a4026-5606-453c-92fa-bb3737514c89">
+					<printWhenExpression><![CDATA[$P{F_GEBURTSDATUM}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Geburtsdatum:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="164" width="60" height="10" uuid="8fd973e1-e96e-4897-9fc6-012b01a8d322"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<text><![CDATA[erstellt am:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="55" y="187" width="175" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="a6c076b6-4673-4474-9f25-fb6882ba328b"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_BEAUSKUNFTUNG_IDENTIFIKATION}==null ?
+"ohne Identifizierung / Vorabauskunft" :
+$P{F_BEAUSKUNFTUNG_IDENTIFIKATION}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="210" y="174" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="9555ba44-c73d-4a77-ba83-631d17c172ee"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_GEBURTSDATUM}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="55" y="197" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="155af80c-9a78-42a6-9dce-024d9fa1cd31"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_BEAUSKUNFTUNG_ZEITPUNKT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="40" y="197" width="15" height="10" uuid="a6fda6bc-61f6-4707-89e2-a63913565180">
+					<printWhenExpression><![CDATA[$P{F_BEAUSKUNFTUNG_ZEITPUNKT}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[am:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="123" width="155" height="16" uuid="b05adcdc-e89f-4335-aebe-ea3377346adc"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Beauskunftung kompakt für]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Transparent" x="155" y="164" width="381" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="533dc6a9-7283-457a-a883-0e31d30330b2"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{F_LKZ}==null ? "": $P{F_LKZ}+"-")+
+($P{F_PLZ}==null ? "": $P{F_PLZ}+" ")+
+($P{F_ORT}==null ? "": $P{F_ORT}+", ")+
+($P{F_STRASSE}==null ? "": $P{F_STRASSE})]]></textFieldExpression>
+			</textField>
+			<break>
+				<reportElement x="0" y="509" width="525" height="1" uuid="3b3010b7-5c7b-412a-89f0-778a4c657da9"/>
+			</break>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="214" width="536" height="20" forecolor="#FFFFFF" backcolor="#FF9933" uuid="69733c9d-9eae-43c1-9c3c-45f8d6ae88c9"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Interne Informationen, nicht zur Weitergabe an die zu beauskunftende Person bestimmt!]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="242" width="536" height="238" uuid="1bfb2881-56f1-4a5f-9bf6-fb3539509257"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Diese Beauskunftung ist nur für die direkt in HELIUM V gespeicherten Daten, bis maximal zur dritten Unterebene, vorgesehen.
+Denken Sie an die Vielzahl der sicherlich vorhandene Daten und Papierakte die Sie, gerade für Mitarbeiter, auch außerhalb von HELIUM V angelegt haben. Denken Sie weiters an Kommentare, Personeneigenschaften, die von dieser Auswertung NICHT erfasst werden.
+
+Bei der Beauskunftung dürfen die Rechte Dritter, z.B. Ihrer Kunden, nicht verletzt werden.
+Achten Sie auch auf Ihre Geschäftsgeheimnisse. In den Erwägungsgründen nach Art 15 DSGVO ... soll dies nicht dazu führen, dass Geschäftsgeheimnisse offengelegt werden.
+Gegebenenfalls ist der Person mitzuteilen, dass in bestimmten Bereichen keine Auskunft erteilt werden kann, da die Rechte Dritter bzw. Ihre Geschäftsgeheimnisse verletzt würden.
+
+Haben Sie auch die Person eindeutig identifziert, sichergestellt, dass diese Person die Daten überhaupt bekommen darf. Denken Sie hier auch daran, dass eine Person ohne Obsorgepflicht, über  eine andere Person keine wie immer geartete Information bekommen darf, auch bei leiblicher Verwandtschaft.
+
+Die Beauskunftung ist normalerweise innerhalb eines Monates an den Auskunft begehrenden zu übermitteln.
+
+Hinweis:
+Beachten Sie gleiche / gleichlautende Namen, ev. sollten vor einer Beauskunftung die Partner zusammengeführt werden. Suchen Sie auch nach gleichen EMail Adressen (erweiterte Suche und Fragmente der EMail-Adresse eingeben).
+
+Bitte beachten Sie auch, dass die Beauskunftung nur für den gewählten Mandanten gemacht wird. D.h. sollten mehrere Mandanten in Ihrem HELIUM V eingerichtet sein, muss die Beauskunftung für jeden Mandanten gemacht werden!
+
+Bei einer eventuellen Anonymisierung beachten Sie bitte die gesetzlichen Aufbewahrungsfristen. Siehe dazu auch DSGVO, Journal, Module und Personenspezifische Merkmale.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="480" width="536" height="30" uuid="91fc5b4b-e272-4640-823b-27d7cc9ca055"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Beachten Sie dass in anderen Projekten ebenfalls Daten gespeichert sein können.
+Denken Sie auch an die Unterlagen, in denen die Organe der Geschäftsführung angeführt sind (Bilanzen u.ä.)
+Dies ist Dokumentationsstand V0.2, 2019-01-14, Copyright: HELIUM V IT-Solutions GmbH]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="155" y="140" width="370" height="24" uuid="208052ba-b160-4e15-b7c0-9aef5e43da45"/>
+				<textElement>
+					<font fontName="Arial" size="20"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_C_NAME2}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="155" y="116" width="370" height="24" uuid="55a12a33-ce56-4fb8-91be-67595db61acb"/>
+				<textElement>
+					<font fontName="Arial" size="20"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_C_NAME1}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="232" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="124" width="155" height="16" uuid="cf2b0011-39c4-42c6-b66e-82c95c28a8fd"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Beauskunftung kompakt für]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="155" y="116" width="370" height="24" uuid="128ad704-cab2-4022-811c-d659d8e64e2c"/>
+				<textElement>
+					<font fontName="Arial" size="20"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_C_NAME1}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="221" width="180" height="10" uuid="c6d4c659-2f20-4c3a-9523-deda390892e9"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Tabelle]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="221" width="160" height="10" uuid="ad1e749d-fbce-4ee3-a807-deee5364cb2b"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Schlüsselspalte]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="340" y="221" width="60" height="10" uuid="386191e6-dbf8-434c-8ce7-3d74de753af2"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Belegnummer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="405" y="221" width="40" height="10" uuid="05f5e23d-41f1-463b-8d52-a2b6e92f6a2b"/>
+				<box rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[interne ID]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="231" width="536" height="1" uuid="3678b211-ffaa-4b7f-afed-b8c512d50276"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="0" y="164" width="60" height="10" uuid="46afb715-18e7-47b4-a34e-69ce5289a878"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<text><![CDATA[erstellt am:]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy HH:mm">
+				<reportElement mode="Transparent" x="60" y="164" width="95" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="75e8b519-149b-4908-9f47-d53470e58528"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{V_HEUTE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="187" width="55" height="10" uuid="d5f10226-9e3c-43b5-991f-4b9102089e8d">
+					<printWhenExpression><![CDATA[$P{F_BEAUSKUNFTUNG_IDENTIFIKATION}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Identifiziert mit:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="197" width="15" height="10" uuid="75b7414c-778b-44a6-8467-7652319db780">
+					<printWhenExpression><![CDATA[$P{F_BEAUSKUNFTUNG_ZEITPUNKT}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[am:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="155" y="197" width="45" height="10" uuid="536b7461-7761-4b42-bc53-c3f8d5ed0bf2">
+					<printWhenExpression><![CDATA[$P{F_BEAUSKUNFTUNG_PERSON}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[erfasst von:]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="55" y="197" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="8ad6c394-e91f-4549-add6-89649e1dd573"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_BEAUSKUNFTUNG_ZEITPUNKT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="200" y="197" width="160" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="db0c645b-165b-4206-bc75-ff584aa776c2"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_BEAUSKUNFTUNG_PERSON}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="55" y="187" width="175" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="45a3f16a-9b66-41fa-be1c-77493ac11d71"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_BEAUSKUNFTUNG_IDENTIFIKATION}==null ?
+"ohne Identifizierung / Vorabauskunft" :
+$P{F_BEAUSKUNFTUNG_IDENTIFIKATION}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="155" y="164" width="370" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7aa4142f-5643-4d75-be23-911b291cf74e"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{F_LKZ}==null ? "": $P{F_LKZ}+"-")+
+($P{F_PLZ}==null ? "": $P{F_PLZ}+" ")+
+($P{F_ORT}==null ? "": $P{F_ORT}+", ")+
+($P{F_STRASSE}==null ? "": $P{F_STRASSE})]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="210" y="174" width="60" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="3c5b1af7-afa7-4b34-a1b4-fdf4b4bac6fc"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_GEBURTSDATUM}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="155" y="174" width="55" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="7d07b90f-8d19-4ae0-a401-380ca289305f">
+					<printWhenExpression><![CDATA[$P{F_GEBURTSDATUM}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Geburtsdatum:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="445" y="221" width="45" height="10" uuid="670c4bf2-abb8-473b-b7a8-1b2a9b08df83"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anlage]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="490" y="221" width="45" height="10" uuid="4c2a9033-9a80-4c31-950c-4e6d35c972a7"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Änderung]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="155" y="140" width="370" height="24" uuid="b4a7830f-c1ca-4396-a597-5c2637fa5b9c"/>
+				<textElement>
+					<font fontName="Arial" size="20"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{F_C_NAME2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[!($F{F_TABELLE}.startsWith("BES_BESTELLPOSITION") &&
+  $F{F_SCHLUESSELSPALTE}.startsWith("KUNDE_I_ID")) &&
+!($F{F_TABELLE}.startsWith("PART_GEODATEN")) &&
+!($F{F_TABELLE}.startsWith("PROJ_HISTORY")) &&
+!($F{F_TABELLE}.startsWith("LP_ENTITYLOG")) && /* Entitylog zur Info, hilft aber sonst nicht weiter */
+!($F{F_TABELLE}.startsWith("LP_ORT")) &&
+!($F{F_TABELLE}.startsWith("LP_VERSANDAUFTRAG")) &&
+!($F{F_TABELLE}.startsWith("WW_ARTIKELLOG")) &&
+!($F{F_TABELLE}.startsWith("PERS_TELEFONZEITEN"))]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="180" height="10" uuid="b9e88d0f-c594-4d8e-9013-18f31ee45f73"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_TABELLE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="0" width="160" height="10" uuid="5c85031d-7a91-40a0-8395-d8ac6790312f"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_SCHLUESSELSPALTE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="340" y="0" width="60" height="10" uuid="901ba0af-2f1b-4432-9025-c45946ba9015"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_C_NR}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="405" y="0" width="40" height="10" uuid="4f500dda-cb2b-4731-bf2c-a19ba5d5ceff"/>
+				<box rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="445" y="0" width="45" height="10" uuid="07f092c1-ff20-4b09-a684-1687aeccef10"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_T_ANLEGEN}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="490" y="0" width="45" height="10" uuid="52b632da-29b3-4804-a72c-983a1ebb3ba9"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_T_AENDERN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="Dritte" x="400" y="0" width="5" height="10" uuid="96d15f96-9ee4-4b63-a24b-f4743aa5e285">
+					<printWhenExpression><![CDATA[$V{Rechte_Dritter_betroffen}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA["3"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$F{F_TABELLE}.startsWith("BES_BESTELLPOSITION") &&
+$F{F_SCHLUESSELSPALTE}.startsWith("KUNDE_I_ID")]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="180" height="10" uuid="e75d60a5-3d9f-4a30-b6d3-c714026712e0"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_TABELLE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="0" width="160" height="10" uuid="9a675b10-81a6-4ddc-8dcc-5333c74ee055"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_SCHLUESSELSPALTE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="340" y="0" width="60" height="10" uuid="d8148f1b-e647-4557-b23a-935b71ef844f"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{BNR_aus_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="405" y="0" width="40" height="10" uuid="b694e671-efe1-4926-a89e-6b8c1b41a6b6"/>
+				<box rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="490" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="49af5052-b2a7-4c83-bc81-6062d9e4df34"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{BNR_aendern_aus_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="445" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="e0075706-81c1-4c6a-9239-5419a43eb85a"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{BNR_anlegen_aus_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="Dritte" x="400" y="0" width="5" height="10" uuid="f81b58b1-ff82-489f-8489-1fc33d4d625c">
+					<printWhenExpression><![CDATA[$V{Rechte_Dritter_betroffen}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA["3"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="536" y="0" width="94" height="10" uuid="91177525-17c2-40ea-bd90-ff92a550c689">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Bestellposition und Kunde]]></text>
+			</staticText>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$F{F_TABELLE}.startsWith("PROJ_HISTORY")]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="180" height="10" uuid="6cb0357d-22f6-402b-bf0c-2a0768b50808"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_TABELLE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="0" width="80" height="10" uuid="f3b2c560-4184-42af-a536-8ea4bfa46dc8"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_SCHLUESSELSPALTE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="340" y="0" width="60" height="10" uuid="c05ea8bf-260f-4dea-9bf5-36c9d53c7c87"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PJNr_aus_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="405" y="0" width="40" height="10" uuid="209b23c7-4b43-4a9b-8d8b-c2066e33c9bd"/>
+				<box rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="490" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="823e7bfd-e148-43a4-84f6-6ea6cea60ad5"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_T_AENDERN}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="445" y="0" width="45" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="4a83e712-265b-44a8-bf5b-708de261a999"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_T_ANLEGEN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="Dritte" x="400" y="0" width="5" height="10" uuid="12bd2fd4-e449-4ce5-9a70-961027cc13dd">
+					<printWhenExpression><![CDATA[$V{Rechte_Dritter_betroffen}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA["3"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="260" y="0" width="80" height="10" uuid="7f52a554-13c8-46c3-924a-eb21bb4efcd2"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PJ_Bereich_aus_I_ID}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="536" y="0" width="94" height="10" uuid="5ad382fb-0d20-4805-864c-ad74eb028feb">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Projekt Historie]]></text>
+			</staticText>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$F{F_TABELLE}.startsWith("PART_GEODATEN")]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="180" height="10" uuid="877fd3ff-4ed2-48b2-a55e-0ea1f62de21a"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_TABELLE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="536" y="0" width="94" height="10" uuid="01a3d0dd-564c-4e24-bdf9-38b888c484ae">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Geodaten]]></text>
+			</staticText>
+		</band>
+		<band height="10">
+			<printWhenExpression><![CDATA[$F{F_TABELLE}.startsWith("PERS_TELEFONZEITEN")]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="180" height="10" uuid="047832c2-1044-4e66-8838-4d5dffbe861a"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_TABELLE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="0" width="160" height="10" uuid="71a29903-8b3f-42aa-91c7-5cacfbd0b1be"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_SCHLUESSELSPALTE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="340" y="0" width="60" height="10" uuid="9c3ae780-f6d8-4d10-9ef5-a2733c95c12b"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Pers.: "+$V{Pers_Kurzzeichen}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="405" y="0" width="40" height="10" uuid="1e16aab3-3399-4b23-ac07-7b4c592cf8e9"/>
+				<box rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_I_ID}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement x="445" y="0" width="45" height="10" uuid="3a0fa028-6c05-4ac6-9939-66213652c9f4"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_T_ANLEGEN}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement x="490" y="0" width="45" height="10" uuid="21228cdc-2a67-48ac-99e1-ca9d36c54561"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{F_T_AENDERN}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="Dritte" x="400" y="0" width="5" height="10" uuid="812b8ad6-ee88-4e8f-af6f-afcdeef04ed4">
+					<printWhenExpression><![CDATA[$V{Rechte_Dritter_betroffen}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA["3"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="536" y="0" width="94" height="10" uuid="9d71be87-f8df-4b9b-8cc5-6dcde548cf90">
+					<printWhenExpression><![CDATA[false]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<text><![CDATA[Telzeit]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="80" splitType="Stretch">
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER-1" mode="Opaque" x="505" y="8" width="20" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="fbf028cb-daae-4a2d-a7e9-22d3f62b5fe6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[String.valueOf($V{PAGE_NUMBER}-1)]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="REPORT_INFORMATION-1" mode="Opaque" x="0" y="8" width="470" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="50409c7c-eb5b-4bcb-849e-07d3a2579613"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER-1" mode="Opaque" x="288" y="8" width="215" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="ca5c5d85-bf89-4a05-bfb4-c3c87648f9f2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}-1) + " von "]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="536" height="1" uuid="6f0b1f17-e0d6-4d83-8307-223b95f326e6"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="90">
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="VON_PAGE_NUMBER-1" mode="Opaque" x="505" y="18" width="20" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="8b269d44-921b-41a6-8401-c1ca526f27ad"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[String.valueOf($V{PAGE_NUMBER}-1)]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="REPORT_INFORMATION-1" mode="Opaque" x="0" y="18" width="470" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="ea04fa75-99b0-40d1-994b-286cf9bdc5fb"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_INFORMATION}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="PAGE_NUMBER-1" mode="Opaque" x="288" y="18" width="215" height="8" forecolor="#000000" backcolor="#FFFFFF" uuid="85778dbb-871a-40b0-b2cb-9a04777d0fde"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="6" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Seite " + String.valueOf($V{PAGE_NUMBER}-1) + " von "]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="Dritte" x="0" y="8" width="200" height="10" uuid="3b1b05d8-ab0d-42fd-b61b-bf9c54528055"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[3 ... Es sind Rechte Dritter betroffen, keine Auskunft]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="0" width="536" height="1" uuid="e1eeb804-acf5-4885-b1d0-18388fecf01e"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="21" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="1" width="120" height="10" uuid="78be6c47-f467-4aa2-b5aa-a2e85021e0f2"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Anzahl Tabellen mit Einträgen]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="130" y="1" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="2279f4bf-39d5-44fa-a236-23c389f69f1d"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{AnzahlTabellen}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="536" height="1" uuid="ff4c460f-b44a-442a-8acd-97bc88d7e4ce"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="490" y="1" width="45" height="10" uuid="3c6912b8-3e8e-4583-a154-1b846f9e7694"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Spaetest_Total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="445" y="1" width="45" height="10" uuid="63ed16bd-193d-491d-bf11-d1f3d5732844"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Fruehest_Total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="130" y="11" width="100" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="01b215a7-0d06-4ef9-8382-d7bac81e1623"/>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Tabellen_ohne_Dritte}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="11" width="130" height="10" uuid="77255c50-57b7-4aed-98a8-f7fb2c2994d3"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Tabellen ohne Verweise auf Dritte]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>
